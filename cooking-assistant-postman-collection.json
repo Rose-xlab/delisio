@@ -1,0 +1,298 @@
+{
+    "info": {
+      "_postman_id": "eac8f675-3f4e-4c3b-9a66-d8d6d34cda2f",
+      "name": "Cooking-Assistant API",
+      "description": "Postman collection for testing the Cooking-Assistant backend API",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "Authentication",
+        "item": [
+          {
+            "name": "Register User",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\",\n    \"name\": \"Test User\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/auth/signup",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "auth", "signup"]
+              },
+              "description": "Register a new user in the system"
+            },
+            "response": []
+          },
+          {
+            "name": "Login User",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/auth/signin",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "auth", "signin"]
+              },
+              "description": "Sign in a user and get authentication token"
+            },
+            "response": []
+          },
+          {
+            "name": "Get Current User",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{authToken}}"
+                }
+              ],
+              "url": {
+                "raw": "{{baseUrl}}/api/auth/me",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "auth", "me"]
+              },
+              "description": "Get the current authenticated user's profile"
+            },
+            "response": []
+          },
+          {
+            "name": "Update User Preferences",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{authToken}}"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n    \"dietaryRestrictions\": [\"vegetarian\", \"gluten-free\"],\n    \"favoriteCuisines\": [\"italian\", \"mexican\"],\n    \"allergies\": [\"nuts\", \"shellfish\"],\n    \"cookingSkill\": \"intermediate\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/auth/preferences",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "auth", "preferences"]
+              },
+              "description": "Update user preferences"
+            },
+            "response": []
+          },
+          {
+            "name": "Sign Out",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{authToken}}"
+                }
+              ],
+              "url": {
+                "raw": "{{baseUrl}}/api/auth/signout",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "auth", "signout"]
+              },
+              "description": "Sign out the current user"
+            },
+            "response": []
+          }
+        ],
+        "description": "Endpoints for authentication and user management"
+      },
+      {
+        "name": "Recipes",
+        "item": [
+          {
+            "name": "Generate Recipe",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{authToken}}",
+                  "type": "text"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n    \"query\": \"vegetarian lasagna\",\n    \"save\": true\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/recipes",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "recipes"]
+              },
+              "description": "Generate a new recipe based on query"
+            },
+            "response": []
+          },
+          {
+            "name": "Generate Recipe (Unauthenticated)",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n    \"query\": \"chocolate chip cookies\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/recipes",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "recipes"]
+              },
+              "description": "Generate a recipe without authentication"
+            },
+            "response": []
+          },
+          {
+            "name": "Get User Recipes",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{authToken}}"
+                }
+              ],
+              "url": {
+                "raw": "{{baseUrl}}/api/users/recipes",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "users", "recipes"]
+              },
+              "description": "Get all recipes for the current user"
+            },
+            "response": []
+          },
+          {
+            "name": "Get Recipe by ID",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{authToken}}"
+                }
+              ],
+              "url": {
+                "raw": "{{baseUrl}}/api/users/recipes/{{recipeId}}",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "users", "recipes", "{{recipeId}}"]
+              },
+              "description": "Get a specific recipe by ID"
+            },
+            "response": []
+          }
+        ],
+        "description": "Endpoints for recipe generation and management"
+      },
+      {
+        "name": "Chat",
+        "item": [
+          {
+            "name": "Send Chat Message",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n    \"message\": \"What can I make with chicken and broccoli?\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/chat",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "chat"]
+              },
+              "description": "Send a message to the AI chat assistant"
+            },
+            "response": []
+          }
+        ],
+        "description": "Endpoints for interacting with the AI chat assistant"
+      },
+      {
+        "name": "Health Check",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{baseUrl}}/health",
+            "host": ["{{baseUrl}}"],
+            "path": ["health"]
+          },
+          "description": "Check if the API is up and running"
+        },
+        "response": []
+      }
+    ],
+    "event": [
+      {
+        "listen": "prerequest",
+        "script": {
+          "type": "text/javascript",
+          "exec": [""]
+        }
+      },
+      {
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [""]
+        }
+      }
+    ],
+    "variable": [
+      {
+        "key": "baseUrl",
+        "value": "http://localhost:3000",
+        "type": "string"
+      },
+      {
+        "key": "authToken",
+        "value": "",
+        "type": "string"
+      },
+      {
+        "key": "recipeId",
+        "value": "",
+        "type": "string"
+      }
+    ]
+  }
