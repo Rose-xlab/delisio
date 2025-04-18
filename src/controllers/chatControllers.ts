@@ -1,98 +1,89 @@
 import { generateChatResponse } from '../services/gptService';
+import { AppError } from '../middleware/errorMiddleware';
 
 /**
- * Interface for chat response
+ * Interface for the structured response expected by the Flutter app
  */
 interface ChatResponse {
   reply: string;
-  can_generate_recipe: boolean;
-  suggested_recipe?: string;
+  suggestions?: string[]; // Optional array of suggested recipe names
 }
 
 /**
- * Handles user chat messages and generates AI responses
- * @param message The user's chat message
- * @returns AI response with suggestion and recipe generation flag
+ * Handles incoming user chat messages, gets a JSON response from GPT service,
+ * parses it, and returns the structured response.
+ *
+ * @param message The user's chat message string.
+ * @returns A Promise resolving to a ChatResponse object.
+ * @throws {AppError} If processing fails.
  */
 export const handleChatMessage = async (message: string): Promise<ChatResponse> => {
   try {
-    // Analyze if the message is a recipe-related question
-    const isRecipeQuery = isRecipeRelatedQuestion(message);
-    
-    // Generate chat response using GPT
-    const gptResponse = await generateChatResponse(message);
-    
-    // Determine if we can generate a recipe from this query
-    const canGenerateRecipe = determineIfCanGenerateRecipe(message, gptResponse);
-    
-    // Extract a suggested recipe title if applicable
-    const suggestedRecipe = extractSuggestedRecipe(gptResponse);
-    
-    // Construct response
-    const response: ChatResponse = {
-      reply: gptResponse,
-      can_generate_recipe: canGenerateRecipe
-    };
-    
-    // Add suggested recipe if present
-    if (suggestedRecipe) {
-      response.suggested_recipe = suggestedRecipe;
+    console.log(`Handling chat message: "${message}"`);
+
+    // Step 1: Get the response JSON string from the GPT service
+    const gptJsonResponse = await generateChatResponse(message);
+    console.log(`Raw JSON Response String from GPT service:\n${gptJsonResponse}`);
+
+    // Step 2: Parse the JSON string
+    let parsedData: any; // Use 'any' initially or define a specific interface
+    try {
+        parsedData = JSON.parse(gptJsonResponse);
+        console.log("Successfully parsed JSON response string.");
+    } catch (jsonError) {
+        console.error('Error parsing JSON response from OpenAI:', jsonError);
+        console.error('Received non-JSON response string:', gptJsonResponse);
+        throw new Error('Failed to parse chat structure from AI response.');
     }
-    
+
+    // Step 3: Validate and Extract data from the parsed object
+    const reply = parsedData?.reply as string | undefined;
+    const suggestionsData = parsedData?.suggestions;
+
+    // Basic validation
+    if (typeof reply !== 'string' || reply.trim().length === 0) {
+        console.error('Parsed JSON missing valid "reply" string:', parsedData);
+        throw new Error('AI response JSON missing required "reply" field.');
+    }
+
+    let suggestions: string[] | undefined = undefined;
+    // Validate suggestions: must be null or an array of strings
+    if (suggestionsData !== null && suggestionsData !== undefined) {
+        if (Array.isArray(suggestionsData) && suggestionsData.every(item => typeof item === 'string')) {
+             // Only assign if it's a non-empty array of strings
+             if (suggestionsData.length > 0) {
+                  suggestions = suggestionsData as string[];
+                  console.log(`Parsed suggestions: ${JSON.stringify(suggestions)}`);
+             } else {
+                  console.log("Parsed suggestions: Received empty array, treating as None.");
+             }
+
+        } else {
+            console.warn('Parsed "suggestions" field was not null or a valid string array:', suggestionsData);
+            // Keep suggestions as undefined if format is wrong
+        }
+    } else {
+        console.log("Parsed suggestions: None (field was null or undefined).");
+         // Keep suggestions as undefined
+    }
+
+
+    // Step 4: Construct the final response object for the Flutter app
+    const response: ChatResponse = {
+      reply: reply, // Use the extracted reply
+      // Conditionally add suggestions field only if it's a valid, non-empty array
+      ...(suggestions && { suggestions: suggestions })
+    };
+
+    console.log('Sending processed chat response to client:', response);
     return response;
+
   } catch (error) {
-    console.error('Error in chat handling:', error);
-    throw new Error(`Failed to process chat message: ${(error as Error).message}`);
+    console.error('Error in handleChatMessage controller:', error);
+    if (error instanceof Error) {
+         throw new AppError(`Failed to process chat message: ${error.message}`, 500);
+    } else {
+         throw new AppError('An unknown error occurred while processing the chat message.', 500);
+    }
   }
 };
-
-/**
- * Determines if the message is related to recipes or cooking
- */
-function isRecipeRelatedQuestion(message: string): boolean {
-  const recipeKeywords = [
-    'recipe', 'cook', 'make', 'prepare', 'bake', 'food', 'dish', 'meal',
-    'breakfast', 'lunch', 'dinner', 'ingredients', 'instructions'
-  ];
-  
-  return recipeKeywords.some(keyword => 
-    message.toLowerCase().includes(keyword)
-  );
-}
-
-/**
- * Determines if we can generate a recipe based on the message and response
- */
-function determineIfCanGenerateRecipe(message: string, response: string): boolean {
-  // Check if the user is asking for a specific recipe
-  const askingForRecipe = /how (can|do) I (make|cook|prepare|bake)/i.test(message) ||
-                         /recipe for/i.test(message);
-  
-  // Check if the response suggests a dish or recipe
-  const suggestingRecipe = /(you could make|try making|how about|you can prepare)/i.test(response);
-  
-  return askingForRecipe || suggestingRecipe;
-}
-
-/**
- * Extracts suggested recipe title from the GPT response
- */
-function extractSuggestedRecipe(response: string): string | undefined {
-  // Look for specific patterns that suggest a recipe
-  const patterns = [
-    /you could make (a |an )?([a-zA-Z\s]+)(\.|\?|!|,)/i,
-    /how about (a |an )?([a-zA-Z\s]+)(\.|\?|!|,)/i,
-    /try (making |cooking |preparing )(a |an )?([a-zA-Z\s]+)(\.|\?|!|,)/i
-  ];
-  
-  for (const pattern of patterns) {
-    const match = response.match(pattern);
-    if (match) {
-      // Return the matched recipe name, clean up extra spaces
-      const recipeName = match[2] || match[3];
-      return recipeName.trim();
-    }
-  }
-  
-  return undefined;
-}
