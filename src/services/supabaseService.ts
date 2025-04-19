@@ -1,3 +1,4 @@
+// src/services/supabaseService.ts
 import { supabase } from '../config/supabase';
 import { Recipe, RecipeStep, NutritionInfo } from '../models/Recipe'; // Updated model
 import { User, UserPreferences } from '../models/User'; // Assuming path is correct
@@ -31,6 +32,14 @@ export const saveRecipe = async (recipe: Recipe, userId: string): Promise<Recipe
     if (!recipe.id) { throw new Error('Recipe object must have an ID before saving.'); }
     try {
         logger.info(`Saving recipe ID ${recipe.id} for user ${userId}`);
+        
+        // ADD THIS DEBUG LOG
+        console.log("Time fields being saved to Supabase:", {
+            prep_time_minutes: recipe.prepTime,
+            cook_time_minutes: recipe.cookTime,
+            total_time_minutes: recipe.totalTime
+        });
+        
         const recipeData: TablesInsert<'recipes'> = {
             id: recipe.id,
             user_id: userId,
@@ -51,6 +60,14 @@ export const saveRecipe = async (recipe: Recipe, userId: string): Promise<Recipe
         if (error) { logger.error('Error upserting recipe', { recipeId: recipe.id, error }); throw error; }
         if (!data) { throw new Error('No data returned from recipe upsert'); }
         logger.info(`Recipe ID ${recipe.id} saved/upserted successfully.`);
+        
+        // ADD THIS DEBUG LOG
+        console.log("Supabase response after save:", {
+            prep_time_minutes: data.prep_time_minutes,
+            cook_time_minutes: data.cook_time_minutes,
+            total_time_minutes: data.total_time_minutes
+        });
+        
         return recipe;
     } catch (error) { logger.error(`Error saving recipe ID ${recipe.id}:`, error); throw new Error(`Failed to save recipe: ${(error as Error).message}`); }
 };
@@ -63,6 +80,15 @@ export const getUserRecipes = async (userId: string): Promise<Recipe[]> => {
     const { data, error } = await supabase.from('recipes').select('*').eq('user_id', userId).order('created_at', { ascending: false });
     if (error) { logger.error('Error fetching user recipes', { error }); throw error; }
     if (!data) { return []; }
+
+    // ADD THIS DEBUG LOG
+    if (data.length > 0) {
+      console.log("Sample recipe from getUserRecipes time fields:", {
+        prep_time_minutes: data[0].prep_time_minutes,
+        cook_time_minutes: data[0].cook_time_minutes,
+        total_time_minutes: data[0].total_time_minutes
+      });
+    }
 
     return data.map((item: Tables<'recipes'>) => ({
       id: item.id,
@@ -89,6 +115,13 @@ export const getRecipeById = async (recipeId: string): Promise<Recipe | null> =>
     const { data, error } = await supabase.from('recipes').select('*').eq('id', recipeId).single();
     if (error) { if (error.code === 'PGRST116') return null; logger.error('Error fetching recipe by ID', { error }); throw error; }
     if (!data) return null;
+
+    // ADD THIS DEBUG LOG
+    console.log("Retrieved time fields from Supabase:", {
+        prep_time_minutes: data.prep_time_minutes,
+        cook_time_minutes: data.cook_time_minutes,
+        total_time_minutes: data.total_time_minutes
+    });
 
     return {
       id: data.id,

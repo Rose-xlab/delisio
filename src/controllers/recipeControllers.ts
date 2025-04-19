@@ -1,11 +1,12 @@
+// src/controllers/recipeControllers.ts
 import axios from 'axios';
 import { Buffer } from 'buffer';
 import { v4 as uuidv4 } from 'uuid';
 import { generateRecipeContent } from '../services/gptService';
 import { generateImage } from '../services/dalleService';
-import { extractNutrition } from '../services/nutritionService'; // Correctly imported
+import { extractNutrition } from '../services/nutritionService';
 import { uploadImageToStorage } from '../services/supabaseService';
-import { Recipe, RecipeStep, NutritionInfo, validateRecipe } from '../models/Recipe'; // Updated model
+import { Recipe, RecipeStep, NutritionInfo, validateRecipe } from '../models/Recipe';
 import { AppError } from '../middleware/errorMiddleware';
 
 /**
@@ -28,17 +29,32 @@ export const generateRecipe = async (
     // Step 1: Generate recipe content JSON string
     const gptJsonResponse = await generateRecipeContent(query, userPreferences);
     console.log("Received potential JSON response string from GPT service.");
-    // console.log("RAW AI RESPONSE STRING TO PARSE:", gptJsonResponse);
-
+    
     // Step 2: Parse and Validate JSON
     let parsedRecipeData: Partial<Recipe>;
     try {
         parsedRecipeData = JSON.parse(gptJsonResponse);
         console.log("Successfully parsed JSON response string.");
-    } catch (jsonError) { throw new Error('Failed to parse recipe structure from AI response.'); }
-    if (!validateRecipe(parsedRecipeData)) { throw new Error('AI response did not match expected recipe structure after parsing.'); }
+        // ADD THIS DEBUG LOG to inspect the time fields from GPT response:
+        console.log("Time fields in GPT response:", {
+          prepTime: parsedRecipeData.prepTime,
+          cookTime: parsedRecipeData.cookTime,
+          totalTime: parsedRecipeData.totalTime
+        });
+    } catch (jsonError) { 
+        console.error("JSON parsing error:", jsonError);
+        throw new Error('Failed to parse recipe structure from AI response.'); 
+    }
+    
+    if (!validateRecipe(parsedRecipeData)) { 
+        console.error("Recipe validation failed:", parsedRecipeData);
+        throw new Error('AI response did not match expected recipe structure after parsing.'); 
+    }
+    
     console.log(`Parsed recipe title: "${parsedRecipeData.title}", Steps found: ${parsedRecipeData.steps?.length ?? 0}`);
-     if (!parsedRecipeData.steps || parsedRecipeData.steps.length === 0) { console.warn('Warning: Parsed recipe data has zero steps.'); }
+    if (!parsedRecipeData.steps || parsedRecipeData.steps.length === 0) { 
+        console.warn('Warning: Parsed recipe data has zero steps.'); 
+    }
 
     // Step 3: Process images sequentially
     let stepsWithImages: RecipeStep[] = [];
@@ -97,6 +113,9 @@ export const generateRecipe = async (
       totalTime: parsedRecipeData.totalTime,
     };
 
+    // ADD THIS DEBUG LOG to verify final recipe object
+    console.log(`Final recipe object time fields: prepTime=${completeRecipe.prepTime}, cookTime=${completeRecipe.cookTime}, totalTime=${completeRecipe.totalTime}`);
+
     console.log(`Successfully constructed complete recipe object for: "${completeRecipe.title}"`);
     return completeRecipe;
 
@@ -106,6 +125,3 @@ export const generateRecipe = async (
     else { throw new Error(`Failed to generate recipe due to an unknown error.`); }
   }
 };
-
-// --- DELETED Placeholder for extractNutrition ---
-// The commented-out block that was here previously has been removed.
