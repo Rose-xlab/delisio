@@ -38,6 +38,3 @@ export const supabase: SupabaseClient<Database> = createClient<Database>(supabas
 
 logger.info('Supabase client initialized successfully.'); // Use info level for success
 
-// If using default export:
-// const supabase = createClient<Database>(...);
-// export default supabase;

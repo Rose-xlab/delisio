@@ -1,426 +1,221 @@
 import { supabase } from '../config/supabase';
-import { Recipe, RecipeStep, NutritionInfo } from '../models/Recipe';
-import { User, UserPreferences } from '../models/User';
-
-import { TablesInsert, Tables, TablesUpdate, Json } from '../types/supabase';
+import { Recipe, RecipeStep, NutritionInfo } from '../models/Recipe'; // Updated model
+import { User, UserPreferences } from '../models/User'; // Assuming path is correct
+import { TablesInsert, Tables, Json } from '../types/supabase'; // Regenerated types
 import { logger } from '../utils/logger';
+import { Buffer } from 'buffer';
+
+// --- Define your bucket name here ---
+const BUCKET_NAME = 'recipe-images'; // <-- IMPORTANT: MAKE SURE THIS MATCHES YOUR BUCKET
+// --- End Bucket Name Definition ---
+
+/**
+ * Uploads image data to Supabase Storage.
+ */
+export const uploadImageToStorage = async (imageData: Buffer, filePath: string, contentType: string = 'image/png'): Promise<string> => {
+     try {
+        logger.info(`Uploading image to Supabase Storage at path: ${filePath} in bucket: ${BUCKET_NAME}`);
+        const { data: uploadData, error: uploadError } = await supabase.storage.from(BUCKET_NAME).upload(filePath, imageData, { contentType: contentType, upsert: true });
+        if (uploadError) { logger.error('Error uploading image', { path: filePath, error: uploadError }); throw uploadError; }
+        const { data: urlData } = supabase.storage.from(BUCKET_NAME).getPublicUrl(filePath);
+        if (!urlData || !urlData.publicUrl) { logger.error('Failed to get public URL', { path: filePath }); throw new Error('Failed to get public URL.'); }
+        logger.info(`Image successfully uploaded. Public URL: ${urlData.publicUrl}`);
+        return urlData.publicUrl;
+    } catch (error) { logger.error('Exception during image upload', { path: filePath, error }); throw new Error(`Failed to upload image: ${(error as Error).message}`); }
+};
 
 /**
  * Saves a recipe to Supabase
- * @param recipe Recipe to save
- * @param userId User ID to associate with the recipe
- * @returns Saved recipe with ID
  */
 export const saveRecipe = async (recipe: Recipe, userId: string): Promise<Recipe> => {
-  try {
-    // Convert app model to database model - Assuming Recipe types match DB expectations
-    const recipeData: TablesInsert<'recipes'> = {
-      user_id: userId,
-      title: recipe.title,
-      servings: recipe.servings,
-      ingredients: recipe.ingredients,
-      steps: recipe.steps as unknown as Json, // Cast to Json for insert/update if needed
-      nutrition: recipe.nutrition as unknown as Json, // Cast to Json for insert/update if needed
-      query: recipe.query,
-      // created_at and updated_at are usually handled by the database
-    };
+    if (!recipe.id) { throw new Error('Recipe object must have an ID before saving.'); }
+    try {
+        logger.info(`Saving recipe ID ${recipe.id} for user ${userId}`);
+        const recipeData: TablesInsert<'recipes'> = {
+            id: recipe.id,
+            user_id: userId,
+            title: recipe.title,
+            servings: recipe.servings,
+            ingredients: recipe.ingredients,
+            steps: recipe.steps as unknown as Json,
+            nutrition: recipe.nutrition as unknown as Json,
+            query: recipe.query,
+            created_at: recipe.createdAt.toISOString(),
+            // --- Map optional time fields to DB columns ---
+            prep_time_minutes: recipe.prepTime ?? null,
+            cook_time_minutes: recipe.cookTime ?? null,
+            total_time_minutes: recipe.totalTime ?? null,
+        };
 
-    const { data, error } = await supabase
-      .from('recipes')
-      .insert(recipeData)
-      .select()
-      .single();
-
-    if (error) {
-      logger.error('Error saving recipe to Supabase', { error });
-      throw error;
-    }
-
-    if (!data) {
-      throw new Error('No data returned from recipe insert');
-    }
-
-    // Return the recipe shape expected by the app, potentially adding the new ID
-    // Note: the 'data' returned here will match the DB row including potential nulls
-    // We might need to map 'data' similarly to how we map in fetch functions if the Recipe model differs significantly
-    return {
-      ...recipe, // Spread the original recipe first
-      id: data.id, // Add the generated ID
-      // Ensure createdAt is handled if Recipe model requires Date object
-      createdAt: new Date(data.created_at ?? Date.now())
-    };
-  } catch (error) {
-    logger.error('Error saving recipe:', error);
-    throw new Error(`Failed to save recipe: ${(error as Error).message}`);
-  }
+        const { data, error } = await supabase.from('recipes').upsert(recipeData, { onConflict: 'id' }).select().single();
+        if (error) { logger.error('Error upserting recipe', { recipeId: recipe.id, error }); throw error; }
+        if (!data) { throw new Error('No data returned from recipe upsert'); }
+        logger.info(`Recipe ID ${recipe.id} saved/upserted successfully.`);
+        return recipe;
+    } catch (error) { logger.error(`Error saving recipe ID ${recipe.id}:`, error); throw new Error(`Failed to save recipe: ${(error as Error).message}`); }
 };
 
 /**
  * Fetches user recipes from Supabase
- * @param userId User ID to fetch recipes for
- * @returns Array of user's recipes
  */
 export const getUserRecipes = async (userId: string): Promise<Recipe[]> => {
   try {
-    const { data, error } = await supabase
-      .from('recipes')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('recipes').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+    if (error) { logger.error('Error fetching user recipes', { error }); throw error; }
+    if (!data) { return []; }
 
-    if (error) {
-      logger.error('Error fetching user recipes from Supabase', { error });
-      throw error;
-    }
-
-    if (!data) {
-      return [];
-    }
-
-    // Convert database rows to app model
-    return data.map((item: Tables<'recipes'>) => ({ // Use Tables<'recipes'>
+    return data.map((item: Tables<'recipes'>) => ({
       id: item.id,
       title: item.title,
-      servings: item.servings ?? 0, // FIX: Handle null servings
-      ingredients: item.ingredients ?? [], // FIX: Handle null ingredients array if needed
-      steps: item.steps as unknown as RecipeStep[], // FIX: Cast Json using 'as unknown as'
-      nutrition: item.nutrition as unknown as NutritionInfo, // FIX: Cast Json using 'as unknown as'
-      query: item.query ?? '', // FIX: Handle null query
-      createdAt: new Date(item.created_at ?? Date.now()) // FIX: Handle null created_at
+      servings: item.servings ?? 0,
+      ingredients: item.ingredients ?? [],
+      steps: item.steps ? (item.steps as unknown as RecipeStep[]) : [],
+      nutrition: item.nutrition ? (item.nutrition as unknown as NutritionInfo) : { calories: 0, protein: '0g', fat: '0g', carbs: '0g' },
+      query: item.query ?? '',
+      createdAt: new Date(item.created_at ?? Date.now()),
+      // --- Map DB time columns back ---
+      prepTime: item.prep_time_minutes ?? undefined,
+      cookTime: item.cook_time_minutes ?? undefined,
+      totalTime: item.total_time_minutes ?? undefined,
     }));
-  } catch (error) {
-    logger.error('Error fetching user recipes:', error);
-    throw new Error(`Failed to fetch recipes: ${(error as Error).message}`);
-  }
+  } catch (error) { logger.error('Error fetching user recipes:', error); throw new Error(`Failed to fetch recipes: ${(error as Error).message}`); }
 };
 
 /**
  * Gets a single recipe by ID
- * @param recipeId Recipe ID to fetch
- * @returns Recipe object
  */
 export const getRecipeById = async (recipeId: string): Promise<Recipe | null> => {
   try {
-    const { data, error } = await supabase
-      .from('recipes')
-      .select('*')
-      .eq('id', recipeId)
-      .single();
+    const { data, error } = await supabase.from('recipes').select('*').eq('id', recipeId).single();
+    if (error) { if (error.code === 'PGRST116') return null; logger.error('Error fetching recipe by ID', { error }); throw error; }
+    if (!data) return null;
 
-    if (error) {
-      // If no data is found, return null
-      if (error.code === 'PGRST116') {
-        return null;
-      }
-
-      logger.error('Error fetching recipe by ID from Supabase', { error });
-      throw error;
-    }
-
-    if (!data) {
-      return null;
-    }
-
-    // Convert database row to app model
     return {
       id: data.id,
       title: data.title,
-      servings: data.servings ?? 0, // FIX: Handle null servings
-      ingredients: data.ingredients ?? [], // FIX: Handle null ingredients array if needed
-      steps: data.steps as unknown as RecipeStep[], // FIX: Cast Json using 'as unknown as'
-      nutrition: data.nutrition as unknown as NutritionInfo, // FIX: Cast Json using 'as unknown as'
-      query: data.query ?? '', // FIX: Handle null query
-      createdAt: new Date(data.created_at ?? Date.now()) // FIX: Handle null created_at
+      servings: data.servings ?? 0,
+      ingredients: data.ingredients ?? [],
+      steps: data.steps ? (data.steps as unknown as RecipeStep[]) : [],
+      nutrition: data.nutrition ? (data.nutrition as unknown as NutritionInfo) : { calories: 0, protein: '0g', fat: '0g', carbs: '0g' },
+      query: data.query ?? '',
+      createdAt: new Date(data.created_at ?? Date.now()),
+      // --- Map DB time columns back ---
+      prepTime: data.prep_time_minutes ?? undefined,
+      cookTime: data.cook_time_minutes ?? undefined,
+      totalTime: data.total_time_minutes ?? undefined,
     };
-  } catch (error) {
-    logger.error('Error fetching recipe by ID:', error);
-    throw new Error(`Failed to fetch recipe: ${(error as Error).message}`);
-  }
+  } catch (error) { logger.error('Error fetching recipe by ID:', error); throw new Error(`Failed to fetch recipe: ${(error as Error).message}`);}
 };
 
 /**
  * Saves user preferences
- * @param userId User ID
- * @param preferences User preferences object
- * @returns Updated preferences
  */
-export const saveUserPreferences = async (
-  userId: string,
-  preferences: UserPreferences
-): Promise<UserPreferences> => {
+export const saveUserPreferences = async (userId: string, preferences: UserPreferences): Promise<UserPreferences> => {
   try {
-    // Convert app model to database model
     const preferencesData: TablesInsert<'user_preferences'> = {
       user_id: userId,
       dietary_restrictions: preferences.dietaryRestrictions,
       favorite_cuisines: preferences.favoriteCuisines,
       allergies: preferences.allergies,
       cooking_skill: preferences.cookingSkill,
-      // updated_at usually handled by DB
     };
-
-    const { data, error } = await supabase
-      .from('user_preferences')
-      .upsert(preferencesData, { onConflict: 'user_id' }) // Specify conflict target if needed
-      .select()
-      .single();
-
-    if (error) {
-      logger.error('Error saving user preferences to Supabase', { error });
-      throw error;
-    }
-
-    if (!data) {
-      throw new Error('No data returned from preferences upsert');
-    }
-
-    // Convert database model to app model
+    const { data, error } = await supabase.from('user_preferences').upsert(preferencesData, { onConflict: 'user_id' }).select().single();
+    if (error) { logger.error('Error saving user preferences', { error }); throw error; }
+    if (!data) { throw new Error('No data returned from preferences upsert'); }
     return {
-      // FIX: Handle nulls coming from DB with default empty arrays
       dietaryRestrictions: data.dietary_restrictions ?? [],
       favoriteCuisines: data.favorite_cuisines ?? [],
       allergies: data.allergies ?? [],
-      // FIX: Handle null and ensure cast matches UserPreferences type
-      cookingSkill: (data.cooking_skill ?? 'beginner') as 'beginner' | 'intermediate' | 'advanced'
+      cookingSkill: (data.cooking_skill ?? 'beginner') as UserPreferences['cookingSkill'] // Cast to expected type
     };
-  } catch (error) {
-    logger.error('Error saving user preferences:', error);
-    throw new Error(`Failed to save preferences: ${(error as Error).message}`);
-  }
+  } catch (error) { logger.error('Error saving user preferences:', error); throw new Error(`Failed to save preferences: ${(error as Error).message}`); }
 };
 
 /**
  * Gets user preferences
- * @param userId User ID to fetch preferences for
- * @returns User preferences object
  */
 export const getUserPreferences = async (userId: string): Promise<UserPreferences | null> => {
   try {
-    const { data, error } = await supabase
-      .from('user_preferences')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
-
-    if (error) {
-      // If no record is found, return null instead of throwing
-      if (error.code === 'PGRST116') {
-        return null;
-      }
-
-      logger.error('Error fetching user preferences from Supabase', { error });
-      throw error;
-    }
-
-    if (!data) {
-      return null;
-    }
-
-    // Convert database model to app model
+    const { data, error } = await supabase.from('user_preferences').select('*').eq('user_id', userId).single();
+    if (error) { if (error.code === 'PGRST116') return null; logger.error('Error fetching user preferences', { error }); throw error; }
+    if (!data) return null;
     return {
-      // FIX: Handle nulls coming from DB with default empty arrays
       dietaryRestrictions: data.dietary_restrictions ?? [],
       favoriteCuisines: data.favorite_cuisines ?? [],
       allergies: data.allergies ?? [],
-      // FIX: Handle null and ensure cast matches UserPreferences type
-      cookingSkill: (data.cooking_skill ?? 'beginner') as 'beginner' | 'intermediate' | 'advanced'
+      cookingSkill: (data.cooking_skill ?? 'beginner') as UserPreferences['cookingSkill'] // Cast to expected type
     };
-  } catch (error) {
-    logger.error('Error fetching user preferences:', error);
-    throw new Error(`Failed to fetch preferences: ${(error as Error).message}`);
-  }
+  } catch (error) { logger.error('Error fetching user preferences:', error); throw new Error(`Failed to fetch preferences: ${(error as Error).message}`); }
 };
 
 /**
  * Saves a search query to history
- * @param userId User ID
- * @param query Search query
  */
 export const saveSearchHistory = async (userId: string, query: string): Promise<void> => {
   try {
-    const historyData: TablesInsert<'search_history'> = {
-      user_id: userId,
-      query,
-      // created_at usually handled by DB
-    };
-
-    const { error } = await supabase
-      .from('search_history')
-      .insert(historyData);
-
-    if (error) {
-      logger.error('Error saving search history to Supabase', { error });
-      // Don't throw error for search history based on original logic
-      // Consider if throwing is actually desired on failure
-    }
-  } catch (error) {
-    logger.error('Error saving search history:', error);
-    // Don't throw error for search history based on original logic
-  }
+    const historyData: TablesInsert<'search_history'> = { user_id: userId, query };
+    const { error } = await supabase.from('search_history').insert(historyData);
+    if (error) { logger.error('Error saving search history', { error }); }
+  } catch (error) { logger.error('Error saving search history:', error); }
 };
 
 /**
  * Gets user search history
- * @param userId User ID
- * @param limit Maximum number of results to return
- * @returns Array of search history items
  */
-export const getSearchHistory = async (
-  userId: string,
-  limit: number = 10
-): Promise<{ query: string; createdAt: Date }[]> => {
+export const getSearchHistory = async (userId: string, limit: number = 10): Promise<{ query: string; createdAt: Date }[]> => {
   try {
-    const { data, error } = await supabase
-      .from('search_history')
-      .select('*') // Select specific columns like 'query, created_at' for efficiency
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(limit);
-
-    if (error) {
-      logger.error('Error fetching search history from Supabase', { error });
-      // Return empty array on error based on original logic
-      return []; // Consider throwing instead?
-    }
-
-    if (!data) {
-      return [];
-    }
-
-    return data.map((item: Tables<'search_history'>) => ({ // Use Tables<'search_history'>
-      query: item.query, // Assuming query is never null based on type
-      createdAt: new Date(item.created_at ?? Date.now()) // FIX: Handle null created_at
+    const { data, error } = await supabase.from('search_history').select('query, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(limit);
+    if (error) { logger.error('Error fetching search history', { error }); return []; }
+    if (!data) return [];
+    return data.map((item: { query: string | null; created_at: string | null }) => ({
+        query: item.query ?? '', // Handle potential null query
+        createdAt: new Date(item.created_at ?? Date.now())
     }));
-  } catch (error) {
-    logger.error('Error fetching search history:', error);
-    return []; // Return empty array on error based on original logic
-  }
+  } catch (error) { logger.error('Error fetching search history:', error); return []; }
 };
 
 /**
  * Adds a recipe to user favorites
- * @param userId User ID
- * @param recipeId Recipe ID
  */
-export const addFavoriteRecipe = async (
-  userId: string,
-  recipeId: string
-): Promise<void> => {
+export const addFavoriteRecipe = async (userId: string, recipeId: string): Promise<void> => {
   try {
-    const favoriteData: TablesInsert<'favorites'> = {
-      user_id: userId,
-      recipe_id: recipeId,
-      // created_at usually handled by DB
-    };
-
-    const { error } = await supabase
-      .from('favorites')
-      .insert(favoriteData);
-
-    if (error) {
-      // If already favorited, ignore error (assuming unique constraint)
-      if (error.code === '23505') { // Check for unique violation code
-         logger.warn('Attempted to add duplicate favorite recipe.', { userId, recipeId });
-        return;
-      }
-
-      logger.error('Error adding favorite recipe to Supabase', { error });
-      throw error;
-    }
-  } catch (error) {
-    logger.error('Error adding favorite recipe:', error);
-    throw new Error(`Failed to add favorite: ${(error as Error).message}`);
-  }
+    const favoriteData: TablesInsert<'favorites'> = { user_id: userId, recipe_id: recipeId };
+    const { error } = await supabase.from('favorites').insert(favoriteData);
+    if (error) { if (error.code === '23505') { logger.warn('Attempted duplicate favorite ignored.'); return; } logger.error('Error adding favorite', { error }); throw error; }
+    logger.info(`Recipe ${recipeId} added to favorites for user ${userId}`);
+  } catch (error) { logger.error('Error adding favorite recipe:', error); throw new Error(`Failed to add favorite: ${(error as Error).message}`); }
 };
 
 /**
  * Removes a recipe from user favorites
- * @param userId User ID
- * @param recipeId Recipe ID
  */
-export const removeFavoriteRecipe = async (
-  userId: string,
-  recipeId: string
-): Promise<void> => {
+export const removeFavoriteRecipe = async (userId: string, recipeId: string): Promise<void> => {
   try {
-    const { error } = await supabase
-      .from('favorites')
-      .delete()
-      .match({ user_id: userId, recipe_id: recipeId });
-
-    if (error) {
-      logger.error('Error removing favorite recipe from Supabase', { error });
-      throw error;
-    }
-  } catch (error) {
-    logger.error('Error removing favorite recipe:', error);
-    throw new Error(`Failed to remove favorite: ${(error as Error).message}`);
-  }
+    const { error } = await supabase.from('favorites').delete().match({ user_id: userId, recipe_id: recipeId });
+    if (error) { logger.error('Error removing favorite', { error }); throw error; }
+     logger.info(`Recipe ${recipeId} removed from favorites for user ${userId}`);
+  } catch (error) { logger.error('Error removing favorite recipe:', error); throw new Error(`Failed to remove favorite: ${(error as Error).message}`);}
 };
 
 /**
  * Gets user's favorite recipes
- * @param userId User ID
- * @returns Array of favorite recipes
  */
 export const getFavoriteRecipes = async (userId: string): Promise<Recipe[]> => {
   try {
-    // First get favorite recipe IDs
-    const { data: favoriteData, error: favoriteError } = await supabase
-      .from('favorites')
-      .select('recipe_id') // Only select the ID
-      .eq('user_id', userId);
-
-    if (favoriteError) {
-      logger.error('Error fetching favorite IDs from Supabase', { error: favoriteError });
-      throw favoriteError;
-    }
-
-    if (!favoriteData || favoriteData.length === 0) {
-      return [];
-    }
-
-    // Extract recipe IDs
-    // FIX: Update type annotation to allow null and filter nulls out
-    const recipeIds = favoriteData
-        .map((item: { recipe_id: string | null }) => item.recipe_id)
-        .filter((id): id is string => id !== null); // Add filter to remove nulls
-
-    // FIX: If recipeIds could be empty after filtering, handle that case
-    if (recipeIds.length === 0) {
-        logger.info('User has favorite entries but recipe_ids are null or missing.', { userId });
-        return [];
-    }
-
-
-    // Fetch the actual recipes
-    const { data: recipesData, error: recipesError } = await supabase
-      .from('recipes')
-      .select('*')
-      .in('id', recipeIds);
-
-    if (recipesError) {
-      logger.error('Error fetching favorite recipes from Supabase', { error: recipesError });
-      throw recipesError;
-    }
-
-    if (!recipesData) {
-      return [];
-    }
-
-    // Convert database rows to app model
-    return recipesData.map((item: Tables<'recipes'>) => ({ // Use Tables<'recipes'>
-      id: item.id,
-      title: item.title,
-      servings: item.servings ?? 0, // FIX: Handle null servings
-      ingredients: item.ingredients ?? [], // FIX: Handle null ingredients array if needed
-      steps: item.steps as unknown as RecipeStep[], // FIX: Cast Json using 'as unknown as'
-      nutrition: item.nutrition as unknown as NutritionInfo, // FIX: Cast Json using 'as unknown as'
-      query: item.query ?? '', // FIX: Handle null query
-      createdAt: new Date(item.created_at ?? Date.now()) // FIX: Handle null created_at
+    const { data: favoriteData, error: favoriteError } = await supabase.from('favorites').select('recipe_id').eq('user_id', userId);
+    if (favoriteError) { logger.error('Error fetching favorite IDs', { error: favoriteError }); throw favoriteError; }
+    if (!favoriteData || favoriteData.length === 0) return [];
+    const recipeIds = favoriteData.map(item => item.recipe_id).filter((id): id is string => id !== null);
+    if (recipeIds.length === 0) return [];
+    const { data: recipesData, error: recipesError } = await supabase.from('recipes').select('*').in('id', recipeIds);
+    if (recipesError) { logger.error('Error fetching favorite recipes', { error: recipesError }); throw recipesError; }
+    if (!recipesData) return [];
+    return recipesData.map((item: Tables<'recipes'>) => ({
+        id: item.id, title: item.title, servings: item.servings ?? 0, ingredients: item.ingredients ?? [],
+        steps: item.steps ? (item.steps as unknown as RecipeStep[]) : [],
+        nutrition: item.nutrition ? (item.nutrition as unknown as NutritionInfo) : { calories: 0, protein: '0g', fat: '0g', carbs: '0g' },
+        query: item.query ?? '', createdAt: new Date(item.created_at ?? Date.now()),
+        prepTime: item.prep_time_minutes ?? undefined, cookTime: item.cook_time_minutes ?? undefined, totalTime: item.total_time_minutes ?? undefined,
     }));
-  } catch (error) {
-    logger.error('Error fetching favorite recipes:', error);
-    throw new Error(`Failed to fetch favorites: ${(error as Error).message}`);
-  }
+  } catch (error) { logger.error('Error fetching favorite recipes:', error); throw new Error(`Failed to fetch favorites: ${(error as Error).message}`); }
 };

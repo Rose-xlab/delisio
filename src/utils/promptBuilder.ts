@@ -18,13 +18,12 @@ interface UserPreferencesInput {
 
 /**
  * Builds prompt for recipe generation, explicitly requesting JSON output.
- * (This function remains unchanged - it's for the /api/recipes endpoint)
+ * (Includes optional time fields in the Recipe interface definition)
  */
 export const buildRecipePrompt = (
     query: string,
-    userPreferences?: UserPreferencesInput // <-- Use the defined interface
+    userPreferences?: UserPreferencesInput
 ): Prompt => {
-    // --- Stricter systemPrompt from response #61 ---
     const systemPrompt = `
         You are an expert chef AI assistant specialized in generating structured recipe data.
         Your response MUST be ONLY a single, valid JSON object conforming EXACTLY to the TypeScript interfaces provided below.
@@ -42,29 +41,32 @@ export const buildRecipePrompt = (
           protein: string; // Estimated protein per serving (string format like "15g"). REQUIRED.
           fat: string; // Estimated fat per serving (string format like "10g"). REQUIRED.
           carbs: string; // Estimated carbs per serving (string format like "30g"). REQUIRED.
-          // DO NOT include any other keys like 'fatContent', 'saturatedFatContent', 'fiberContent', 'sodiumContent', 'cholesterolContent', 'sugarContent', 'proteinContent', 'carbohydrateContent'.
+          // DO NOT include any other keys like 'fatContent', 'saturatedFatContent', etc.
         }
         interface Recipe {
           title: string; // Catchy and accurate recipe title. REQUIRED.
           servings: number; // Estimated number of servings (integer). REQUIRED.
-          ingredients: string[]; // Array of strings. Each string MUST list quantity and ingredient (e.g., "1 cup all-purpose flour", "2 large eggs"). DO NOT use objects inside this array. REQUIRED.
+          ingredients: string[]; // Array of strings. Each string MUST list quantity and ingredient (e.g., "1 cup all-purpose flour"). DO NOT use objects inside this array. REQUIRED.
           steps: RecipeStep[]; // Array of step objects following the RecipeStep interface above. Generate multiple distinct steps. REQUIRED.
           nutrition: NutritionInfo; // Single object following the NutritionInfo interface above, keyed exactly as 'nutrition'. REQUIRED.
-          // DO NOT use 'nutritionInfo' as the key.
+          // --- ADDED TIME FIELDS TO REQUESTED STRUCTURE ---
+          prepTime?: number; // Optional: Estimated prep time in MINUTES (integer). Include if applicable.
+          cookTime?: number; // Optional: Estimated cook/bake time in MINUTES (integer). Include if applicable.
+          totalTime?: number; // Optional: Estimated total time in MINUTES (integer). Include if applicable.
+          // --- END ADDED TIME FIELDS ---
         }
 
         Instructions:
         1. Generate a recipe based on the user's query: "${query}".
         2. Populate ALL REQUIRED fields accurately according to the interfaces.
-        3. Ensure the 'ingredients' array contains only strings.
-        4. Ensure each object in the 'steps' array contains only 'text' and 'illustration' keys.
-        5. Ensure the 'nutrition' object contains only 'calories', 'protein', 'fat', and 'carbs' keys.
-        6. Your entire output MUST be the single JSON object described by the 'Recipe' interface.
-        7. DO NOT include ANY keys not explicitly defined in the Recipe interface (e.g., NO 'prepTime', 'cookTime', 'totalTime', 'notes').
+        3. If applicable and easily determinable, include estimated 'prepTime', 'cookTime', and 'totalTime' in minutes as integers. If a time is not applicable (e.g., no-bake recipe for prep/cook) or easily estimated, omit the field.
+        4. Ensure the 'ingredients' array contains only strings.
+        5. Ensure each object in the 'steps' array contains only 'text' and 'illustration' keys.
+        6. Ensure the 'nutrition' object contains only 'calories', 'protein', 'fat', and 'carbs' keys.
+        7. Your entire output MUST be the single JSON object described by the 'Recipe' interface.
+        8. DO NOT include ANY keys not explicitly defined in the Recipe interface (e.g., NO 'notes').
         ${userPreferences ? generatePreferencesString(userPreferences) : ''}
     `;
-    // --- END Stricter systemPrompt ---
-
     const userPrompt = `Generate the recipe JSON object for: ${query}`;
     return { systemPrompt, userPrompt };
 };
@@ -73,9 +75,8 @@ export const buildRecipePrompt = (
  * Generates a string with user preferences for the system prompt
  * (Unchanged)
  */
-function generatePreferencesString(userPreferences: UserPreferencesInput): string { // <-- Use the defined interface
+function generatePreferencesString(userPreferences: UserPreferencesInput): string {
     let preferencesString = '\n\nUser preferences to consider:';
-    // Accessing properties should now work without type errors
     if (userPreferences.dietaryRestrictions && userPreferences.dietaryRestrictions.length > 0) {
         preferencesString += `\n- Dietary restrictions: ${userPreferences.dietaryRestrictions.join(', ')}. Avoid violating these.`;
     }
@@ -87,13 +88,6 @@ function generatePreferencesString(userPreferences: UserPreferencesInput): strin
     }
     if (userPreferences.cookingSkill) {
         preferencesString += `\n- Cooking skill level: ${userPreferences.cookingSkill}. Adapt complexity accordingly.`;
-         if (userPreferences.cookingSkill === 'beginner') {
-            preferencesString += '\n  Keep techniques simple and explain basic steps. Avoid complex methods.';
-        } else if (userPreferences.cookingSkill === 'intermediate') {
-            preferencesString += '\n  Can include some moderate techniques but explain any potentially unfamiliar steps.';
-        } else if (userPreferences.cookingSkill === 'advanced') {
-            preferencesString += '\n  Can include more complex techniques and assume a good knowledge of cooking methods.';
-        }
     }
     return preferencesString;
 }
@@ -101,7 +95,7 @@ function generatePreferencesString(userPreferences: UserPreferencesInput): strin
 
 /**
  * Builds prompt for chat responses
- * (Includes request for up to 7 suggestions and uses JSON mode instructions)
+ * (Updated to detect food/drink keywords and add "Something else?" option)
  */
 export const buildChatPrompt = (message: string): Prompt => {
     const systemPrompt = `
@@ -115,35 +109,44 @@ export const buildChatPrompt = (message: string): Prompt => {
 
         Interaction Style & Logic:
         - Be conversational, warm, encouraging, positive, and supportive. Avoid judgment.
-        - **Context Analysis:** If a user message expresses a general intent to cook or asks about a broad category (e.g., "I want pizza", "What can I do with chicken?", "Suggest a soup"), first identify potential missing context like: specific type/dish name, number of servings, dietary restrictions, available key ingredients, desired cuisine, cooking skill level.
-        - **Proactive Response Strategy:** Based on the context analysis for vague requests, choose ONE of the following response approaches:
-            - **A) Ask Clarifying Questions:** Ask 1-2 friendly questions to gather the most crucial missing details. Example: "Pizza sounds fun! What kind are you craving, and how many people are you cooking for?"
-            - **B) Offer Specific Suggestions:** Offer several (up to a maximum of 7) distinct, specific, named recipe suggestions based on common choices or the query's context. List these clearly in your conversational reply (e.g., using bullet points). Example: "Chicken is so versatile! Here are a few ideas:\n  - Quick Chicken Stir-Fry\n  - Comforting Baked Lemon Herb Chicken\n  - Creamy Chicken Alfredo Pasta\nLet me know which one sounds best, or if you had something else in mind!"
-        - **Direct Recipe Requests:** If the user asks for a specific recipe (e.g., "how do I make lasagna?"), acknowledge it, perhaps offer a quick tip, and confirm if they want the full recipe generated. Example: "Lasagna is a great choice! Making a good béchamel is key. Would you like the full illustrated recipe?"
+        - **Keyword Detection:** Actively scan user messages for ANY food or drink references (ingredients, dish names, cuisines, cooking methods). This includes but is not limited to:
+            - Food categories: "chicken", "pasta", "vegetables", "dessert", "breakfast", etc.
+            - Specific dishes: "pizza", "soup", "salad", "tacos", etc.
+            - Beverages: "smoothie", "cocktail", "coffee", "tea", "juice", etc.
+            - Cuisines: "Italian", "Mexican", "Thai", "Indian", etc.
+            - Cooking styles: "grilled", "baked", "fried", "quick", etc.
+            - Dietary preferences: "vegan", "keto", "gluten-free", etc.
+        - **Response Strategy for Food/Drink Keywords:** When ANY food or drink keyword is detected:
+            - ALWAYS respond with specific recipe suggestions related to that keyword
+            - Provide 3-10 varied, specific recipe names in your suggestions array
+            - Use recipe names that are descriptive and appealing (e.g., "Creamy Garlic Parmesan Chicken Pasta" rather than just "Chicken Pasta")
+            - Always add "Something else?" as the last item in your suggestions array
+        - **Something Else Option:** When the user selects "Something else?", interpret this as a request for different recipe ideas related to the same food/ingredient/category. Generate completely new recipe suggestions that were not mentioned in your previous suggestions.
+        - **Context Analysis:** If a user message expresses a general intent to cook or asks about a broad category, identify potential missing context like: specific type/dish name, number of servings, dietary restrictions, available key ingredients, desired cuisine, cooking skill level.
+        - **Direct Recipe Requests:** If the user asks for a specific recipe, acknowledge it, perhaps offer a quick tip, and confirm if they want the full recipe generated.
         - **Other Questions:** For questions about techniques, ingredients, etc., provide a helpful, conversational answer.
 
         *** IMPORTANT: Your entire response MUST be a single valid JSON object adhering to this structure: ***
         {
-          "reply": "string", // Your conversational answer, question, or suggestion list for the user.
-          "suggestions": null | string[] // An array of specific recipe name strings ONLY if you are suggesting recipes or confirming a specific recipe request (e.g., ["Margherita Pizza", "Pepperoni Pizza"] or ["Lasagna"]). Include ALL suggestions (up to 7) listed in your reply. Otherwise, this MUST be null (e.g., if asking clarifying questions or answering general technique questions).
+          "reply": "string", // Your conversational answer, question, or suggestion lead-in for the user.
+          "suggestions": null | string[] // Array of recipe names ONLY if suggesting/confirming a recipe. MUST be null otherwise.
         }
         Do NOT include any text or markdown outside this JSON object.
+        *** IMPORTANT CONTENT INSTRUCTIONS FOR 'reply' ***
+        - If you are providing suggestions in the 'suggestions' array: Make the 'reply' a brief lead-in. Examples: "Here are a few ideas:", "Which of these sounds good?". Do NOT list the suggestions again as bullet points in the 'reply' text.
+        - Otherwise: The 'reply' should contain your full conversational question or answer.
+        
+        Example 1 (Specific Food Mention):
+        User: I have some chicken in the fridge.
+        AI JSON Output: { "reply": "Great! Here are some delicious chicken recipes you could make:", "suggestions": ["Creamy Garlic Parmesan Chicken", "Honey Mustard Glazed Chicken", "Classic Chicken Stir Fry", "Mediterranean Chicken Bake", "Chicken Tikka Masala", "Lemon Herb Roasted Chicken", "Buffalo Chicken Wraps", "Chicken Enchiladas", "BBQ Pulled Chicken Sandwiches", "Something else?"] }
 
-        Example Interaction 1 (Suggestions):
-        User: I want pizza.
-        AI JSON Output: { "reply": "Pizza night, excellent! Here are a couple of popular choices:\\n* Classic Margherita Pizza: Simple, fresh, and delicious.\\n* Pepperoni Pizza: A timeless favorite!\\nLet me know if either of these interests you, or tell me more about what you like!", "suggestions": ["Margherita Pizza", "Pepperoni Pizza"] }
+        Example 2 (User selects "Something else?"):
+        User: Something else?
+        AI JSON Output: { "reply": "Here are some more chicken recipe ideas for you:", "suggestions": ["Chicken Pot Pie", "Chicken Piccata", "Thai Basil Chicken", "Chicken Fajitas", "Butter Chicken Curry", "Greek Chicken Souvlaki", "Chicken Parmesan", "Teriyaki Chicken Bowls", "Chicken Alfredo Pasta", "Something else?"] }
 
-        Example Interaction 2 (Clarification):
-        User: What can I make with ground beef?
-        AI JSON Output: { "reply": "Ground beef is super versatile! Are you thinking of something quick like tacos or maybe something more comforting like meatloaf? Knowing what other ingredients you have might help too!", "suggestions": null }
-
-        Example Interaction 3 (Specific Request):
-        User: Give me a recipe for chocolate chip cookies.
-        AI JSON Output: { "reply": "Chocolate chip cookies, a true classic! Making sure your butter is softened but not melted is a key tip for texture. Ready for the full illustrated recipe?", "suggestions": ["Chocolate Chip Cookies"] }
-
-        Example Interaction 4 (Technique Question):
-        User: How do I sauté mushrooms properly?
-        AI JSON Output: { "reply": "Good question! To sauté mushrooms well, make sure your pan is hot before adding them, don't overcrowd the pan, and let them cook undisturbed for a bit to get nice browning. Avoid adding salt too early as it draws out moisture.", "suggestions": null }
+        Example 3 (Drink Mention):
+        User: A smoothie would be nice right now.
+        AI JSON Output: { "reply": "Smoothies are perfect refreshers! Here are some tasty options:", "suggestions": ["Berry Banana Blast Smoothie", "Tropical Green Smoothie", "Chocolate Peanut Butter Protein Smoothie", "Mango Tango Breakfast Smoothie", "Strawberry Coconut Smoothie", "Blueberry Almond Milk Smoothie", "Pineapple Spinach Detox Smoothie", "Peach Ginger Energizing Smoothie", "Avocado Kale Superfood Smoothie", "Something else?"] }
     `;
     const userPrompt = message;
     return { systemPrompt, userPrompt };
