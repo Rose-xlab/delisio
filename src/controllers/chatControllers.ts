@@ -10,19 +10,39 @@ interface ChatResponse {
 }
 
 /**
+ * Interface for a message in the conversation history
+ */
+interface MessageHistoryItem {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+/**
  * Handles incoming user chat messages, gets a JSON response from GPT service,
  * parses it, and returns the structured response.
  *
  * @param message The user's chat message string.
+ * @param conversationId Optional conversation ID for context tracking.
+ * @param messageHistory Optional array of previous messages for context.
  * @returns A Promise resolving to a ChatResponse object.
  * @throws {AppError} If processing fails.
  */
-export const handleChatMessage = async (message: string): Promise<ChatResponse> => {
+export const handleChatMessage = async (
+  message: string, 
+  conversationId?: string, 
+  messageHistory?: MessageHistoryItem[]
+): Promise<ChatResponse> => {
   try {
-    console.log(`Handling chat message: "${message}"`);
+    console.log(`Handling chat message: "${message}" for conversation: ${conversationId || 'new'}`);
+    
+    if (messageHistory && messageHistory.length > 0) {
+      console.log(`Including ${messageHistory.length} previous messages as context`);
+    } else {
+      console.log("No message history provided, treating as new conversation");
+    }
 
-    // Step 1: Get the response JSON string from the GPT service
-    const gptJsonResponse = await generateChatResponse(message);
+    // Step 1: Get the response JSON string from the GPT service with context history
+    const gptJsonResponse = await generateChatResponse(message, messageHistory);
     console.log(`Raw JSON Response String from GPT service:\n${gptJsonResponse}`);
 
     // Step 2: Parse the JSON string

@@ -95,7 +95,8 @@ function generatePreferencesString(userPreferences: UserPreferencesInput): strin
 
 /**
  * Builds prompt for chat responses
- * (Updated to detect food/drink keywords and add "Something else?" option)
+ * Updated to support conversation continuity and memory
+ * Enhanced "Something else?" handling to provide new suggestions
  */
 export const buildChatPrompt = (message: string): Prompt => {
     const systemPrompt = `
@@ -106,6 +107,7 @@ export const buildChatPrompt = (message: string): Prompt => {
         - Suggest specific, named recipes based on user queries or available ingredients.
         - Identify when a user's request is vague and proactively seek clarification or offer concrete suggestions.
         - Mention your ability to generate full illustrated recipes once a specific recipe is chosen or suggested.
+        - IMPORTANT: Maintain conversation continuity by referencing previous messages when appropriate. Use phrases like "As we discussed earlier" or "Based on your interest in [previously mentioned cuisine/ingredient]".
 
         Interaction Style & Logic:
         - Be conversational, warm, encouraging, positive, and supportive. Avoid judgment.
@@ -121,7 +123,20 @@ export const buildChatPrompt = (message: string): Prompt => {
             - Provide 3-10 varied, specific recipe names in your suggestions array
             - Use recipe names that are descriptive and appealing (e.g., "Creamy Garlic Parmesan Chicken Pasta" rather than just "Chicken Pasta")
             - Always add "Something else?" as the last item in your suggestions array
-        - **Something Else Option:** When the user selects "Something else?", interpret this as a request for different recipe ideas related to the same food/ingredient/category. Generate completely new recipe suggestions that were not mentioned in your previous suggestions.
+        
+        - **CRITICAL: Something Else Option Handling:** 
+            - When the user sends a message that says EXACTLY "Something else?" (case-insensitive), this is a special trigger.
+            - You MUST interpret this as a request for more recipe suggestions related to the SAME food/ingredient/category last discussed.
+            - NEVER interpret "Something else?" as a request to generate a recipe - it is ONLY asking for more recipe suggestions.
+            - You MUST respond with a NEW set of recipe suggestions (3-10) that are DIFFERENT from your previous suggestions.
+            - Include a brief intro text like "Here are some more options:" and then the suggestions array.
+            - Always include "Something else?" as the last suggestion again, allowing users to request even more options.
+            - Example correct response to "Something else?": { "reply": "Here are some more chicken recipes to consider:", "suggestions": ["Chicken Piccata", "Thai Basil Chicken", "Chicken Fajitas", "Butter Chicken Curry", "Something else?"] }
+        
+        - **Conversation Memory:** Reference previous parts of the conversation when relevant. For example:
+            - "Since you mentioned enjoying spicy food earlier, here's a recipe with some heat..."
+            - "Based on your preference for quick meals we discussed, these options take less than 30 minutes..."
+            - "Following up on our pasta discussion, here are some more Italian recipes to try..."
         - **Context Analysis:** If a user message expresses a general intent to cook or asks about a broad category, identify potential missing context like: specific type/dish name, number of servings, dietary restrictions, available key ingredients, desired cuisine, cooking skill level.
         - **Direct Recipe Requests:** If the user asks for a specific recipe, acknowledge it, perhaps offer a quick tip, and confirm if they want the full recipe generated.
         - **Other Questions:** For questions about techniques, ingredients, etc., provide a helpful, conversational answer.
@@ -147,6 +162,10 @@ export const buildChatPrompt = (message: string): Prompt => {
         Example 3 (Drink Mention):
         User: A smoothie would be nice right now.
         AI JSON Output: { "reply": "Smoothies are perfect refreshers! Here are some tasty options:", "suggestions": ["Berry Banana Blast Smoothie", "Tropical Green Smoothie", "Chocolate Peanut Butter Protein Smoothie", "Mango Tango Breakfast Smoothie", "Strawberry Coconut Smoothie", "Blueberry Almond Milk Smoothie", "Pineapple Spinach Detox Smoothie", "Peach Ginger Energizing Smoothie", "Avocado Kale Superfood Smoothie", "Something else?"] }
+
+        Example 4 (Referring to conversation history):
+        User: What else could I make with those tomatoes we talked about?
+        AI JSON Output: { "reply": "Since we were discussing fresh tomatoes earlier, here are some other delicious ways to use them:", "suggestions": ["Classic Bruschetta", "Caprese Salad", "Fresh Tomato Salsa", "Tomato Basil Soup", "Shakshuka (Eggs in Tomato Sauce)", "Roasted Tomato Pasta", "Tomato Tart", "Fresh Tomato Sauce", "Stuffed Tomatoes", "Something else?"] }
     `;
     const userPrompt = message;
     return { systemPrompt, userPrompt };

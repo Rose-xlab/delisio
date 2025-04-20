@@ -12,9 +12,9 @@ const router = express.Router();
  */
 router.post('/', validateRequest(chatMessageSchema), async (req, res, next) => {
   try {
-    const { message } = req.body;
+    const { conversation_id, message, message_history } = req.body;
     
-    const response = await handleChatMessage(message);
+    const response = await handleChatMessage(message, conversation_id, message_history);
     res.status(200).json(response);
   } catch (error) {
     next(error);

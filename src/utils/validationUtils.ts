@@ -48,7 +48,7 @@ export const recipeSchema = Joi.object({
   save: Joi.boolean().optional()
 });
 
-// Chat message validation schema
+// Updated chat message validation schema with conversation_id and message_history
 export const chatMessageSchema = Joi.object({
   message: Joi.string().required().min(1).max(500)
     .messages({
@@ -56,7 +56,14 @@ export const chatMessageSchema = Joi.object({
       'string.min': 'Message must be at least 1 character long',
       'string.max': 'Message cannot exceed 500 characters',
       'any.required': 'Message is required'
+    }),
+  conversation_id: Joi.string().optional(),
+  message_history: Joi.array().items(
+    Joi.object({
+      role: Joi.string().valid('user', 'assistant').required(),
+      content: Joi.string().required()
     })
+  ).optional()
 });
 
 // User registration validation schema
