@@ -34,6 +34,9 @@ export interface Recipe {
   cookTime?: number;   // Optional cook time in minutes
   totalTime?: number;  // Optional total time in minutes
   // --- END ADDED FIELDS ---
+  // --- ADDED FOR CANCELLATION SUPPORT ---
+  requestId?: string;  // To track and cancel generation in progress
+  // --- END CANCELLATION FIELD ---
 }
 
 /**
@@ -70,7 +73,7 @@ export const validateRecipe = (recipe: any): boolean => {
     if (
       typeof step !== 'object' || step === null ||
       typeof step.text !== 'string' || step.text.trim() === '' ||
-      typeof step.illustration !== 'string' || step.illustration.trim() === ''
+      (step.illustration !== undefined && typeof step.illustration !== 'string')
       // Do NOT check for image_url here, it's added later
     ) {
        console.error('Validation Error: Invalid step object found.', step);
@@ -91,6 +94,12 @@ export const validateRecipe = (recipe: any): boolean => {
    if (recipe.totalTime !== undefined && typeof recipe.totalTime !== 'number') {
       console.error('Validation Warning: totalTime exists but is not a number.', recipe.totalTime);
       // return false;
+  }
+
+  // Optional: Check requestId format if present
+  if (recipe.requestId !== undefined && typeof recipe.requestId !== 'string') {
+      console.error('Validation Warning: requestId exists but is not a string.', recipe.requestId);
+      // Not a critical error, just log it
   }
 
   return true; // Passed basic validation
@@ -124,5 +133,7 @@ export const createRecipe = (recipeData: Partial<Recipe>): Recipe => {
     prepTime: recipeData.prepTime,
     cookTime: recipeData.cookTime,
     totalTime: recipeData.totalTime,
+    // Assign requestId if present
+    requestId: recipeData.requestId,
   };
 };

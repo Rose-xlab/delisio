@@ -9,6 +9,7 @@ import { optionalAuthenticate } from './middleware/authMiddleware';
 import { errorHandler } from './middleware/errorMiddleware';
 import { httpLogger } from './utils/logger';
 import { rateLimiter } from './middleware/rateLimiter';
+import { cancellationRoutes } from './middleware/cancellationMiddleware'; // Add the cancellation middleware
 
 // Load environment variables
 dotenv.config();
@@ -31,6 +32,9 @@ app.use(optionalAuthenticate);
 
 // Apply rate limiting
 app.use(rateLimiter);
+
+// Apply cancellation middleware (before mounting routes)
+app.use(cancellationRoutes);
 
 // Mount routes
 app.use('/api/recipes', recipeRoutes);
@@ -59,4 +63,3 @@ app.use(errorHandler);
 
 // Export the configured app instance
 export default app;
-

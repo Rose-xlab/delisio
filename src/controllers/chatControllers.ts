@@ -66,6 +66,10 @@ export const handleChatMessage = async (
         throw new Error('AI response JSON missing required "reply" field.');
     }
 
+    // Preserve formatting from the response (including newlines)
+    let formattedReply = reply;
+    formattedReply = formattedReply.replace(/\\n/g, '\n');
+
     let suggestions: string[] | undefined = undefined;
     // Validate suggestions: must be null or an array of strings
     if (suggestionsData !== null && suggestionsData !== undefined) {
@@ -90,7 +94,7 @@ export const handleChatMessage = async (
 
     // Step 4: Construct the final response object for the Flutter app
     const response: ChatResponse = {
-      reply: reply, // Use the extracted reply
+      reply: formattedReply, // Use the formatted reply with preserved newlines
       // Conditionally add suggestions field only if it's a valid, non-empty array
       ...(suggestions && { suggestions: suggestions })
     };
