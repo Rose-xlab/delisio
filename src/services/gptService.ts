@@ -1,25 +1,6 @@
 // src/services/gptService.ts
-import { OpenAI } from 'openai';
-import * as dotenv from 'dotenv';
-dotenv.config(); // Load environment variables
-
+import openai, { OpenAI, GPT_MODEL } from './openaiClient';
 import { buildRecipePrompt, buildChatPrompt } from '../utils/promptBuilder';
-
-// --- Use environment variable for API Key ---
-const apiKey = process.env.OPENAI_API_KEY;
-if (!apiKey) {
-  console.error('FATAL ERROR: OPENAI_API_KEY environment variable not set.');
-  // In a real app, you might throw or exit
-  // throw new Error('OPENAI_API_KEY environment variable not set.');
-} else {
-    console.log('API Key loaded successfully.');
-}
-
-const openai = new OpenAI({ apiKey: apiKey });
-// --- End API Key Handling ---
-
-// Check model compatibility with JSON mode, consider 'gpt-4-turbo' if needed
-const GPT_MODEL = process.env.GPT_MODEL || 'gpt-4-1106-preview';
 
 /**
  * Interface for a message in the conversation history
@@ -258,7 +239,6 @@ export const generateRecipeContent = async (
   query: string,
   userPreferences?: { /* ... preferences ... */ }
 ): Promise<string> => {
-  if (!apiKey) throw new Error('OpenAI API key is not configured.');
   try {
     const { systemPrompt, userPrompt } = buildRecipePrompt(query, userPreferences);
     console.log("Sending request to OpenAI for recipe JSON...");
@@ -318,10 +298,14 @@ export const generateRecipeContent = async (
     }
   } catch (error) {
     console.error('Error generating recipe content from OpenAI:', error);
-     if (error instanceof OpenAI.APIError) {
+    if (error instanceof Error) {
+      // Check if it's an OpenAI API error by checking for status property
+      if ('status' in error && typeof error.status === 'number') {
         throw new Error(`OpenAI API Error (${error.status}): ${error.message}`);
+      }
+      throw new Error(`Failed to generate recipe: ${error.message}`);
     }
-    throw new Error(`Failed to generate recipe: ${(error as Error).message}`);
+    throw new Error('Failed to generate recipe: Unknown error');
   }
 };
 
@@ -333,7 +317,6 @@ export const generateChatResponse = async (
   message: string, 
   messageHistory?: MessageHistoryItem[]
 ): Promise<string> => {
-   if (!apiKey) throw new Error('OpenAI API key is not configured.');
   try {
     // Build the system prompt (base prompt without conversation history)
     const { systemPrompt } = buildChatPrompt("");
@@ -391,8 +374,8 @@ export const generateChatResponse = async (
     return chatJsonContent; // Return the JSON string
   } catch (error) {
     console.error('Error generating chat response from OpenAI:', error);
-     if (error instanceof OpenAI.APIError) {
-        throw new Error(`OpenAI API Error (${error.status}): ${error.message}`);
+    if (error instanceof OpenAI.APIError) {
+      throw new Error(`OpenAI API Error (${error.status}): ${error.message}`);
     }
     throw new Error(`Failed to generate chat response: ${(error as Error).message}`);
   }

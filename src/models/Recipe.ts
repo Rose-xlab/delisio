@@ -1,3 +1,6 @@
+// src/models/Recipe.ts
+
+
 /**
  * Interface for a recipe step
  */
@@ -35,15 +38,19 @@ export interface Recipe {
   totalTime?: number;  // Optional total time in minutes
   // --- END ADDED FIELDS ---
   // --- ADDED FOR CANCELLATION SUPPORT ---
-  requestId?: string;  // To track and cancel generation in progress
+  requestId?: string;   // To track and cancel generation in progress
   // --- END CANCELLATION FIELD ---
 
-  // --- FIX: ADDED MISSING FIELDS required by controller logic ---
+  // --- Fields added previously for quality/categorization/deduplication ---
   quality_score?: number;     // Added for quality assessment
   category?: string;          // Added for categorization
   tags?: string[];            // Added for categorization
   similarity_hash?: string;   // Added for duplicate detection
-  // --- END ADDED MISSING FIELDS ---
+
+  // --- NEW: ADDED MISSING FIELDS required by supabaseService ---
+  views?: number;             // Optional: View count from DB
+  isFavorite?: boolean;       // Optional: Flag set by specific functions like getFavoriteRecipes
+  // --- END ADDITION ---
 }
 
 /**
@@ -71,8 +78,8 @@ export const validateRecipe = (recipe: any): boolean => {
 
   // Check ingredients format (must be strings)
   if (!recipe.ingredients.every((ing: any) => typeof ing === 'string')) {
-     console.error('Validation Error: Ingredients array does not contain only strings.', recipe.ingredients);
-     return false;
+      console.error('Validation Error: Ingredients array does not contain only strings.', recipe.ingredients);
+      return false;
   }
 
   // Check steps format (must be objects with text and optional illustration strings)
@@ -90,23 +97,23 @@ export const validateRecipe = (recipe: any): boolean => {
 
   // Optional: Check optional time fields if they exist
   if (recipe.prepTime !== undefined && typeof recipe.prepTime !== 'number') {
-     console.warn('Validation Warning: prepTime exists but is not a number.', recipe.prepTime);
-     // Decide if this should cause validation failure? For now, allow it but log.
-     // return false;
+      console.warn('Validation Warning: prepTime exists but is not a number.', recipe.prepTime);
+      // Decide if this should cause validation failure? For now, allow it but log.
+      // return false;
   }
   if (recipe.cookTime !== undefined && typeof recipe.cookTime !== 'number') {
-     console.warn('Validation Warning: cookTime exists but is not a number.', recipe.cookTime);
-     // return false;
+      console.warn('Validation Warning: cookTime exists but is not a number.', recipe.cookTime);
+      // return false;
   }
   if (recipe.totalTime !== undefined && typeof recipe.totalTime !== 'number') {
-     console.warn('Validation Warning: totalTime exists but is not a number.', recipe.totalTime);
-     // return false;
+      console.warn('Validation Warning: totalTime exists but is not a number.', recipe.totalTime);
+      // return false;
   }
 
   // Optional: Check requestId format if present
   if (recipe.requestId !== undefined && typeof recipe.requestId !== 'string') {
-     console.warn('Validation Warning: requestId exists but is not a string.', recipe.requestId);
-     // Not a critical error, just log it
+      console.warn('Validation Warning: requestId exists but is not a string.', recipe.requestId);
+      // Not a critical error, just log it
   }
 
   return true; // Passed basic validation
@@ -121,10 +128,10 @@ export const validateRecipe = (recipe: any): boolean => {
 export const createRecipe = (recipeData: Partial<Recipe>): Recipe => {
   // Helper to ensure nutrition fields have defaults if missing
   const ensureNutrition = (nutri?: Partial<NutritionInfo>): NutritionInfo => ({
-     calories: nutri?.calories ?? 0,
-     protein: nutri?.protein ?? '0g',
-     fat: nutri?.fat ?? '0g',
-     carbs: nutri?.carbs ?? '0g',
+      calories: nutri?.calories ?? 0,
+      protein: nutri?.protein ?? '0g',
+      fat: nutri?.fat ?? '0g',
+      carbs: nutri?.carbs ?? '0g',
   });
 
   return {
@@ -147,5 +154,8 @@ export const createRecipe = (recipeData: Partial<Recipe>): Recipe => {
     category: recipeData.category,
     tags: recipeData.tags,
     similarity_hash: recipeData.similarity_hash,
+    // Assign views and isFavorite if present (likely undefined here, populated later)
+    views: recipeData.views,
+    isFavorite: recipeData.isFavorite,
   };
 };

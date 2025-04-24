@@ -1,3 +1,5 @@
+//src\services\duplicateDetectionService.ts
+
 import { logger } from '../utils/logger';
 import { Recipe, RecipeStep, NutritionInfo } from '../models/Recipe';
 import { supabase } from '../config/supabase';
@@ -112,7 +114,7 @@ export const checkForDuplicates = async (recipe: Recipe): Promise<SimilarityResu
       }
     }
 
-    const SIMILARITY_THRESHOLD = 0.8;
+    const SIMILARITY_THRESHOLD =  0.2;
     const isDuplicate = highestSimilarityScore >= SIMILARITY_THRESHOLD;
 
     logger.info(`Duplicate check result for ${recipe.title}: ${isDuplicate ? 'IS' : 'NOT'} a duplicate. Similarity score: ${highestSimilarityScore.toFixed(2)}`);
