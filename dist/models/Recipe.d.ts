@@ -3,8 +3,8 @@
  */
 export interface RecipeStep {
     text: string;
-    image_url?: string;
     illustration?: string;
+    image_url?: string;
 }
 /**
  * Interface for nutrition information
@@ -19,6 +19,7 @@ export interface NutritionInfo {
  * Interface for a complete recipe
  */
 export interface Recipe {
+    id?: string;
     title: string;
     servings: number;
     ingredients: string[];
@@ -26,17 +27,24 @@ export interface Recipe {
     nutrition: NutritionInfo;
     query: string;
     createdAt: Date;
-    id?: string;
+    prepTime?: number;
+    cookTime?: number;
+    totalTime?: number;
+    requestId?: string;
+    quality_score?: number;
+    category?: string;
+    tags?: string[];
+    similarity_hash?: string;
 }
 /**
- * Validates a recipe object
- * @param recipe Recipe object to validate
- * @returns Boolean indicating if recipe is valid
+ * Validates the basic structure of a parsed recipe object
+ * @param recipe Partial recipe object to validate
+ * @returns Boolean indicating if the core structure is valid
  */
 export declare const validateRecipe: (recipe: any) => boolean;
 /**
- * Creates a recipe object with default values for missing fields
- * @param recipeData Partial recipe data
- * @returns Complete recipe object
+ * Creates a complete recipe object from partial data, including new time fields
+ * @param recipeData Partial recipe data, likely from parsed JSON
+ * @returns Complete recipe object with defaults
  */
 export declare const createRecipe: (recipeData: Partial<Recipe>) => Recipe;

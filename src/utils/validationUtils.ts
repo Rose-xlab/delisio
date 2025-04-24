@@ -1,3 +1,5 @@
+//Users\mukas\Downloads\delisio\delisio\src\utils\validationUtils.ts
+
 import Joi from 'joi';
 import { Request, Response, NextFunction } from 'express';
 
@@ -36,7 +38,7 @@ export const validateRequest = (schema: Joi.ObjectSchema) => {
   };
 };
 
-// Recipe validation schema
+// Recipe validation schema - removed imageStyle field
 export const recipeSchema = Joi.object({
   query: Joi.string().required().min(2).max(200)
     .messages({

@@ -66,7 +66,4 @@ exports.supabase = (0, supabase_js_1.createClient)(supabaseUrl, supabaseServiceK
     }
 });
 logger_1.logger.info('Supabase client initialized successfully.'); // Use info level for success
-// If using default export:
-// const supabase = createClient<Database>(...);
-// export default supabase;
 //# sourceMappingURL=supabase.js.map

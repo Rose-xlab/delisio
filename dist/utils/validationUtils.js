@@ -1,4 +1,5 @@
 "use strict";
+//Users\mukas\Downloads\delisio\delisio\src\utils\validationUtils.ts
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -37,7 +38,7 @@ const validateRequest = (schema) => {
     };
 };
 exports.validateRequest = validateRequest;
-// Recipe validation schema
+// Recipe validation schema - removed imageStyle field
 exports.recipeSchema = joi_1.default.object({
     query: joi_1.default.string().required().min(2).max(200)
         .messages({
@@ -48,7 +49,7 @@ exports.recipeSchema = joi_1.default.object({
     }),
     save: joi_1.default.boolean().optional()
 });
-// Chat message validation schema
+// Updated chat message validation schema with conversation_id and message_history
 exports.chatMessageSchema = joi_1.default.object({
     message: joi_1.default.string().required().min(1).max(500)
         .messages({
@@ -56,7 +57,12 @@ exports.chatMessageSchema = joi_1.default.object({
         'string.min': 'Message must be at least 1 character long',
         'string.max': 'Message cannot exceed 500 characters',
         'any.required': 'Message is required'
-    })
+    }),
+    conversation_id: joi_1.default.string().optional(),
+    message_history: joi_1.default.array().items(joi_1.default.object({
+        role: joi_1.default.string().valid('user', 'assistant').required(),
+        content: joi_1.default.string().required()
+    })).optional()
 });
 // User registration validation schema
 exports.registerSchema = joi_1.default.object({

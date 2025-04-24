@@ -2,7 +2,7 @@
 import { supabase } from '../config/supabase';
 import { Recipe, RecipeStep, NutritionInfo } from '../models/Recipe'; // Updated model
 import { User, UserPreferences } from '../models/User'; // Assuming path is correct
-import { TablesInsert, Tables, Json } from '../types/supabase'; // Regenerated types
+import { TablesInsert, Tables, Json } from '../types/supabase'; 
 import { logger } from '../utils/logger';
 import { Buffer } from 'buffer';
 import { recipeCategories } from '../config/categories';
@@ -345,6 +345,7 @@ export const getDiscoverRecipes = async ({
     }
 
     // Convert to Recipe objects
+    // --- ERROR FIX: Changed category mapping ---
     return data.map((item: Tables<'recipes'>) => ({
       id: item.id,
       title: item.title,
@@ -358,9 +359,10 @@ export const getDiscoverRecipes = async ({
       cookTime: item.cook_time_minutes ?? undefined,
       totalTime: item.total_time_minutes ?? undefined,
       // Additional fields for discovery
-      category: item.category,
+      category: item.category ?? undefined, // <-- FIX APPLIED HERE
       tags: item.tags as string[] | undefined,
     }));
+    // --- END ERROR FIX ---
   } catch (error) {
     logger.error('Error fetching discover recipes:', error);
     throw new Error(`Failed to fetch discover recipes: ${(error as Error).message}`);
@@ -393,6 +395,7 @@ export const getPopularRecipes = async (limit: number = 10): Promise<Recipe[]> =
     }
 
     // Convert to Recipe objects
+    // --- ERROR FIX: Changed category mapping ---
     return data.map((item: Tables<'recipes'>) => ({
       id: item.id,
       title: item.title,
@@ -406,9 +409,10 @@ export const getPopularRecipes = async (limit: number = 10): Promise<Recipe[]> =
       cookTime: item.cook_time_minutes ?? undefined,
       totalTime: item.total_time_minutes ?? undefined,
       // Additional fields for discovery
-      category: item.category,
+      category: item.category ?? undefined, // <-- FIX APPLIED HERE
       tags: item.tags as string[] | undefined,
     }));
+    // --- END ERROR FIX ---
   } catch (error) {
     logger.error('Error fetching popular recipes:', error);
     throw new Error(`Failed to fetch popular recipes: ${(error as Error).message}`);
@@ -463,6 +467,7 @@ export const getCategoryRecipes = async (
     }
 
     // Convert to Recipe objects
+    // --- ERROR FIX: Changed category mapping ---
     return data.map((item: Tables<'recipes'>) => ({
       id: item.id,
       title: item.title,
@@ -476,9 +481,10 @@ export const getCategoryRecipes = async (
       cookTime: item.cook_time_minutes ?? undefined,
       totalTime: item.total_time_minutes ?? undefined,
       // Additional fields for discovery
-      category: item.category,
+      category: item.category ?? undefined, // <-- FIX APPLIED HERE
       tags: item.tags as string[] | undefined,
     }));
+    // --- END ERROR FIX ---
   } catch (error) {
     logger.error('Error fetching category recipes:', error);
     throw new Error(`Failed to fetch category recipes: ${(error as Error).message}`);

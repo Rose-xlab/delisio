@@ -1,12 +1,9 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.extractNutrition = void 0;
-const openai_1 = __importDefault(require("openai"));
+const openai_1 = require("openai");
 // Initialize OpenAI client
-const openai = new openai_1.default({
+const openai = new openai_1.OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 // Default GPT model

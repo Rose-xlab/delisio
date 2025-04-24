@@ -4,6 +4,57 @@ export type Json = string | number | boolean | null | {
 export type Database = {
     public: {
         Tables: {
+            admin_users: {
+                Row: {
+                    created_at: string;
+                    created_by: string | null;
+                    id: string;
+                    role: string;
+                    updated_at: string;
+                    user_id: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    created_by?: string | null;
+                    id: string;
+                    role: string;
+                    updated_at?: string;
+                    user_id: string;
+                };
+                Update: {
+                    created_at?: string;
+                    created_by?: string | null;
+                    id?: string;
+                    role?: string;
+                    updated_at?: string;
+                    user_id?: string;
+                };
+                Relationships: [];
+            };
+            conversations: {
+                Row: {
+                    created_at: string;
+                    id: string;
+                    title: string | null;
+                    updated_at: string;
+                    user_id: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    id?: string;
+                    title?: string | null;
+                    updated_at?: string;
+                    user_id: string;
+                };
+                Update: {
+                    created_at?: string;
+                    id?: string;
+                    title?: string | null;
+                    updated_at?: string;
+                    user_id?: string;
+                };
+                Relationships: [];
+            };
             favorites: {
                 Row: {
                     created_at: string | null;
@@ -33,42 +84,173 @@ export type Database = {
                     }
                 ];
             };
+            messages: {
+                Row: {
+                    content: string;
+                    conversation_id: string;
+                    created_at: string;
+                    id: string;
+                    metadata: Json | null;
+                    role: string;
+                    user_id: string | null;
+                };
+                Insert: {
+                    content: string;
+                    conversation_id: string;
+                    created_at?: string;
+                    id?: string;
+                    metadata?: Json | null;
+                    role: string;
+                    user_id?: string | null;
+                };
+                Update: {
+                    content?: string;
+                    conversation_id?: string;
+                    created_at?: string;
+                    id?: string;
+                    metadata?: Json | null;
+                    role?: string;
+                    user_id?: string | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "messages_conversation_id_fkey";
+                        columns: ["conversation_id"];
+                        isOneToOne: false;
+                        referencedRelation: "conversations";
+                        referencedColumns: ["id"];
+                    }
+                ];
+            };
+            payment_methods: {
+                Row: {
+                    card_brand: string | null;
+                    card_exp_month: number | null;
+                    card_exp_year: number | null;
+                    card_last4: string | null;
+                    created_at: string;
+                    id: string;
+                    is_default: boolean;
+                    stripe_payment_method_id: string;
+                    updated_at: string;
+                    user_id: string;
+                };
+                Insert: {
+                    card_brand?: string | null;
+                    card_exp_month?: number | null;
+                    card_exp_year?: number | null;
+                    card_last4?: string | null;
+                    created_at?: string;
+                    id?: string;
+                    is_default?: boolean;
+                    stripe_payment_method_id: string;
+                    updated_at?: string;
+                    user_id: string;
+                };
+                Update: {
+                    card_brand?: string | null;
+                    card_exp_month?: number | null;
+                    card_exp_year?: number | null;
+                    card_last4?: string | null;
+                    created_at?: string;
+                    id?: string;
+                    is_default?: boolean;
+                    stripe_payment_method_id?: string;
+                    updated_at?: string;
+                    user_id?: string;
+                };
+                Relationships: [];
+            };
+            recipe_usage: {
+                Row: {
+                    count: number;
+                    created_at: string;
+                    id: string;
+                    period_end: string;
+                    period_start: string;
+                    updated_at: string;
+                    user_id: string;
+                };
+                Insert: {
+                    count?: number;
+                    created_at?: string;
+                    id?: string;
+                    period_end: string;
+                    period_start: string;
+                    updated_at?: string;
+                    user_id: string;
+                };
+                Update: {
+                    count?: number;
+                    created_at?: string;
+                    id?: string;
+                    period_end?: string;
+                    period_start?: string;
+                    updated_at?: string;
+                    user_id?: string;
+                };
+                Relationships: [];
+            };
             recipes: {
                 Row: {
+                    category: string | null;
+                    cook_time_minutes: number | null;
                     created_at: string | null;
                     id: string;
                     ingredients: string[];
                     nutrition: Json;
+                    prep_time_minutes: number | null;
+                    quality_score: number | null;
                     query: string | null;
                     servings: number | null;
+                    similarity_hash: string | null;
                     steps: Json;
+                    tags: string[] | null;
                     title: string;
+                    total_time_minutes: number | null;
                     updated_at: string | null;
                     user_id: string | null;
+                    views: number | null;
                 };
                 Insert: {
+                    category?: string | null;
+                    cook_time_minutes?: number | null;
                     created_at?: string | null;
                     id?: string;
                     ingredients: string[];
                     nutrition: Json;
+                    prep_time_minutes?: number | null;
+                    quality_score?: number | null;
                     query?: string | null;
                     servings?: number | null;
+                    similarity_hash?: string | null;
                     steps: Json;
+                    tags?: string[] | null;
                     title: string;
+                    total_time_minutes?: number | null;
                     updated_at?: string | null;
                     user_id?: string | null;
+                    views?: number | null;
                 };
                 Update: {
+                    category?: string | null;
+                    cook_time_minutes?: number | null;
                     created_at?: string | null;
                     id?: string;
                     ingredients?: string[];
                     nutrition?: Json;
+                    prep_time_minutes?: number | null;
+                    quality_score?: number | null;
                     query?: string | null;
                     servings?: number | null;
+                    similarity_hash?: string | null;
                     steps?: Json;
+                    tags?: string[] | null;
                     title?: string;
+                    total_time_minutes?: number | null;
                     updated_at?: string | null;
                     user_id?: string | null;
+                    views?: number | null;
                 };
                 Relationships: [];
             };
@@ -90,6 +272,126 @@ export type Database = {
                     id?: string;
                     query?: string;
                     user_id?: string | null;
+                };
+                Relationships: [];
+            };
+            subscription_history: {
+                Row: {
+                    created_at: string;
+                    id: string;
+                    status: string;
+                    tier: string;
+                    user_id: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    id?: string;
+                    status: string;
+                    tier: string;
+                    user_id: string;
+                };
+                Update: {
+                    created_at?: string;
+                    id?: string;
+                    status?: string;
+                    tier?: string;
+                    user_id?: string;
+                };
+                Relationships: [];
+            };
+            subscriptions: {
+                Row: {
+                    cancel_at_period_end: boolean;
+                    created_at: string;
+                    current_period_end: string;
+                    current_period_start: string;
+                    id: string;
+                    status: string;
+                    stripe_customer_id: string | null;
+                    stripe_subscription_id: string | null;
+                    tier: string;
+                    updated_at: string;
+                    user_id: string;
+                };
+                Insert: {
+                    cancel_at_period_end?: boolean;
+                    created_at?: string;
+                    current_period_end: string;
+                    current_period_start: string;
+                    id?: string;
+                    status: string;
+                    stripe_customer_id?: string | null;
+                    stripe_subscription_id?: string | null;
+                    tier: string;
+                    updated_at?: string;
+                    user_id: string;
+                };
+                Update: {
+                    cancel_at_period_end?: boolean;
+                    created_at?: string;
+                    current_period_end?: string;
+                    current_period_start?: string;
+                    id?: string;
+                    status?: string;
+                    stripe_customer_id?: string | null;
+                    stripe_subscription_id?: string | null;
+                    tier?: string;
+                    updated_at?: string;
+                    user_id?: string;
+                };
+                Relationships: [];
+            };
+            system_settings: {
+                Row: {
+                    created_at: string;
+                    id: number;
+                    settings: Json;
+                    updated_at: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    id?: number;
+                    settings?: Json;
+                    updated_at?: string;
+                };
+                Update: {
+                    created_at?: string;
+                    id?: number;
+                    settings?: Json;
+                    updated_at?: string;
+                };
+                Relationships: [];
+            };
+            user_activity: {
+                Row: {
+                    action_type: string;
+                    created_at: string;
+                    id: string;
+                    last_active: string;
+                    metadata: Json | null;
+                    resource_id: string | null;
+                    resource_type: string | null;
+                    user_id: string;
+                };
+                Insert: {
+                    action_type: string;
+                    created_at?: string;
+                    id?: string;
+                    last_active?: string;
+                    metadata?: Json | null;
+                    resource_id?: string | null;
+                    resource_type?: string | null;
+                    user_id: string;
+                };
+                Update: {
+                    action_type?: string;
+                    created_at?: string;
+                    id?: string;
+                    last_active?: string;
+                    metadata?: Json | null;
+                    resource_id?: string | null;
+                    resource_type?: string | null;
+                    user_id?: string;
                 };
                 Relationships: [];
             };
@@ -131,7 +433,82 @@ export type Database = {
             [_ in never]: never;
         };
         Functions: {
-            [_ in never]: never;
+            get_category_counts: {
+                Args: Record<PropertyKey, never>;
+                Returns: {
+                    category: string;
+                    recipe_count: number;
+                }[];
+            };
+            get_recipe_generation_trend: {
+                Args: {
+                    p_start_date: string;
+                    p_interval?: string;
+                };
+                Returns: {
+                    period: string;
+                    recipe_count: number;
+                }[];
+            };
+            get_subscription_conversions: {
+                Args: Record<PropertyKey, never>;
+                Returns: {
+                    from_tier: string;
+                    to_tier: string;
+                    count: number;
+                }[];
+            };
+            get_subscription_status: {
+                Args: {
+                    p_user_id: string;
+                };
+                Returns: Json;
+            };
+            get_subscription_tier_counts: {
+                Args: Record<PropertyKey, never>;
+                Returns: {
+                    tier: string;
+                    count: number;
+                }[];
+            };
+            get_user_growth_trend: {
+                Args: {
+                    p_start_date: string;
+                    p_interval?: string;
+                };
+                Returns: {
+                    period: string;
+                    new_users: number;
+                    cumulative_users: number;
+                }[];
+            };
+            has_reached_recipe_limit: {
+                Args: {
+                    p_user_id: string;
+                    p_tier: string;
+                };
+                Returns: boolean;
+            };
+            increment_recipe_usage: {
+                Args: {
+                    p_user_id: string;
+                    p_period_start: string;
+                    p_period_end: string;
+                };
+                Returns: undefined;
+            };
+            reset_expired_usage_periods: {
+                Args: Record<PropertyKey, never>;
+                Returns: undefined;
+            };
+            reset_recipe_usage: {
+                Args: {
+                    p_user_id: string;
+                    p_period_start: string;
+                    p_period_end: string;
+                };
+                Returns: undefined;
+            };
         };
         Enums: {
             [_ in never]: never;

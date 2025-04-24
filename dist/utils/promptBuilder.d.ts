@@ -5,22 +5,21 @@ interface Prompt {
     systemPrompt: string;
     userPrompt: string;
 }
-/**
- * Builds prompt for recipe generation
- * @param query User's recipe query
- * @param userPreferences Optional user preferences
- * @returns System and user prompts
- */
-export declare const buildRecipePrompt: (query: string, userPreferences?: {
+interface UserPreferencesInput {
     dietaryRestrictions?: string[];
     allergies?: string[];
     favoriteCuisines?: string[];
     cookingSkill?: string;
-}) => Prompt;
+}
 /**
- * Builds prompt for chat responses
- * @param message User's message
- * @returns System and user prompts
+ * Builds prompt for recipe generation, explicitly requesting JSON output.
+ * (Includes optional time fields in the Recipe interface definition)
  */
+export declare const buildRecipePrompt: (query: string, userPreferences?: UserPreferencesInput) => Prompt;
+/**
+* Builds prompt for chat responses
+* Updated to support conversation continuity and memory
+* Enhanced "Something else?" handling to provide new suggestions
+*/
 export declare const buildChatPrompt: (message: string) => Prompt;
 export {};

@@ -1,113 +1,204 @@
-import { generateChatResponse } from '../services/gptService';
+// src/controllers/chatControllers.ts
+import { Request, Response, NextFunction } from 'express';
+import { v4 as uuidv4 } from 'uuid';
+import { supabase } from '../config/supabase';
+import chatQueue from '../queues/chatQueue'; // Assuming this import is correct
 import { AppError } from '../middleware/errorMiddleware';
+import { logger } from '../utils/logger';
+// Import the actual Result Type from the queue definition
+import { ChatJobResult } from '../queues/chatQueue';
+
 
 /**
- * Interface for the structured response expected by the Flutter app
+ * Handles incoming chat messages, queues them for processing,
+ * and waits for the response within a timeout period.
  */
-interface ChatResponse {
-  reply: string;
-  suggestions?: string[]; // Optional array of suggested recipe names
-}
-
-/**
- * Interface for a message in the conversation history
- */
-interface MessageHistoryItem {
-  role: 'user' | 'assistant';
-  content: string;
-}
-
-/**
- * Handles incoming user chat messages, gets a JSON response from GPT service,
- * parses it, and returns the structured response.
- *
- * @param message The user's chat message string.
- * @param conversationId Optional conversation ID for context tracking.
- * @param messageHistory Optional array of previous messages for context.
- * @returns A Promise resolving to a ChatResponse object.
- * @throws {AppError} If processing fails.
- */
-export const handleChatMessage = async (
-  message: string, 
-  conversationId?: string, 
-  messageHistory?: MessageHistoryItem[]
-): Promise<ChatResponse> => {
+export const handleChatMessage = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    console.log(`Handling chat message: "${message}" for conversation: ${conversationId || 'new'}`);
-    
-    if (messageHistory && messageHistory.length > 0) {
-      console.log(`Including ${messageHistory.length} previous messages as context`);
+    const { conversation_id, message, message_history } = req.body;
+    const userId = req.user?.id; // Use optional chaining
+    const messageId = uuidv4();
+
+    // Check if conversation_id is provided (moved validation here for clarity)
+    if (!conversation_id) {
+      throw new AppError('Missing conversation_id in request', 400);
+    }
+    const conversationId: string = conversation_id; // Assign after check
+
+    logger.info(`Chat message received`, { conversationId });
+
+    if (userId) {
+      try {
+        await supabase.from('messages').insert({
+          id: messageId, conversation_id: conversationId, user_id: userId, role: 'user', content: message
+        });
+        logger.info(`User message saved`, { messageId, conversationId });
+      } catch (dbError) {
+        const errorMsg = dbError instanceof Error ? dbError.message : String(dbError);
+        logger.error(`Error saving user message: ${errorMsg}`, { conversationId });
+        // Optionally decide if this DB error should halt processing
+        // throw new AppError('Failed to save user message', 500);
+      }
     } else {
-      console.log("No message history provided, treating as new conversation");
+      logger.info(`Anonymous user message received, not saving to DB`, { conversationId });
     }
 
-    // Step 1: Get the response JSON string from the GPT service with context history
-    const gptJsonResponse = await generateChatResponse(message, messageHistory);
-    console.log(`Raw JSON Response String from GPT service:\n${gptJsonResponse}`);
+    // Add job to chat queue
+    const job = await chatQueue.add(
+      'process-message', // Correct job name literal matching NameType
+      { // Job Data
+        message, conversationId, messageHistory: message_history, userId
+      },
+      // --- FIX APPLIED IN ORIGINAL CODE ---
+      // Assert options object as 'any' to bypass incorrect type check for 'timeout'
+      { // Job Options
+        timeout: 30000,       // This SHOULD be valid in JobsOptions
+        removeOnComplete: 500,
+        removeOnFail: 1000,
+        attempts: 2
+      } as any // Add 'as any' assertion here
+    );
 
-    // Step 2: Parse the JSON string
-    let parsedData: any; // Use 'any' initially or define a specific interface
-    try {
-        parsedData = JSON.parse(gptJsonResponse);
-        console.log("Successfully parsed JSON response string.");
-    } catch (jsonError) {
-        console.error('Error parsing JSON response from OpenAI:', jsonError);
-        console.error('Received non-JSON response string:', gptJsonResponse);
-        throw new Error('Failed to parse chat structure from AI response.');
-    }
+    logger.info(`Chat message job added`, { jobId: job.id, conversationId });
 
-    // Step 3: Validate and Extract data from the parsed object
-    const reply = parsedData?.reply as string | undefined;
-    const suggestionsData = parsedData?.suggestions;
+    // Poll for job completion
+    const startTime = Date.now();
+    const timeoutMs = 25000; // Reduced timeout for polling loop itself
 
-    // Basic validation
-    if (typeof reply !== 'string' || reply.trim().length === 0) {
-        console.error('Parsed JSON missing valid "reply" string:', parsedData);
-        throw new Error('AI response JSON missing required "reply" field.');
-    }
+    while (Date.now() - startTime < timeoutMs) {
+      await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms between polls
 
-    // Preserve formatting from the response (including newlines)
-    let formattedReply = reply;
-    formattedReply = formattedReply.replace(/\\n/g, '\n');
+      const currentJob = await chatQueue.getJob(job.id!); // Use non-null assertion, job ID should exist
+      if (!currentJob) {
+        logger.warn(`Job not found polling, might be removed or completed`, { jobId: job.id });
+        // Consider if we should break or continue polling briefly
+        continue; // Continue polling for a short duration in case of race condition
+      }
 
-    let suggestions: string[] | undefined = undefined;
-    // Validate suggestions: must be null or an array of strings
-    if (suggestionsData !== null && suggestionsData !== undefined) {
-        if (Array.isArray(suggestionsData) && suggestionsData.every(item => typeof item === 'string')) {
-             // Only assign if it's a non-empty array of strings
-             if (suggestionsData.length > 0) {
-                  suggestions = suggestionsData as string[];
-                  console.log(`Parsed suggestions: ${JSON.stringify(suggestions)}`);
-             } else {
-                  console.log("Parsed suggestions: Received empty array, treating as None.");
-             }
+      const state = await currentJob.getState();
+      logger.debug(`Polling chat job: State=${state}`, { jobId: job.id }); // Debug log for state
 
-        } else {
-            console.warn('Parsed "suggestions" field was not null or a valid string array:', suggestionsData);
-            // Keep suggestions as undefined if format is wrong
+      if (state === 'completed') {
+        const result = await currentJob.returnvalue as ChatJobResult; // Use assertion
+
+        if (result?.error) {
+          // Log handled error from worker, but don't throw here unless critical
+          logger.warn(`Chat job completed with handled error: ${result.error}`, { jobId: job.id });
         }
-    } else {
-        console.log("Parsed suggestions: None (field was null or undefined).");
-         // Keep suggestions as undefined
+
+        // --- UPDATED CHECK ---
+        // Check if the result object exists and if the 'reply' property is specifically a string.
+        // This allows empty strings "" as valid replies, preventing the previous error.
+        if (result && typeof result.reply === 'string') {
+        // --- END OF UPDATE ---
+            if (userId) {
+                try {
+                  // Save assistant response (only if user is logged in?) - Review this logic
+                  // Assuming AI response should be saved regardless of user login for history?
+                  await supabase.from('messages').insert({
+                    id: uuidv4(), conversation_id: conversationId, user_id: null, role: 'assistant',
+                    content: result.reply,
+                    metadata: { suggestions: result.suggestions ?? [] } // Ensure metadata is saved correctly
+                  });
+                  // Update conversation timestamp only if user is logged in
+                  await supabase.from('conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId);
+                  logger.info(`Assistant response saved and conversation updated`, { conversationId });
+                } catch (dbError) {
+                  const errorMsg = dbError instanceof Error ? dbError.message : String(dbError);
+                  logger.error(`Error saving assistant message or updating conversation: ${errorMsg}`, { conversationId });
+                  // Decide if this should cause a 500 response or just be logged
+                }
+            } else {
+                logger.info(`Assistant response generated for anonymous user, not saving to DB`, { conversationId });
+            }
+
+            logger.info(`Chat job completed, response sent`, { jobId: job.id });
+            return res.status(200).json({
+                reply: result.reply,
+                suggestions: result.suggestions ?? [] // Ensure suggestions are handled correctly
+            });
+        } else {
+            // This block is now only reached if result is null/undefined or result.reply is not a string
+            logger.error(`Chat job completed but 'reply' is missing or invalid type`, { jobId: job.id, resultReplyType: typeof result?.reply });
+            throw new Error('Chat completed but no valid reply was generated.'); // Updated error message slightly
+        }
+
+      } else if (state === 'failed') {
+        const reason = currentJob.failedReason || 'Unknown reason';
+        logger.error(`Chat job failed: ${reason}`, { jobId: job.id });
+        // Propagate a more specific error message if possible
+        throw new AppError(`Chat message processing failed: ${reason}`, 500); // Use AppError for status code
+      }
+      // Continue polling if state is active, waiting, delayed, etc.
     }
 
+    // Timeout reached for polling loop
+    logger.warn(`Chat job polling timed out after ${timeoutMs}ms`, { jobId: job.id });
 
-    // Step 4: Construct the final response object for the Flutter app
-    const response: ChatResponse = {
-      reply: formattedReply, // Use the formatted reply with preserved newlines
-      // Conditionally add suggestions field only if it's a valid, non-empty array
-      ...(suggestions && { suggestions: suggestions })
-    };
+    // Optional: Check job status one last time after timeout
+    const timedOutJob = await chatQueue.getJob(job.id!);
+    if (timedOutJob) {
+      const finalState = await timedOutJob.getState();
+      if (finalState === 'completed') {
+          const finalResult = await timedOutJob.returnvalue as ChatJobResult;
+          if (finalResult && typeof finalResult.reply === 'string') {
+              logger.info(`Returning result from job completed just after polling timeout`, { jobId: job.id });
+              // Note: DB saving logic might be missed here if it depends on userId from req
+              return res.status(200).json({
+                  reply: finalResult.reply,
+                  suggestions: finalResult.suggestions ?? []
+              });
+          } else {
+              logger.error(`Job completed post-timeout but missing valid reply`, { jobId: job.id });
+          }
+      } else {
+          logger.warn(`Job found post-timeout, final state: ${finalState}`, { jobId: job.id });
+          // Optionally try to remove/fail the job if it's stuck
+          // try { await timedOutJob.moveToFailed({ message: 'Processing timed out' }, true); } catch(moveError) { logger.error('Failed to move timed out job to failed state', { jobId: job.id, moveError });}
+      }
+    }
 
-    console.log('Sending processed chat response to client:', response);
-    return response;
+    // If timeout reached and job didn't complete successfully just after, return timeout error
+    throw new AppError('Chat message processing timed out', 408); // 408 Request Timeout
 
   } catch (error) {
-    console.error('Error in handleChatMessage controller:', error);
-    if (error instanceof Error) {
-         throw new AppError(`Failed to process chat message: ${error.message}`, 500);
+    // Centralized error handling
+    const isAppError = error instanceof AppError;
+    const statusCode = isAppError ? error.statusCode : 500;
+    // Use the specific error message from AppError or the generic one from Error
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error processing chat';
+
+    // Log the categorized error
+    logger.error(`Error in handleChatMessage: ${errorMsg}`, { statusCode, isAppError });
+
+    // Ensure response is sent only once
+    if (!res.headersSent) {
+        return res.status(statusCode).json({
+            // Use a user-friendly reply for client
+            reply: "I'm sorry, I encountered an issue. Please try again.",
+            // Provide the actual error message in the error field (for debugging/logging on client if needed)
+            error: errorMsg,
+            suggestions: null // Ensure suggestions field is present even on error
+        });
     } else {
-         throw new AppError('An unknown error occurred while processing the chat message.', 500);
+        // If headers already sent, pass to Express default error handler
+        next(error);
     }
+  }
+};
+
+/**
+ * Gets status of the chat queue
+ */
+export const getChatQueueStatus = async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!chatQueue) { throw new AppError('Chat queue not initialized', 500); }
+    const jobCounts = await chatQueue.getJobCounts('waiting', 'active', 'delayed', 'paused', 'completed', 'failed');
+    res.status(200).json({ isQueueActive: true, counts: jobCounts });
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    logger.error(`Error getting chat queue status: ${errorMsg}`);
+    // Pass AppError to central error handler
+    next(new AppError(`Failed get chat queue status: ${errorMsg}`, 500));
   }
 };

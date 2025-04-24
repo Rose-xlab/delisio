@@ -1,6 +1,6 @@
 // src/config/supabase.ts
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Database } from '../types/supabase'; // Ensure this path is correct relative to this file
+import { Database } from '../types/supabase'; 
 import { logger } from '../utils/logger';
 import * as dotenv from 'dotenv';
 

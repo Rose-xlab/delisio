@@ -1,15 +1,10 @@
+import { Request, Response, NextFunction } from 'express';
 /**
- * Interface for chat response
+ * Handles incoming chat messages, queues them for processing,
+ * and waits for the response within a timeout period.
  */
-interface ChatResponse {
-    reply: string;
-    can_generate_recipe: boolean;
-    suggested_recipe?: string;
-}
+export declare const handleChatMessage: (req: Request, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>> | undefined>;
 /**
- * Handles user chat messages and generates AI responses
- * @param message The user's chat message
- * @returns AI response with suggestion and recipe generation flag
+ * Gets status of the chat queue
  */
-export declare const handleChatMessage: (message: string) => Promise<ChatResponse>;
-export {};
+export declare const getChatQueueStatus: (_req: Request, res: Response, next: NextFunction) => Promise<void>;

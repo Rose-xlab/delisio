@@ -1,0 +1,1009 @@
+2025-04-23 18:09:32 [INFO]: Server running on port 3000
+2025-04-23 18:10:26 [INFO]: Server running on port 3000
+2025-04-23 18:15:58 [INFO]: Server running on port 3000
+2025-04-23 18:28:04 [INFO]: Server running on port 3000
+2025-04-23 18:32:59 [INFO]: Server running on port 3000
+2025-04-23 18:40:59 [INFO]: Server running on port 8000
+2025-04-23 18:43:44 [INFO]: Server running on port 8080
+2025-04-23 18:49:45 [INFO]: Server running on port 9999
+2025-04-23 18:53:01 [INFO]: Server running on port 9999
+2025-04-23 19:10:51 [INFO]: Server running on port 9999
+2025-04-23 19:13:10 [INFO]: Server running on port 3000
+2025-04-23 19:20:41 [INFO]: Server running on port 3000
+2025-04-23 19:24:58 [INFO]: Server running on port 3000
+2025-04-23 19:27:04 [INFO]: Server running on port 3000
+2025-04-23 19:28:23 [INFO]: Server running on port 3000
+2025-04-23 19:30:21 [INFO]: Server running on port 3000
+2025-04-23 19:36:17 [INFO]: Server running on port 3002
+2025-04-23 19:50:47 [INFO]: Server running on port 3002 
+2025-04-23 19:58:52 [INFO]: Server running on port 3002 
+2025-04-23 20:01:17 [INFO]: POST /auth/signin
+2025-04-23 20:02:46 [INFO]: GET /admin/users?page=1&limit=10&sortBy=created_at&sortDir=desc
+2025-04-23 20:02:46 [ERROR]: Error (500): Failed to fetch users
+2025-04-23 20:02:46 [INFO]: GET /admin/users?page=1&limit=10&sortBy=created_at&sortDir=desc
+2025-04-23 20:02:46 [ERROR]: Error (500): Failed to fetch users
+2025-04-23 20:02:51 [INFO]: GET /admin/subscriptions/tiers
+2025-04-23 20:02:51 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-23 20:02:51 [INFO]: GET /admin/subscriptions/conversions
+2025-04-23 20:02:51 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-23 20:02:51 [INFO]: GET /admin/subscriptions/tiers
+2025-04-23 20:02:51 [INFO]: GET /admin/subscriptions/conversions
+2025-04-23 20:02:51 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-23 20:02:51 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-23 20:02:59 [INFO]: GET /admin/jobs/queues
+2025-04-23 20:03:01 [INFO]: GET /admin/jobs/queues
+2025-04-23 20:03:01 [INFO]: GET /admin/jobs/failed?page=1&limit=10&queue=all
+2025-04-23 20:03:02 [INFO]: GET /admin/jobs/performance?queue=all&period=24h
+2025-04-23 20:03:03 [INFO]: GET /admin/jobs/failed?page=1&limit=10&queue=all
+2025-04-23 20:03:03 [INFO]: GET /admin/jobs/performance?queue=all&period=24h
+2025-04-23 20:03:13 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 20:03:13 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 20:03:13 [INFO]: GET /admin/errors/impact
+2025-04-23 20:03:13 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 20:03:13 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 20:03:13 [INFO]: GET /admin/errors/impact
+2025-04-23 20:04:02 [INFO]: GET /admin/settings
+2025-04-23 20:04:03 [INFO]: GET /admin/settings
+2025-04-23 20:04:13 [INFO]: GET /admin/settings
+2025-04-23 20:04:13 [INFO]: GET /admin/settings
+2025-04-23 20:04:15 [INFO]: GET /admin/settings
+2025-04-23 20:04:16 [INFO]: GET /admin/settings
+2025-04-23 20:04:16 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:04:16 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:04:16 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:04:16 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:04:16 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:04:16 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:04:16 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:04:16 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:04:17 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:04:17 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:04:17 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:04:17 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:04:17 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:04:17 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:04:17 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:04:17 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:04:18 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:04:18 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:04:18 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:04:18 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:04:18 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:04:18 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:04:18 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:04:18 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:04:48 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:04:48 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:04:48 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:04:48 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:05:18 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:05:18 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:05:18 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:05:18 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:05:48 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:05:48 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:05:48 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:05:48 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:06:18 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:06:18 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:06:18 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:06:18 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:06:48 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:06:48 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:06:48 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:06:48 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:07:49 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:07:49 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:07:49 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:07:49 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:08:50 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:08:50 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:08:50 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:08:50 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:09:51 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:09:51 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:09:51 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:09:51 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:10:52 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:10:52 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:10:52 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:10:52 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:11:53 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:11:53 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:11:53 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:11:53 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:12:54 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:12:54 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:12:54 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:12:54 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:13:55 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:13:55 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:13:55 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:13:55 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:14:56 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:14:56 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:14:56 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:14:56 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:15:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:15:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:15:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:15:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:16:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:16:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:16:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:16:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:17:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:17:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:17:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:17:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:18:27 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:18:27 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:18:27 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:18:27 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:18:48 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:18:48 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:18:48 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:18:48 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:19:18 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:19:18 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:19:18 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:19:18 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:19:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:19:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:19:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:19:58 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:20:58 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:20:58 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:20:59 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:20:59 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:21:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:21:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:21:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:21:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:22:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:22:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:22:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:22:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:23:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:23:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:23:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:23:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:24:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:24:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:24:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:24:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:25:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:25:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:25:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:25:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:26:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:26:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:26:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:26:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:27:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:27:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:27:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:27:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:28:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:28:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:28:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:28:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:29:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:29:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:29:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:29:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:30:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:30:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:30:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:30:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:31:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:31:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:31:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:31:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:32:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:32:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:32:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:32:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:33:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:33:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:33:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:33:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:34:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:34:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:34:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:34:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:35:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:35:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:35:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:35:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:36:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:36:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:36:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:36:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:37:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:37:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:37:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:37:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:38:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:38:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:38:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:38:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:39:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:39:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:39:58 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:39:58 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:40:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:40:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:40:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:40:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:41:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:41:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:41:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:41:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:42:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:42:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:42:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:42:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:43:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:43:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:43:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:43:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:44:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:44:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:44:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:44:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:45:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:45:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:45:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:45:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:46:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:46:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:46:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:46:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:47:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:47:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:47:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:47:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:48:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:48:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:48:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:48:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:49:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:49:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:49:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:49:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:50:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:50:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:50:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:50:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:51:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:51:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:51:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:51:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:52:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:52:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:52:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:52:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:53:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:53:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:53:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:53:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:54:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:54:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:54:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:54:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:55:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:55:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:55:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:55:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:56:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:56:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:56:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:56:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:57:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:57:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:57:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:57:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:58:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:58:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:58:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 20:58:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:59:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 20:59:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 20:59:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 20:59:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:00:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:00:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:00:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:00:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:01:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:01:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:01:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:01:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:02:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:02:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:02:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:02:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:03:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:03:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:03:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:03:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:04:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:04:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:04:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:04:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:05:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:05:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:05:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:05:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:06:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:06:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:06:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:06:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:07:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:07:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:07:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:07:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:08:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:08:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:08:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:08:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:09:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:09:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:09:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:09:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:10:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:10:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:10:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:10:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:11:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:11:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:11:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:11:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:12:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:12:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:12:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:12:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:13:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:13:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:13:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:13:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:14:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:14:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:14:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:14:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:15:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:15:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:15:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:15:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:16:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:16:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:16:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:16:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:17:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:17:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:17:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:17:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:18:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:18:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:18:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:18:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:19:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:19:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:19:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:19:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:20:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:20:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:20:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:20:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:21:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:21:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:21:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:21:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:22:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:22:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:22:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:22:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:23:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:23:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:23:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:23:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:24:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:24:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:24:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:24:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:25:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:25:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:25:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:25:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:26:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:26:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:26:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:26:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:27:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:27:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:27:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:27:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:28:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:28:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:28:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:28:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:29:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:29:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:29:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:29:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:30:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:30:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:30:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:30:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:31:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:31:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:31:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:31:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:32:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:32:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:32:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:32:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:33:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:33:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:33:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:33:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:34:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:34:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:34:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:34:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:35:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:35:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:35:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:35:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:36:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:36:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:36:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:36:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:37:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:37:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:37:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:37:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:38:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:38:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:38:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:38:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:39:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:39:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:39:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:39:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:40:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:40:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:40:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:40:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:41:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:41:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:41:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:41:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:42:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:42:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:42:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:42:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:43:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:43:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:43:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:43:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:44:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:44:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:44:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:44:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:45:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:45:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:45:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:45:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:46:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:46:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:46:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:46:58 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:47:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:47:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:47:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:47:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:48:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:48:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:48:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:48:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:49:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:49:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:49:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:49:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:50:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:50:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:50:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:50:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:51:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:51:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:51:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:51:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:52:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:52:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:52:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:52:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:53:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:53:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:53:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:53:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:54:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:54:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:54:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:54:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:55:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:55:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:55:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:55:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:56:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:56:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:56:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:56:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:57:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:57:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:57:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:57:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:58:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:58:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:58:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 21:58:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:59:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 21:59:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 21:59:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 21:59:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 22:00:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:00:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:00:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 22:00:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 22:01:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:01:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:01:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 22:01:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 22:02:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:02:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:02:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 22:02:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 22:03:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:03:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:03:58 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 22:03:58 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 22:04:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:04:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:04:57 [ERROR]: Error (500): Failed to fetch dashboard statistics
+2025-04-23 22:04:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 22:06:40 [INFO]: Server running on port 3002 
+2025-04-23 22:06:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:06:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:06:58 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 22:07:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:07:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:07:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 22:08:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:08:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:08:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 22:09:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:09:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:09:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 22:10:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:10:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:10:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 22:11:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:11:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:11:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 22:12:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:12:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:12:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 22:13:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:13:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:13:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 22:14:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:14:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:14:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 22:15:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:15:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:15:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 22:19:05 [INFO]: Server running on port 3002 
+2025-04-23 22:19:37 [INFO]: Server running on port 3002 
+2025-04-23 22:19:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:19:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:19:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 22:20:29 [INFO]: Server running on port 3002 
+2025-04-23 22:20:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:20:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:20:57 [ERROR]: Error (500): Failed to fetch trend data
+2025-04-23 22:21:21 [INFO]: Server running on port 3002 
+2025-04-23 22:22:12 [INFO]: Server running on port 3002 
+2025-04-23 22:26:09 [INFO]: Server running on port 3002 
+2025-04-23 22:26:50 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:26:50 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:27:22 [INFO]: Server running on port 3002 
+2025-04-23 22:27:51 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:27:51 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:28:52 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:28:52 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:29:53 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:29:53 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:30:54 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:30:54 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:31:55 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:31:55 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:32:56 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:32:56 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:33:46 [INFO]: Server running on port 3002 
+2025-04-23 22:33:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:33:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:34:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:34:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:35:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:35:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:36:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:36:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:37:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:37:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:38:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:38:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:39:28 [INFO]: Server running on port 3002 
+2025-04-23 22:40:17 [INFO]: Server running on port 3002 
+2025-04-23 22:40:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:40:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:41:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:41:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:42:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:42:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:43:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:43:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:44:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:44:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:45:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:45:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:46:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:46:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:47:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:47:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:48:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:48:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:49:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:49:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:58:25 [INFO]: Server running on port 3002 
+2025-04-23 22:58:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:58:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 22:59:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 22:59:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:00:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:00:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:01:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:01:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:02:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:02:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:03:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:03:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:04:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:04:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:05:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:05:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:06:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:06:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:09:48 [INFO]: Server running on port 3002 
+2025-04-23 23:09:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:09:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:11:23 [INFO]: Server running on port 3002 
+2025-04-23 23:11:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:11:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:12:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:12:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:13:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:13:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:14:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:14:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:15:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:15:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:16:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:16:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:30:47 [INFO]: Server running on port 3002 
+2025-04-23 23:30:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:30:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:31:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:31:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:32:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:32:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:33:18 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:33:18 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:33:27 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:33:27 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:33:27 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:33:28 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:33:48 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:33:48 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:33:50 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:33:50 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:33:50 [INFO]: GET /admin/errors/impact
+2025-04-23 23:33:50 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:33:50 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:33:50 [INFO]: GET /admin/errors/impact
+2025-04-23 23:33:59 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:33:59 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:33:59 [INFO]: GET /admin/errors/impact
+2025-04-23 23:33:59 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:33:59 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:33:59 [INFO]: GET /admin/errors/impact
+2025-04-23 23:34:18 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:34:18 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:34:26 [INFO]: GET /admin/users?page=1&limit=10&sortBy=created_at&sortDir=desc
+2025-04-23 23:34:27 [ERROR]: Error (500): Failed to fetch users
+2025-04-23 23:34:27 [INFO]: GET /admin/users?page=1&limit=10&sortBy=created_at&sortDir=desc
+2025-04-23 23:34:27 [ERROR]: Error (500): Failed to fetch users
+2025-04-23 23:34:29 [INFO]: GET /admin/users?page=1&limit=10&sortBy=created_at&sortDir=desc
+2025-04-23 23:34:29 [ERROR]: Error (500): Failed to fetch users
+2025-04-23 23:34:29 [INFO]: GET /admin/users?page=1&limit=10&sortBy=created_at&sortDir=desc
+2025-04-23 23:34:29 [ERROR]: Error (500): Failed to fetch users
+2025-04-23 23:34:30 [INFO]: GET /admin/users?page=1&limit=10&sortBy=created_at&sortDir=desc
+2025-04-23 23:34:30 [ERROR]: Error (500): Failed to fetch users
+2025-04-23 23:34:30 [INFO]: GET /admin/users?page=1&limit=10&sortBy=created_at&sortDir=desc
+2025-04-23 23:34:30 [ERROR]: Error (500): Failed to fetch users
+2025-04-23 23:34:31 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:34:31 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:34:31 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:34:32 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:34:51 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:34:51 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:34:51 [INFO]: GET /admin/errors/impact
+2025-04-23 23:34:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:34:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:35:02 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:35:02 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:35:31 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:35:31 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:35:51 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:35:51 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:35:51 [INFO]: GET /admin/errors/impact
+2025-04-23 23:35:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:35:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:36:02 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:36:02 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:36:32 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:36:32 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:36:51 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:36:51 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:36:51 [INFO]: GET /admin/errors/impact
+2025-04-23 23:36:51 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:36:51 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:36:51 [INFO]: GET /admin/errors/impact
+2025-04-23 23:36:51 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:36:51 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:36:51 [INFO]: GET /admin/errors/impact
+2025-04-23 23:36:53 [INFO]: GET /admin/users?page=1&limit=10&sortBy=created_at&sortDir=desc
+2025-04-23 23:36:53 [ERROR]: Error (500): Failed to fetch users
+2025-04-23 23:36:53 [INFO]: GET /admin/users?page=1&limit=10&sortBy=created_at&sortDir=desc
+2025-04-23 23:36:53 [ERROR]: Error (500): Failed to fetch users
+2025-04-23 23:36:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:36:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:37:51 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:37:51 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:37:51 [INFO]: GET /admin/errors/impact
+2025-04-23 23:37:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:37:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:38:51 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:38:51 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:38:51 [INFO]: GET /admin/errors/impact
+2025-04-23 23:38:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:38:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:39:52 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:39:52 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:39:52 [INFO]: GET /admin/errors/impact
+2025-04-23 23:39:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:39:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:40:45 [INFO]: Server running on port 3002 
+2025-04-23 23:40:53 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:40:53 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:40:53 [INFO]: GET /admin/errors/impact
+2025-04-23 23:40:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:40:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:41:54 [INFO]: GET /admin/errors/impact
+2025-04-23 23:41:54 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:41:54 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:41:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:41:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:42:31 [INFO]: GET /admin/users?page=1&limit=10&sortBy=created_at&sortDir=desc
+2025-04-23 23:42:31 [ERROR]: Error (500): Failed to fetch users
+2025-04-23 23:42:31 [INFO]: GET /admin/users?page=1&limit=10&sortBy=created_at&sortDir=desc
+2025-04-23 23:42:31 [ERROR]: Error (500): Failed to fetch users
+2025-04-23 23:42:55 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:42:55 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:42:55 [INFO]: GET /admin/errors/impact
+2025-04-23 23:42:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:42:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:43:56 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:43:56 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:43:56 [INFO]: GET /admin/errors/impact
+2025-04-23 23:43:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:43:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:44:57 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:44:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:44:57 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:44:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:44:57 [INFO]: GET /admin/errors/impact
+2025-04-23 23:45:57 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:45:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:45:57 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:45:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:45:57 [INFO]: GET /admin/errors/impact
+2025-04-23 23:46:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:46:57 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:46:57 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:46:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:46:57 [INFO]: GET /admin/errors/impact
+2025-04-23 23:47:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:47:57 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:47:57 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:47:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:47:57 [INFO]: GET /admin/errors/impact
+2025-04-23 23:48:57 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-23 23:48:57 [INFO]: GET /admin/dashboard/stats
+2025-04-23 23:48:57 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-23 23:48:57 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-23 23:48:57 [INFO]: GET /admin/errors/impact
+2025-04-23 23:51:59 [INFO]: Server running on port 3002 
+2025-04-24 00:06:55 [INFO]: Server running on port 3002 
+2025-04-24 00:12:48 [INFO]: Server running on port 3002 
+2025-04-24 00:19:27 [INFO]: Server running on port 3002 
+2025-04-24 00:52:12 [INFO]: POST /auth/signin
+2025-04-24 00:53:08 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 00:53:08 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 00:53:08 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 00:53:08 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 00:53:08 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 00:53:08 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 00:53:08 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 00:53:08 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 00:54:49 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 00:54:49 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 00:54:49 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 00:54:49 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 00:54:49 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 00:54:49 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 00:54:49 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 00:54:49 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:00:47 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:00:47 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:00:47 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:00:47 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:00:47 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:00:47 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:00:47 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:00:47 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:00:59 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:00:59 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:01:00 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:01:00 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:01:00 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:01:00 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:01:00 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:01:00 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:01:04 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:01:04 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:01:04 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:01:04 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:01:04 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:01:04 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:01:04 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:01:04 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:01:14 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:01:14 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:01:14 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:01:14 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:01:14 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:01:14 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:01:14 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:01:14 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:17:20 [INFO]: Server running on port 3002 
+2025-04-24 01:18:38 [INFO]: Server running on port 3002 
+2025-04-24 01:18:38 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:18:38 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:18:38 [INFO]: GET /admin/jobs/queues
+2025-04-24 01:18:41 [INFO]: GET /admin/jobs/queues
+2025-04-24 01:18:41 [INFO]: GET /admin/jobs/failed?page=1&limit=10&queue=all
+2025-04-24 01:18:41 [INFO]: GET /admin/jobs/performance?queue=all&period=24h
+2025-04-24 01:18:43 [INFO]: GET /admin/jobs/failed?page=1&limit=10&queue=all
+2025-04-24 01:18:43 [INFO]: GET /admin/jobs/performance?queue=all&period=24h
+2025-04-24 01:18:48 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-24 01:18:48 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-24 01:18:48 [INFO]: GET /admin/errors/impact
+2025-04-24 01:18:48 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-24 01:18:48 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-24 01:18:48 [INFO]: GET /admin/errors/impact
+2025-04-24 01:18:50 [INFO]: GET /admin/jobs/queues
+2025-04-24 01:18:52 [INFO]: GET /admin/jobs/queues
+2025-04-24 01:18:52 [INFO]: GET /admin/jobs/failed?page=1&limit=10&queue=all
+2025-04-24 01:18:53 [INFO]: GET /admin/jobs/performance?queue=all&period=24h
+2025-04-24 01:18:54 [INFO]: GET /admin/jobs/failed?page=1&limit=10&queue=all
+2025-04-24 01:18:54 [INFO]: GET /admin/jobs/performance?queue=all&period=24h
+2025-04-24 01:18:58 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-24 01:18:58 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-24 01:18:58 [INFO]: GET /admin/errors/impact
+2025-04-24 01:18:58 [INFO]: GET /admin/errors/trends?period=7d
+2025-04-24 01:18:59 [INFO]: GET /admin/errors/frequent?limit=10
+2025-04-24 01:18:59 [INFO]: GET /admin/errors/impact
+2025-04-24 01:18:59 [INFO]: GET /admin/settings
+2025-04-24 01:19:00 [INFO]: GET /admin/settings
+2025-04-24 01:19:02 [INFO]: GET /admin/users?page=1&limit=10&sortBy=created_at&sortDir=desc
+2025-04-24 01:19:02 [ERROR]: Error (500): Failed to fetch users
+2025-04-24 01:19:02 [INFO]: GET /admin/users?page=1&limit=10&sortBy=created_at&sortDir=desc
+2025-04-24 01:19:02 [ERROR]: Error (500): Failed to fetch users
+2025-04-24 01:19:03 [INFO]: GET /admin/dashboard/stats
+2025-04-24 01:19:03 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-24 01:19:04 [INFO]: GET /admin/dashboard/trends?period=30d
+2025-04-24 01:19:05 [INFO]: GET /admin/dashboard/stats
+2025-04-24 01:19:13 [INFO]: GET /admin/users?page=1&limit=10&sortBy=created_at&sortDir=desc
+2025-04-24 01:19:13 [ERROR]: Error (500): Failed to fetch users
+2025-04-24 01:19:13 [INFO]: GET /admin/users?page=1&limit=10&sortBy=created_at&sortDir=desc
+2025-04-24 01:19:14 [ERROR]: Error (500): Failed to fetch users
+2025-04-24 01:19:20 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:19:20 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:19:20 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:19:20 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:19:20 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:19:20 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:19:20 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:19:20 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:20:20 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:20:20 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:20:20 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:20:20 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:21:20 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:21:20 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:21:20 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:21:20 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:22:20 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:22:20 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:22:20 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:22:20 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:23:20 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:23:20 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:23:20 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:23:20 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:24:20 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:24:20 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:24:20 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:24:20 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:25:21 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:25:21 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:25:21 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:25:21 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:26:22 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:26:22 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:26:22 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:26:22 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:27:23 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:27:23 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:27:23 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:27:23 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:28:24 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:28:24 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:28:24 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:28:24 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:29:25 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:29:25 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:29:25 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:29:25 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:30:26 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:30:26 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:30:26 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:30:26 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:37:11 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:37:11 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:37:11 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:37:11 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:37:57 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:37:57 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:37:57 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:37:57 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:38:57 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:38:57 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:38:57 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:38:57 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 01:39:57 [INFO]: GET /admin/subscriptions/tiers
+2025-04-24 01:39:57 [INFO]: GET /admin/subscriptions/revenue?period=30d
+2025-04-24 01:39:57 [INFO]: GET /admin/subscriptions/churn?period=90d
+2025-04-24 01:39:57 [INFO]: GET /admin/subscriptions/conversions
+2025-04-24 08:19:51 [INFO]: Server running on port 3002 
