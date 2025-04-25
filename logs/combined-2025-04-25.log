@@ -37,3 +37,87 @@
 {"level":"warn","message":"Image worker is closing connection to Redis.","timestamp":"2025-04-25 00:15:26:1526"}
 {"level":"warn","message":"Image worker has closed connection to Redis.","timestamp":"2025-04-25 00:15:26:1526"}
 {"level":"info","message":"[Worker] Recipe worker and imageQueueEvents connection closed.","timestamp":"2025-04-25 00:15:26:1526"}
+{"level":"info","message":"Chat worker process started...","timestamp":"2025-04-25 15:38:05:385"}
+{"level":"info","message":"Redis client connected successfully to Upstash Redis","timestamp":"2025-04-25 15:38:06:386"}
+{"level":"info","message":"Supabase client initialized successfully.","timestamp":"2025-04-25 15:38:06:386"}
+{"level":"info","message":"Image worker process started...","timestamp":"2025-04-25 15:38:06:386"}
+{"level":"info","message":"Supabase client initialized successfully.","timestamp":"2025-04-25 15:38:06:386"}
+{"level":"info","message":"Recipe worker process started...","timestamp":"2025-04-25 15:38:06:386"}
+{"level":"info","message":"[Worker] Chat queue worker process connected to Redis.","timestamp":"2025-04-25 15:38:07:387"}
+{"level":"info","message":"Redis client connected successfully to Upstash Redis","timestamp":"2025-04-25 15:38:07:387"}
+{"level":"info","message":"Redis client connected successfully to Upstash Redis","timestamp":"2025-04-25 15:38:07:387"}
+{"level":"info","message":"Image queue worker process connected to Redis.","timestamp":"2025-04-25 15:38:07:387"}
+{"level":"info","message":"Recipe queue worker process connected to Redis.","timestamp":"2025-04-25 15:38:07:387"}
+{"level":"info","message":"Image queue worker process connected to Redis.","timestamp":"2025-04-25 15:38:07:387"}
+{"level":"info","message":"[Worker] Chat queue is drained - all jobs processed.","timestamp":"2025-04-25 15:38:07:387"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-25 15:38:08:388"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-25 15:38:08:388"}
+{"level":"info","message":"Supabase client initialized successfully.","timestamp":"2025-04-25 15:38:07:387"}
+{"level":"info","message":"Redis client connected successfully to Upstash Redis","timestamp":"2025-04-25 15:38:10:3810"}
+{"level":"info","message":"[Worker] Shutting down recipe worker process...","timestamp":"2025-04-25 15:38:36:3836"}
+{"level":"info","message":"[Worker] Shutting down image worker process...","timestamp":"2025-04-25 15:38:36:3836"}
+{"level":"info","message":"[Worker] Shutting down chat worker process...","timestamp":"2025-04-25 15:38:36:3836"}
+{"level":"warn","message":"Image worker is closing connection to Redis.","timestamp":"2025-04-25 15:38:36:3836"}
+{"level":"warn","message":"[Worker] Chat worker is closing connection to Redis.","timestamp":"2025-04-25 15:38:36:3836"}
+{"level":"warn","message":"Image worker has closed connection to Redis.","timestamp":"2025-04-25 15:38:36:3836"}
+{"level":"warn","message":"[Worker] Chat worker has closed connection to Redis.","timestamp":"2025-04-25 15:38:36:3836"}
+{"level":"info","message":"[Worker] Recipe worker and imageQueueEvents connection closed.","timestamp":"2025-04-25 15:38:36:3836"}
+{"level":"info","message":"Chat worker process started...","timestamp":"2025-04-25 16:40:12:4012"}
+{"level":"info","message":"Supabase client initialized successfully.","timestamp":"2025-04-25 16:40:12:4012"}
+{"level":"info","message":"Image worker process started...","timestamp":"2025-04-25 16:40:13:4013"}
+{"level":"info","message":"Redis client connected successfully to Upstash Redis","timestamp":"2025-04-25 16:40:13:4013"}
+{"level":"info","message":"Supabase client initialized successfully.","timestamp":"2025-04-25 16:40:12:4012"}
+{"level":"info","message":"Recipe worker process started...","timestamp":"2025-04-25 16:40:13:4013"}
+{"level":"info","message":"Redis client connected successfully to Upstash Redis","timestamp":"2025-04-25 16:40:13:4013"}
+{"level":"info","message":"Redis client connected successfully to Upstash Redis","timestamp":"2025-04-25 16:40:13:4013"}
+{"level":"info","message":"[Worker] Chat queue worker process connected to Redis.","timestamp":"2025-04-25 16:40:13:4013"}
+{"level":"info","message":"Image queue worker process connected to Redis.","timestamp":"2025-04-25 16:40:13:4013"}
+{"level":"info","message":"Recipe queue worker process connected to Redis.","timestamp":"2025-04-25 16:40:14:4014"}
+{"level":"info","message":"Image queue worker process connected to Redis.","timestamp":"2025-04-25 16:40:14:4014"}
+{"level":"info","message":"[Worker] Chat queue is drained - all jobs processed.","timestamp":"2025-04-25 16:40:14:4014"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-25 16:40:14:4014"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-25 16:40:14:4014"}
+{"level":"info","message":"Supabase client initialized successfully.","timestamp":"2025-04-25 16:40:13:4013"}
+{"level":"info","message":"Redis client connected successfully to Upstash Redis","timestamp":"2025-04-25 16:40:17:4017"}
+{"level":"info","message":"Recipe queue worker process connected to Redis.","timestamp":"2025-04-25 16:40:17:4017"}
+{"level":"info","message":"Image queue worker process connected to Redis.","timestamp":"2025-04-25 16:40:17:4017"}
+{"level":"info","message":"[Worker] Chat queue worker process connected to Redis.","timestamp":"2025-04-25 16:40:17:4017"}
+{"level":"info","message":"[Worker] Shutting down image worker process...","timestamp":"2025-04-25 16:40:22:4022"}
+{"level":"info","message":"[Worker] Shutting down recipe worker process...","timestamp":"2025-04-25 16:40:22:4022"}
+{"level":"info","message":"[Worker] Shutting down chat worker process...","timestamp":"2025-04-25 16:40:22:4022"}
+{"level":"warn","message":"Image worker is closing connection to Redis.","timestamp":"2025-04-25 16:40:22:4022"}
+{"level":"warn","message":"[Worker] Chat worker is closing connection to Redis.","timestamp":"2025-04-25 16:40:22:4022"}
+{"level":"warn","message":"Image worker has closed connection to Redis.","timestamp":"2025-04-25 16:40:22:4022"}
+{"level":"warn","message":"[Worker] Chat worker has closed connection to Redis.","timestamp":"2025-04-25 16:40:22:4022"}
+{"level":"info","message":"[Worker] Recipe worker and imageQueueEvents connection closed.","timestamp":"2025-04-25 16:40:22:4022"}
+{"level":"info","message":"Chat worker process started...","timestamp":"2025-04-25 16:42:56:4256"}
+{"level":"info","message":"Redis client connected successfully to Upstash Redis","timestamp":"2025-04-25 16:42:57:4257"}
+{"level":"info","message":"Supabase client initialized successfully.","timestamp":"2025-04-25 16:42:57:4257"}
+{"level":"info","message":"Image worker process started...","timestamp":"2025-04-25 16:42:57:4257"}
+{"level":"info","message":"[Worker] Chat queue worker process connected to Redis.","timestamp":"2025-04-25 16:42:57:4257"}
+{"level":"info","message":"Supabase client initialized successfully.","timestamp":"2025-04-25 16:42:57:4257"}
+{"level":"info","message":"Recipe worker process started...","timestamp":"2025-04-25 16:42:58:4258"}
+{"level":"info","message":"Redis client connected successfully to Upstash Redis","timestamp":"2025-04-25 16:42:58:4258"}
+{"level":"info","message":"Redis client connected successfully to Upstash Redis","timestamp":"2025-04-25 16:42:58:4258"}
+{"level":"info","message":"[Worker] Chat queue is drained - all jobs processed.","timestamp":"2025-04-25 16:42:58:4258"}
+{"level":"info","message":"Image queue worker process connected to Redis.","timestamp":"2025-04-25 16:42:58:4258"}
+{"level":"info","message":"Image queue worker process connected to Redis.","timestamp":"2025-04-25 16:42:58:4258"}
+{"level":"info","message":"Recipe queue worker process connected to Redis.","timestamp":"2025-04-25 16:42:58:4258"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-25 16:42:59:4259"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-25 16:43:00:430"}
+{"level":"info","message":"Supabase client initialized successfully.","timestamp":"2025-04-25 16:42:58:4258"}
+{"level":"info","message":"Redis client connected successfully to Upstash Redis","timestamp":"2025-04-25 16:43:01:431"}
+{"level":"info","message":"[Worker] Shutting down recipe worker process...","timestamp":"2025-04-25 16:43:57:4357"}
+{"level":"info","message":"[Worker] Shutting down image worker process...","timestamp":"2025-04-25 16:43:57:4357"}
+{"level":"info","message":"[Worker] Shutting down chat worker process...","timestamp":"2025-04-25 16:43:57:4357"}
+{"level":"warn","message":"Image worker is closing connection to Redis.","timestamp":"2025-04-25 16:43:57:4357"}
+{"level":"warn","message":"[Worker] Chat worker is closing connection to Redis.","timestamp":"2025-04-25 16:43:57:4357"}
+{"level":"info","message":"[Worker] Shutting down chat worker process...","timestamp":"2025-04-25 16:43:57:4357"}
+{"level":"info","message":"[Worker] Shutting down recipe worker process...","timestamp":"2025-04-25 16:43:57:4357"}
+{"level":"info","message":"[Worker] Shutting down image worker process...","timestamp":"2025-04-25 16:43:57:4357"}
+{"level":"info","message":"[Worker] Shutting down image worker process...","timestamp":"2025-04-25 16:43:57:4357"}
+{"level":"info","message":"[Worker] Shutting down chat worker process...","timestamp":"2025-04-25 16:43:57:4357"}
+{"level":"info","message":"[Worker] Shutting down recipe worker process...","timestamp":"2025-04-25 16:43:57:4357"}
+{"level":"warn","message":"[Worker] Chat worker has closed connection to Redis.","timestamp":"2025-04-25 16:43:57:4357"}
+{"level":"warn","message":"Image worker has closed connection to Redis.","timestamp":"2025-04-25 16:43:57:4357"}
+{"level":"info","message":"[Worker] Recipe worker and imageQueueEvents connection closed.","timestamp":"2025-04-25 16:43:57:4357"}
