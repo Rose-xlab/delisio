@@ -28,7 +28,6 @@
     "@sentry/profiling-node": "^9.14.0",
     "@sentry/tracing": "^7.120.3",
     "@supabase/supabase-js": "^2.49.4",
-    "@types/stripe": "^8.0.417",
     "@types/uuid": "^10.0.0",
     "axios": "^1.8.4",
     "bullmq": "^5.49.1",

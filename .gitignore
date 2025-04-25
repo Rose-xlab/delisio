@@ -1,1 +1,22 @@
 node_modules
+#dist
+dist/
+build/
+
+
+# node.js
+#
+node_modules/
+
+# yarn folder
+#.yarn/*
+
+npm-debug.log
+yarn-error.log
+
+# testing
+/coverage
+
+#
+.env
+
