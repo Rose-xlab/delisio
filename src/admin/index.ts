@@ -37,7 +37,7 @@ app.use('/admin', adminRoutes);
 app.use(errorHandler);
 
 // Start server
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.ADMIN_PORT || 3003;
 app.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`);
 });

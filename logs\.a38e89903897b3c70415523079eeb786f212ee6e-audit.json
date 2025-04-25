@@ -51,9 +51,9 @@
             "hash": "faffe01d01992de3ea7ef2c01c90c82200bbbf1cb3f708a9061467f998fd7293"
         },
         {
-            "date": 1745588578359,
+            "date": 1745593297558,
             "name": "logs/error-2025-04-25.log",
-            "hash": "e12456ab9703ffe1076156f61984a3692db5e1be86cb96c5302d58bdbbb513e2"
+            "hash": "28d34230c80b5f1e67f81d45087620a0dccda6eb64ca07e43b596f32c90d1db0"
         }
     ],
     "hashType": "sha256"
