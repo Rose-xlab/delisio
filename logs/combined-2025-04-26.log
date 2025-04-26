@@ -873,3 +873,501 @@
 {"level":"info","message":"Recipe worker process started...","timestamp":"2025-04-26 13:12:13:1213"}
 {"level":"info","message":"Redis client connected successfully to Upstash Redis","timestamp":"2025-04-26 13:12:13:1213"}
 {"level":"info","message":"Redis client connected successfully to Upstash Redis","timestamp":"2025-04-26 13:12:13:1213"}
+{"level":"info","message":"Image queue worker process connected to Redis.","timestamp":"2025-04-26 13:12:13:1213"}
+{"level":"info","message":"Image queue worker process connected to Redis.","timestamp":"2025-04-26 13:12:13:1213"}
+{"level":"info","message":"Recipe queue worker process connected to Redis.","timestamp":"2025-04-26 13:12:13:1213"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-26 13:12:13:1213"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-26 13:12:13:1213"}
+{"level":"info","message":"Supabase client initialized successfully.","timestamp":"2025-04-26 13:12:13:1213"}
+{"level":"info","message":"Redis client connected successfully to Upstash Redis","timestamp":"2025-04-26 13:12:18:1218"}
+{"level":"info","message":"Image queue worker process connected to Redis.","timestamp":"2025-04-26 13:12:18:1218"}
+{"level":"info","message":"Recipe queue worker process connected to Redis.","timestamp":"2025-04-26 13:12:18:1218"}
+{"level":"info","message":"[Worker] Chat queue worker process connected to Redis.","timestamp":"2025-04-26 13:12:18:1218"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-26 13:12:18:1218"}
+{"level":"info","message":"[Worker] Chat queue is drained - all jobs processed.","timestamp":"2025-04-26 13:12:18:1218"}
+{"level":"info","message":"Workspaceing popular recipes with limit: 5","timestamp":"2025-04-26 13:13:33:1333"}
+{"level":"info","message":"Fetching all recipe categories with counts","timestamp":"2025-04-26 13:13:37:1337"}
+{"level":"info","message":"Workspaceing discover recipes with filters: category=undefined, tags=undefined, sort=recent, limit=20, offset=0, query=undefined","timestamp":"2025-04-26 13:13:41:1341"}
+{"conversationId":"9416d9ca-a80c-4160-a71c-9831258a20ce","level":"info","message":"Chat message received","timestamp":"2025-04-26 13:15:01:151"}
+{"conversationId":"9416d9ca-a80c-4160-a71c-9831258a20ce","level":"info","message":"User message saved","messageId":"83c75cf0-e9c3-4858-a39d-9f500933f279","timestamp":"2025-04-26 13:15:01:151"}
+{"conversationId":"9416d9ca-a80c-4160-a71c-9831258a20ce","jobId":"116","level":"info","message":"Chat message job added","timestamp":"2025-04-26 13:15:01:151"}
+{"level":"info","message":"[Worker] Chat queue is drained - all jobs processed.","timestamp":"2025-04-26 13:15:02:152"}
+{"level":"info","message":"[Worker] Processor function ENTERED for job: 116","timestamp":"2025-04-26 13:15:02:152"}
+{"conversationId":"9416d9ca-a80c-4160-a71c-9831258a20ce","jobId":"116","level":"info","message":"[Worker] Processing chat message job STARTED","timestamp":"2025-04-26 13:15:02:152"}
+{"jobId":"116","level":"info","message":"[Worker] Calling generateChatResponse...","timestamp":"2025-04-26 13:15:02:152"}
+{"jobId":"116","level":"info","message":"[Worker] generateChatResponse returned. Duration: 3673ms","timestamp":"2025-04-26 13:15:06:156"}
+{"jobId":"116","level":"info","message":"[Worker] Parsing response...","timestamp":"2025-04-26 13:15:06:156"}
+{"jobId":"116","level":"info","message":"[Worker] Response parsed successfully.","timestamp":"2025-04-26 13:15:06:156"}
+{"jobId":"116","level":"info","message":"[Worker] Processing chat message job COMPLETED SUCCESSFULLY. Total Duration: 4211ms","timestamp":"2025-04-26 13:15:06:156"}
+{"jobId":"116","level":"info","message":"[Worker] Chat job completed successfully event received","timestamp":"2025-04-26 13:15:06:156"}
+{"conversationId":"9416d9ca-a80c-4160-a71c-9831258a20ce","level":"info","message":"Assistant response saved and conversation updated","timestamp":"2025-04-26 13:15:07:157"}
+{"jobId":"116","level":"info","message":"Chat job completed, response sent","timestamp":"2025-04-26 13:15:07:157"}
+{"conversationId":"9416d9ca-a80c-4160-a71c-9831258a20ce","level":"info","message":"Chat message received","timestamp":"2025-04-26 13:15:15:1515"}
+{"conversationId":"9416d9ca-a80c-4160-a71c-9831258a20ce","level":"info","message":"User message saved","messageId":"b0bb1c95-90a1-4d46-8ddf-ae511f6f189e","timestamp":"2025-04-26 13:15:15:1515"}
+{"conversationId":"9416d9ca-a80c-4160-a71c-9831258a20ce","jobId":"117","level":"info","message":"Chat message job added","timestamp":"2025-04-26 13:15:15:1515"}
+{"level":"info","message":"[Worker] Chat queue is drained - all jobs processed.","timestamp":"2025-04-26 13:15:16:1516"}
+{"level":"info","message":"[Worker] Processor function ENTERED for job: 117","timestamp":"2025-04-26 13:15:16:1516"}
+{"conversationId":"9416d9ca-a80c-4160-a71c-9831258a20ce","jobId":"117","level":"info","message":"[Worker] Processing chat message job STARTED","timestamp":"2025-04-26 13:15:16:1516"}
+{"jobId":"117","level":"info","message":"[Worker] Calling generateChatResponse...","timestamp":"2025-04-26 13:15:16:1516"}
+{"jobId":"117","level":"info","message":"[Worker] generateChatResponse returned. Duration: 3732ms","timestamp":"2025-04-26 13:15:20:1520"}
+{"jobId":"117","level":"info","message":"[Worker] Parsing response...","timestamp":"2025-04-26 13:15:20:1520"}
+{"jobId":"117","level":"info","message":"[Worker] Response parsed successfully.","timestamp":"2025-04-26 13:15:20:1520"}
+{"jobId":"117","level":"info","message":"[Worker] Processing chat message job COMPLETED SUCCESSFULLY. Total Duration: 4255ms","timestamp":"2025-04-26 13:15:20:1520"}
+{"jobId":"117","level":"info","message":"[Worker] Chat job completed successfully event received","timestamp":"2025-04-26 13:15:20:1520"}
+{"conversationId":"9416d9ca-a80c-4160-a71c-9831258a20ce","level":"info","message":"Assistant response saved and conversation updated","timestamp":"2025-04-26 13:15:21:1521"}
+{"jobId":"117","level":"info","message":"Chat job completed, response sent","timestamp":"2025-04-26 13:15:21:1521"}
+{"level":"info","message":"Queue system is active and connected.","timestamp":"2025-04-26 13:15:34:1534"}
+{"level":"info","message":"Recipe generation requested via Queue for query: Classic Hot Black Tea, requestId: 4bcf0e23-2545-4ce5-ab73-954c23ef37ab","timestamp":"2025-04-26 13:15:34:1534"}
+{"level":"info","message":"Recipe generation job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab added to queue","timestamp":"2025-04-26 13:15:35:1535"}
+{"level":"info","message":"[Worker] Recipe Processor function ENTERED for job: 4bcf0e23-2545-4ce5-ab73-954c23ef37ab","timestamp":"2025-04-26 13:15:35:1535"}
+{"globalRecipeId":"e210779f-c4ab-4b4f-adaf-ef6f735ddbe8","jobId":"4bcf0e23-2545-4ce5-ab73-954c23ef37ab","level":"info","message":"Processing recipe job","requestId":"4bcf0e23-2545-4ce5-ab73-954c23ef37ab","timestamp":"2025-04-26 13:15:35:1535"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Generating content...","timestamp":"2025-04-26 13:15:35:1535"}
+{"level":"info","message":"Checking status for recipe generation: 4bcf0e23-2545-4ce5-ab73-954c23ef37ab","timestamp":"2025-04-26 13:15:40:1540"}
+{"level":"info","message":"Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab is in state: active, progress: 10%","timestamp":"2025-04-26 13:15:40:1540"}
+{"level":"info","message":"Checking status for recipe generation: 4bcf0e23-2545-4ce5-ab73-954c23ef37ab","timestamp":"2025-04-26 13:15:45:1545"}
+{"level":"info","message":"Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab is in state: active, progress: 10%","timestamp":"2025-04-26 13:15:45:1545"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Parsing content...","timestamp":"2025-04-26 13:15:48:1548"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Saving initial recipe data (for progressive display)...","timestamp":"2025-04-26 13:15:49:1549"}
+{"level":"info","message":"Initializing partial recipe cache for 4bcf0e23-2545-4ce5-ab73-954c23ef37ab","timestamp":"2025-04-26 13:15:49:1549"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Generating STEP images (6 steps)...","timestamp":"2025-04-26 13:15:49:1549"}
+{"level":"info","message":"Successfully updated partial recipe cache for 4bcf0e23-2545-4ce5-ab73-954c23ef37ab, progress: 40%","timestamp":"2025-04-26 13:15:49:1549"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Queueing realistic image job for step 1...","timestamp":"2025-04-26 13:15:49:1549"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Queued realistic image generation job 293","timestamp":"2025-04-26 13:15:49:1549"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Queueing realistic image job for step 2...","timestamp":"2025-04-26 13:15:50:1550"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Queued realistic image generation job 294","timestamp":"2025-04-26 13:15:50:1550"}
+{"level":"info","message":"[Worker] Image Processor function ENTERED for job: 294","timestamp":"2025-04-26 13:15:50:1550"}
+{"level":"info","message":"Checking status for recipe generation: 4bcf0e23-2545-4ce5-ab73-954c23ef37ab","timestamp":"2025-04-26 13:15:50:1550"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Queueing realistic image job for step 3...","timestamp":"2025-04-26 13:15:50:1550"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-26 13:15:50:1550"}
+{"jobId":"294","level":"info","message":"Processing image job","recipeId":"e210779f-c4ab-4b4f-adaf-ef6f735ddbe8","stepIndex":1,"timestamp":"2025-04-26 13:15:50:1550"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Queued realistic image generation job 295","timestamp":"2025-04-26 13:15:50:1550"}
+{"level":"info","message":"[Job 294] Generating image...","prompt":"Step 2 for recipe 'Classic Hot Black Tea': Adding tea to cup. Realistic food photography showing the cooking process.","timestamp":"2025-04-26 13:15:50:1550"}
+{"level":"info","message":"Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab is in state: active, progress: 58%","timestamp":"2025-04-26 13:15:50:1550"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Queueing realistic image job for step 4...","timestamp":"2025-04-26 13:15:51:1551"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-26 13:15:51:1551"}
+{"level":"info","message":"[Worker] Image Processor function ENTERED for job: 295","timestamp":"2025-04-26 13:15:51:1551"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Queued realistic image generation job 296","timestamp":"2025-04-26 13:15:51:1551"}
+{"jobId":"295","level":"info","message":"Processing image job","recipeId":"e210779f-c4ab-4b4f-adaf-ef6f735ddbe8","stepIndex":2,"timestamp":"2025-04-26 13:15:51:1551"}
+{"level":"info","message":"[Job 295] Generating image...","prompt":"Step 3 for recipe 'Classic Hot Black Tea': Pouring water over tea. Realistic food photography showing the cooking process.","timestamp":"2025-04-26 13:15:51:1551"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Queueing realistic image job for step 5...","timestamp":"2025-04-26 13:15:51:1551"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Queued realistic image generation job 297","timestamp":"2025-04-26 13:15:51:1551"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Queueing realistic image job for step 6...","timestamp":"2025-04-26 13:15:52:1552"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Queued realistic image generation job 298","timestamp":"2025-04-26 13:15:52:1552"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Waiting for 6 image jobs to complete...","timestamp":"2025-04-26 13:15:52:1552"}
+{"level":"info","message":"[Worker] Image Processor function ENTERED for job: 298","timestamp":"2025-04-26 13:15:52:1552"}
+{"jobId":"298","level":"info","message":"Processing image job","recipeId":"e210779f-c4ab-4b4f-adaf-ef6f735ddbe8","stepIndex":5,"timestamp":"2025-04-26 13:15:52:1552"}
+{"level":"info","message":"[Job 298] Generating image...","prompt":"Step 6 for recipe 'Classic Hot Black Tea': Adding condiments to tea. Realistic food photography showing the cooking process.","timestamp":"2025-04-26 13:15:52:1552"}
+{"level":"info","message":"Checking status for recipe generation: 4bcf0e23-2545-4ce5-ab73-954c23ef37ab","timestamp":"2025-04-26 13:15:55:1555"}
+{"level":"info","message":"Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab is in state: active, progress: 95%","timestamp":"2025-04-26 13:15:55:1555"}
+{"level":"info","message":"[Job 295] Downloading image...","timestamp":"2025-04-26 13:16:04:164"}
+{"level":"info","message":"[Job 294] Downloading image...","timestamp":"2025-04-26 13:16:07:167"}
+{"level":"info","message":"[Job 295] Uploading image...","timestamp":"2025-04-26 13:16:07:167"}
+{"level":"info","message":"Uploading image to Supabase Storage at path: public/steps/e210779f-c4ab-4b4f-adaf-ef6f735ddbe8/2.png in bucket: recipe-images","timestamp":"2025-04-26 13:16:07:167"}
+{"level":"info","message":"[Job 298] Downloading image...","timestamp":"2025-04-26 13:16:07:167"}
+{"level":"info","message":"Image successfully uploaded. Public URL: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/e210779f-c4ab-4b4f-adaf-ef6f735ddbe8/2.png","timestamp":"2025-04-26 13:16:07:167"}
+{"level":"info","message":"[Job 295] Image processing completed successfully.","timestamp":"2025-04-26 13:16:07:167"}
+{"level":"info","message":"[Job 298] Uploading image...","timestamp":"2025-04-26 13:16:07:167"}
+{"level":"info","message":"Uploading image to Supabase Storage at path: public/steps/e210779f-c4ab-4b4f-adaf-ef6f735ddbe8/5.png in bucket: recipe-images","timestamp":"2025-04-26 13:16:07:167"}
+{"level":"info","message":"Merging partial recipe cache for 4bcf0e23-2545-4ce5-ab73-954c23ef37ab","timestamp":"2025-04-26 13:16:08:168"}
+{"level":"info","message":"Updated step 2 image URL for 4bcf0e23-2545-4ce5-ab73-954c23ef37ab","timestamp":"2025-04-26 13:16:08:168"}
+{"imageUrl":"https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/e210779f-c4ab-4b4f-adaf-ef6f735ddbe8/2.png","jobId":"295","level":"info","message":"Image job completed successfully","timestamp":"2025-04-26 13:16:08:168"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-26 13:16:08:168"}
+{"level":"info","message":"Image successfully uploaded. Public URL: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/e210779f-c4ab-4b4f-adaf-ef6f735ddbe8/5.png","timestamp":"2025-04-26 13:16:08:168"}
+{"level":"info","message":"Successfully updated partial recipe cache for 4bcf0e23-2545-4ce5-ab73-954c23ef37ab, progress: 50%","timestamp":"2025-04-26 13:16:08:168"}
+{"level":"info","message":"[Job 295] Updated partial recipe step 2 with image URL","timestamp":"2025-04-26 13:16:08:168"}
+{"level":"info","message":"[Job 298] Image processing completed successfully.","timestamp":"2025-04-26 13:16:08:168"}
+{"level":"info","message":"Merging partial recipe cache for 4bcf0e23-2545-4ce5-ab73-954c23ef37ab","timestamp":"2025-04-26 13:16:08:168"}
+{"level":"info","message":"Updated step 5 image URL for 4bcf0e23-2545-4ce5-ab73-954c23ef37ab","timestamp":"2025-04-26 13:16:08:168"}
+{"imageUrl":"https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/e210779f-c4ab-4b4f-adaf-ef6f735ddbe8/5.png","jobId":"298","level":"info","message":"Image job completed successfully","timestamp":"2025-04-26 13:16:08:168"}
+{"level":"info","message":"Successfully updated partial recipe cache for 4bcf0e23-2545-4ce5-ab73-954c23ef37ab, progress: 60%","timestamp":"2025-04-26 13:16:08:168"}
+{"level":"info","message":"[Job 298] Updated partial recipe step 5 with image URL","timestamp":"2025-04-26 13:16:08:168"}
+{"level":"info","message":"[Job 294] Uploading image...","timestamp":"2025-04-26 13:16:09:169"}
+{"level":"info","message":"Uploading image to Supabase Storage at path: public/steps/e210779f-c4ab-4b4f-adaf-ef6f735ddbe8/1.png in bucket: recipe-images","timestamp":"2025-04-26 13:16:09:169"}
+{"level":"info","message":"Image successfully uploaded. Public URL: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/e210779f-c4ab-4b4f-adaf-ef6f735ddbe8/1.png","timestamp":"2025-04-26 13:16:09:169"}
+{"level":"info","message":"[Job 294] Image processing completed successfully.","timestamp":"2025-04-26 13:16:10:1610"}
+{"level":"info","message":"Merging partial recipe cache for 4bcf0e23-2545-4ce5-ab73-954c23ef37ab","timestamp":"2025-04-26 13:16:10:1610"}
+{"level":"info","message":"Updated step 1 image URL for 4bcf0e23-2545-4ce5-ab73-954c23ef37ab","timestamp":"2025-04-26 13:16:10:1610"}
+{"imageUrl":"https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/e210779f-c4ab-4b4f-adaf-ef6f735ddbe8/1.png","jobId":"294","level":"info","message":"Image job completed successfully","timestamp":"2025-04-26 13:16:10:1610"}
+{"level":"info","message":"Successfully updated partial recipe cache for 4bcf0e23-2545-4ce5-ab73-954c23ef37ab, progress: 70%","timestamp":"2025-04-26 13:16:10:1610"}
+{"error":"OpenAI API Error: 401 Incorrect API key provided: sk-proj-********************************************************************************************************************************************************diUA. You can find your API key at https://platform.openai.com/account/api-keys.","level":"error","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Image job step 0 completed with error:","timestamp":"2025-04-26 13:16:10:1610"}
+{"level":"info","message":"[Job 294] Updated partial recipe step 1 with image URL","timestamp":"2025-04-26 13:16:10:1610"}
+{"level":"info","message":"Populated image_url for step 1: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/e210779f-c4ab-4b4f-adaf-ef6f735ddbe8/1.png","timestamp":"2025-04-26 13:16:10:1610"}
+{"level":"info","message":"Populated image_url for step 2: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/e210779f-c4ab-4b4f-adaf-ef6f735ddbe8/2.png","timestamp":"2025-04-26 13:16:10:1610"}
+{"error":"OpenAI API Error: 401 Incorrect API key provided: sk-proj-********************************************************************************************************************************************************diUA. You can find your API key at https://platform.openai.com/account/api-keys.","level":"error","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Image job step 3 completed with error:","timestamp":"2025-04-26 13:16:10:1610"}
+{"error":"OpenAI API Error: 401 Incorrect API key provided: sk-proj-********************************************************************************************************************************************************diUA. You can find your API key at https://platform.openai.com/account/api-keys.","level":"error","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Image job step 4 completed with error:","timestamp":"2025-04-26 13:16:10:1610"}
+{"level":"info","message":"Populated image_url for step 5: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/e210779f-c4ab-4b4f-adaf-ef6f735ddbe8/5.png","timestamp":"2025-04-26 13:16:10:1610"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Using image from last step (5) as thumbnail: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/e210779f-c4ab-4b4f-adaf-ef6f735ddbe8/5.png","timestamp":"2025-04-26 13:16:10:1610"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Attempting to save GLOBAL recipe copy e210779f-c4ab-4b4f-adaf-ef6f735ddbe8...","timestamp":"2025-04-26 13:16:10:1610"}
+{"level":"info","message":"Saving recipe ID e210779f-c4ab-4b4f-adaf-ef6f735ddbe8 for user Global","timestamp":"2025-04-26 13:16:10:1610"}
+{"level":"info","message":"Recipe ID e210779f-c4ab-4b4f-adaf-ef6f735ddbe8 saved/upserted successfully.","timestamp":"2025-04-26 13:16:10:1610"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] GLOBAL recipe copy e210779f-c4ab-4b4f-adaf-ef6f735ddbe8 saved successfully.","timestamp":"2025-04-26 13:16:10:1610"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] User detected (d46a5b79-61e3-4e5b-8978-6f3b2f48efcc). Generating unique ID for user's recipe copy: c0e91cb7-7c6f-4b42-ac49-0bfab42947fd","timestamp":"2025-04-26 13:16:10:1610"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Attempting to save user-specific recipe copy c0e91cb7-7c6f-4b42-ac49-0bfab42947fd for user d46a5b79-61e3-4e5b-8978-6f3b2f48efcc...","timestamp":"2025-04-26 13:16:10:1610"}
+{"level":"info","message":"Saving recipe ID c0e91cb7-7c6f-4b42-ac49-0bfab42947fd for user d46a5b79-61e3-4e5b-8978-6f3b2f48efcc","timestamp":"2025-04-26 13:16:10:1610"}
+{"level":"info","message":"Recipe ID c0e91cb7-7c6f-4b42-ac49-0bfab42947fd saved/upserted successfully.","timestamp":"2025-04-26 13:16:11:1611"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] User-specific recipe copy c0e91cb7-7c6f-4b42-ac49-0bfab42947fd saved successfully for user d46a5b79-61e3-4e5b-8978-6f3b2f48efcc.","timestamp":"2025-04-26 13:16:11:1611"}
+{"level":"info","message":"[Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab] Recipe generation process completed successfully: \"Classic Hot Black Tea\"","timestamp":"2025-04-26 13:16:11:1611"}
+{"jobId":"4bcf0e23-2545-4ce5-ab73-954c23ef37ab","level":"info","message":"Recipe job completed successfully: \"Classic Hot Black Tea\"","requestId":"4bcf0e23-2545-4ce5-ab73-954c23ef37ab","timestamp":"2025-04-26 13:16:11:1611"}
+{"level":"info","message":"Checking status for recipe generation: 4bcf0e23-2545-4ce5-ab73-954c23ef37ab","timestamp":"2025-04-26 13:16:30:1630"}
+{"level":"info","message":"Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab is in state: completed, progress: 100%","timestamp":"2025-04-26 13:16:30:1630"}
+{"level":"info","message":"Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab completed. Verifying final data from DB for recipe ID: c0e91cb7-7c6f-4b42-ac49-0bfab42947fd","timestamp":"2025-04-26 13:16:30:1630"}
+{"level":"info","message":"Successfully fetched final recipe c0e91cb7-7c6f-4b42-ac49-0bfab42947fd from DB for completed job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab","timestamp":"2025-04-26 13:16:31:1631"}
+{"level":"info","message":"Job 4bcf0e23-2545-4ce5-ab73-954c23ef37ab completed successfully.","timestamp":"2025-04-26 13:16:31:1631"}
+{"level":"info","message":"Recipe 4bcf0e23-2545-4ce5-ab73-954c23ef37ab has 6 steps with images:","timestamp":"2025-04-26 13:16:31:1631"}
+{"level":"info","message":"Step 0 image_url: NOT SET","timestamp":"2025-04-26 13:16:31:1631"}
+{"level":"info","message":"Step 1 image_url: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/e210779f-c4ab-4b4f-adaf-ef6f735ddbe8/1.png","timestamp":"2025-04-26 13:16:31:1631"}
+{"level":"info","message":"Step 2 image_url: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/e210779f-c4ab-4b4f-adaf-ef6f735ddbe8/2.png","timestamp":"2025-04-26 13:16:31:1631"}
+{"level":"info","message":"Step 3 image_url: NOT SET","timestamp":"2025-04-26 13:16:31:1631"}
+{"level":"info","message":"Step 4 image_url: NOT SET","timestamp":"2025-04-26 13:16:31:1631"}
+{"level":"info","message":"Step 5 image_url: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/e210779f-c4ab-4b4f-adaf-ef6f735ddbe8/5.png","timestamp":"2025-04-26 13:16:31:1631"}
+{"level":"info","message":"Cleaned up Redis cache for requestId: 4bcf0e23-2545-4ce5-ab73-954c23ef37ab","timestamp":"2025-04-26 13:16:31:1631"}
+{"level":"info","message":"Workspaceing popular recipes with limit: 5","timestamp":"2025-04-26 13:18:45:1845"}
+{"level":"info","message":"Fetching all recipe categories with counts","timestamp":"2025-04-26 13:18:46:1846"}
+{"level":"info","message":"Workspaceing discover recipes with filters: category=undefined, tags=undefined, sort=recent, limit=20, offset=0, query=undefined","timestamp":"2025-04-26 13:18:48:1848"}
+{"conversationId":"8d2bea7e-8af9-4a9b-a601-d213d44bf7f2","level":"info","message":"Chat message received","timestamp":"2025-04-26 13:19:52:1952"}
+{"conversationId":"8d2bea7e-8af9-4a9b-a601-d213d44bf7f2","level":"info","message":"User message saved","messageId":"7d0eeae3-efe4-4543-b855-fbed1d59a5c8","timestamp":"2025-04-26 13:19:52:1952"}
+{"conversationId":"8d2bea7e-8af9-4a9b-a601-d213d44bf7f2","jobId":"118","level":"info","message":"Chat message job added","timestamp":"2025-04-26 13:19:52:1952"}
+{"level":"info","message":"[Worker] Chat queue is drained - all jobs processed.","timestamp":"2025-04-26 13:19:53:1953"}
+{"level":"info","message":"[Worker] Processor function ENTERED for job: 118","timestamp":"2025-04-26 13:19:53:1953"}
+{"conversationId":"8d2bea7e-8af9-4a9b-a601-d213d44bf7f2","jobId":"118","level":"info","message":"[Worker] Processing chat message job STARTED","timestamp":"2025-04-26 13:19:53:1953"}
+{"jobId":"118","level":"info","message":"[Worker] Calling generateChatResponse...","timestamp":"2025-04-26 13:19:53:1953"}
+{"jobId":"118","level":"info","message":"[Worker] generateChatResponse returned. Duration: 3092ms","timestamp":"2025-04-26 13:19:56:1956"}
+{"jobId":"118","level":"info","message":"[Worker] Parsing response...","timestamp":"2025-04-26 13:19:57:1957"}
+{"jobId":"118","level":"info","message":"[Worker] Response parsed successfully.","timestamp":"2025-04-26 13:19:57:1957"}
+{"jobId":"118","level":"info","message":"[Worker] Processing chat message job COMPLETED SUCCESSFULLY. Total Duration: 3880ms","timestamp":"2025-04-26 13:19:57:1957"}
+{"jobId":"118","level":"info","message":"[Worker] Chat job completed successfully event received","timestamp":"2025-04-26 13:19:57:1957"}
+{"conversationId":"8d2bea7e-8af9-4a9b-a601-d213d44bf7f2","level":"info","message":"Assistant response saved and conversation updated","timestamp":"2025-04-26 13:19:58:1958"}
+{"jobId":"118","level":"info","message":"Chat job completed, response sent","timestamp":"2025-04-26 13:19:58:1958"}
+{"conversationId":"8d2bea7e-8af9-4a9b-a601-d213d44bf7f2","level":"info","message":"Chat message received","timestamp":"2025-04-26 13:20:09:209"}
+{"conversationId":"8d2bea7e-8af9-4a9b-a601-d213d44bf7f2","level":"info","message":"User message saved","messageId":"5240995e-b573-4c6f-8b6f-596c8b165c45","timestamp":"2025-04-26 13:20:09:209"}
+{"conversationId":"8d2bea7e-8af9-4a9b-a601-d213d44bf7f2","jobId":"119","level":"info","message":"Chat message job added","timestamp":"2025-04-26 13:20:09:209"}
+{"level":"info","message":"[Worker] Processor function ENTERED for job: 119","timestamp":"2025-04-26 13:20:09:209"}
+{"conversationId":"8d2bea7e-8af9-4a9b-a601-d213d44bf7f2","jobId":"119","level":"info","message":"[Worker] Processing chat message job STARTED","timestamp":"2025-04-26 13:20:09:209"}
+{"level":"info","message":"[Worker] Chat queue is drained - all jobs processed.","timestamp":"2025-04-26 13:20:09:209"}
+{"jobId":"119","level":"info","message":"[Worker] Calling generateChatResponse...","timestamp":"2025-04-26 13:20:09:209"}
+{"jobId":"119","level":"info","message":"[Worker] generateChatResponse returned. Duration: 3711ms","timestamp":"2025-04-26 13:20:13:2013"}
+{"jobId":"119","level":"info","message":"[Worker] Parsing response...","timestamp":"2025-04-26 13:20:13:2013"}
+{"jobId":"119","level":"info","message":"[Worker] Response parsed successfully.","timestamp":"2025-04-26 13:20:13:2013"}
+{"jobId":"119","level":"info","message":"[Worker] Processing chat message job COMPLETED SUCCESSFULLY. Total Duration: 4233ms","timestamp":"2025-04-26 13:20:13:2013"}
+{"jobId":"119","level":"info","message":"[Worker] Chat job completed successfully event received","timestamp":"2025-04-26 13:20:14:2014"}
+{"conversationId":"8d2bea7e-8af9-4a9b-a601-d213d44bf7f2","level":"info","message":"Assistant response saved and conversation updated","timestamp":"2025-04-26 13:20:14:2014"}
+{"jobId":"119","level":"info","message":"Chat job completed, response sent","timestamp":"2025-04-26 13:20:14:2014"}
+{"level":"info","message":"Queue system is active and connected.","timestamp":"2025-04-26 13:20:19:2019"}
+{"level":"info","message":"Recipe generation requested via Queue for query: Spicy Pork Bulgogi, requestId: 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:20:19:2019"}
+{"level":"info","message":"Recipe generation job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe added to queue","timestamp":"2025-04-26 13:20:19:2019"}
+{"level":"info","message":"[Worker] Recipe Processor function ENTERED for job: 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:20:19:2019"}
+{"globalRecipeId":"4df364fb-3dde-42da-96c8-8c7d353c0335","jobId":"82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","level":"info","message":"Processing recipe job","requestId":"82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:20:19:2019"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Generating content...","timestamp":"2025-04-26 13:20:20:2020"}
+{"level":"info","message":"Checking status for recipe generation: 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:20:24:2024"}
+{"level":"info","message":"Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe is in state: active, progress: 10%","timestamp":"2025-04-26 13:20:25:2025"}
+{"level":"info","message":"Checking status for recipe generation: 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:20:29:2029"}
+{"level":"info","message":"Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe is in state: active, progress: 10%","timestamp":"2025-04-26 13:20:30:2030"}
+{"level":"info","message":"Checking status for recipe generation: 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:20:34:2034"}
+{"level":"info","message":"Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe is in state: active, progress: 10%","timestamp":"2025-04-26 13:20:35:2035"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Parsing content...","timestamp":"2025-04-26 13:20:37:2037"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Saving initial recipe data (for progressive display)...","timestamp":"2025-04-26 13:20:37:2037"}
+{"level":"info","message":"Initializing partial recipe cache for 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:20:37:2037"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Generating STEP images (5 steps)...","timestamp":"2025-04-26 13:20:37:2037"}
+{"level":"info","message":"Successfully updated partial recipe cache for 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe, progress: 40%","timestamp":"2025-04-26 13:20:38:2038"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Queueing realistic image job for step 1...","timestamp":"2025-04-26 13:20:38:2038"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Queued realistic image generation job 299","timestamp":"2025-04-26 13:20:38:2038"}
+{"level":"info","message":"[Worker] Image Processor function ENTERED for job: 299","timestamp":"2025-04-26 13:20:38:2038"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Queueing realistic image job for step 2...","timestamp":"2025-04-26 13:20:38:2038"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-26 13:20:38:2038"}
+{"jobId":"299","level":"info","message":"Processing image job","recipeId":"4df364fb-3dde-42da-96c8-8c7d353c0335","stepIndex":0,"timestamp":"2025-04-26 13:20:38:2038"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Queued realistic image generation job 300","timestamp":"2025-04-26 13:20:38:2038"}
+{"level":"info","message":"[Job 299] Generating image...","prompt":"Step 1 for recipe 'Spicy Pork Bulgogi': Preparing marinade. Realistic food photography showing the cooking process.","timestamp":"2025-04-26 13:20:38:2038"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Queueing realistic image job for step 3...","timestamp":"2025-04-26 13:20:39:2039"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Queued realistic image generation job 301","timestamp":"2025-04-26 13:20:39:2039"}
+{"level":"info","message":"[Worker] Image Processor function ENTERED for job: 301","timestamp":"2025-04-26 13:20:39:2039"}
+{"jobId":"301","level":"info","message":"Processing image job","recipeId":"4df364fb-3dde-42da-96c8-8c7d353c0335","stepIndex":2,"timestamp":"2025-04-26 13:20:39:2039"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Queueing realistic image job for step 4...","timestamp":"2025-04-26 13:20:39:2039"}
+{"level":"info","message":"Checking status for recipe generation: 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:20:39:2039"}
+{"level":"info","message":"[Job 301] Generating image...","prompt":"Step 3 for recipe 'Spicy Pork Bulgogi': Cooking pork in pan. Realistic food photography showing the cooking process.","timestamp":"2025-04-26 13:20:39:2039"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Queued realistic image generation job 302","timestamp":"2025-04-26 13:20:40:2040"}
+{"level":"info","message":"[Worker] Image Processor function ENTERED for job: 302","timestamp":"2025-04-26 13:20:40:2040"}
+{"level":"info","message":"Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe is in state: active, progress: 73%","timestamp":"2025-04-26 13:20:40:2040"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-26 13:20:40:2040"}
+{"jobId":"302","level":"info","message":"Processing image job","recipeId":"4df364fb-3dde-42da-96c8-8c7d353c0335","stepIndex":3,"timestamp":"2025-04-26 13:20:40:2040"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Queueing realistic image job for step 5...","timestamp":"2025-04-26 13:20:40:2040"}
+{"level":"info","message":"[Job 302] Generating image...","prompt":"Step 4 for recipe 'Spicy Pork Bulgogi': Adding onions to pork. Realistic food photography showing the cooking process.","timestamp":"2025-04-26 13:20:40:2040"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Queued realistic image generation job 303","timestamp":"2025-04-26 13:20:40:2040"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Waiting for 5 image jobs to complete...","timestamp":"2025-04-26 13:20:40:2040"}
+{"level":"info","message":"[Worker] Image Processor function ENTERED for job: 303","timestamp":"2025-04-26 13:20:40:2040"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-26 13:20:41:2041"}
+{"jobId":"303","level":"info","message":"Processing image job","recipeId":"4df364fb-3dde-42da-96c8-8c7d353c0335","stepIndex":4,"timestamp":"2025-04-26 13:20:41:2041"}
+{"level":"info","message":"[Job 303] Generating image...","prompt":"Step 5 for recipe 'Spicy Pork Bulgogi': Garnishing bulgogi. Realistic food photography showing the cooking process.","timestamp":"2025-04-26 13:20:41:2041"}
+{"level":"info","message":"Checking status for recipe generation: 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:20:44:2044"}
+{"level":"info","message":"Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe is in state: active, progress: 95%","timestamp":"2025-04-26 13:20:45:2045"}
+{"level":"info","message":"[Job 299] Downloading image...","timestamp":"2025-04-26 13:20:51:2051"}
+{"level":"info","message":"[Job 302] Downloading image...","timestamp":"2025-04-26 13:20:54:2054"}
+{"level":"info","message":"[Job 303] Downloading image...","timestamp":"2025-04-26 13:20:56:2056"}
+{"level":"info","message":"[Job 302] Uploading image...","timestamp":"2025-04-26 13:20:56:2056"}
+{"level":"info","message":"Uploading image to Supabase Storage at path: public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/3.png in bucket: recipe-images","timestamp":"2025-04-26 13:20:56:2056"}
+{"level":"info","message":"Image successfully uploaded. Public URL: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/3.png","timestamp":"2025-04-26 13:20:57:2057"}
+{"level":"info","message":"[Job 302] Image processing completed successfully.","timestamp":"2025-04-26 13:20:57:2057"}
+{"level":"info","message":"Merging partial recipe cache for 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:20:57:2057"}
+{"level":"info","message":"Updated step 3 image URL for 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:20:57:2057"}
+{"imageUrl":"https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/3.png","jobId":"302","level":"info","message":"Image job completed successfully","timestamp":"2025-04-26 13:20:57:2057"}
+{"level":"info","message":"Successfully updated partial recipe cache for 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe, progress: 52%","timestamp":"2025-04-26 13:20:58:2058"}
+{"level":"info","message":"[Job 302] Updated partial recipe step 3 with image URL","timestamp":"2025-04-26 13:20:58:2058"}
+{"level":"info","message":"[Job 303] Uploading image...","timestamp":"2025-04-26 13:20:58:2058"}
+{"level":"info","message":"Uploading image to Supabase Storage at path: public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/4.png in bucket: recipe-images","timestamp":"2025-04-26 13:20:58:2058"}
+{"level":"info","message":"Image successfully uploaded. Public URL: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/4.png","timestamp":"2025-04-26 13:20:58:2058"}
+{"level":"info","message":"[Job 303] Image processing completed successfully.","timestamp":"2025-04-26 13:20:59:2059"}
+{"level":"info","message":"Merging partial recipe cache for 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:20:59:2059"}
+{"level":"info","message":"Updated step 4 image URL for 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:20:59:2059"}
+{"imageUrl":"https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/4.png","jobId":"303","level":"info","message":"Image job completed successfully","timestamp":"2025-04-26 13:20:59:2059"}
+{"level":"info","message":"Successfully updated partial recipe cache for 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe, progress: 64%","timestamp":"2025-04-26 13:20:59:2059"}
+{"level":"info","message":"[Job 303] Updated partial recipe step 4 with image URL","timestamp":"2025-04-26 13:20:59:2059"}
+{"level":"info","message":"[Job 301] Downloading image...","timestamp":"2025-04-26 13:21:03:213"}
+{"level":"info","message":"[Job 299] Uploading image...","timestamp":"2025-04-26 13:21:08:218"}
+{"level":"info","message":"Uploading image to Supabase Storage at path: public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/0.png in bucket: recipe-images","timestamp":"2025-04-26 13:21:08:218"}
+{"level":"info","message":"Image successfully uploaded. Public URL: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/0.png","timestamp":"2025-04-26 13:21:08:218"}
+{"level":"info","message":"[Job 299] Image processing completed successfully.","timestamp":"2025-04-26 13:21:08:218"}
+{"level":"info","message":"Merging partial recipe cache for 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:21:09:219"}
+{"level":"info","message":"Updated step 0 image URL for 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:21:09:219"}
+{"imageUrl":"https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/0.png","jobId":"299","level":"info","message":"Image job completed successfully","timestamp":"2025-04-26 13:21:09:219"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-26 13:21:09:219"}
+{"level":"info","message":"Successfully updated partial recipe cache for 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe, progress: 76%","timestamp":"2025-04-26 13:21:09:219"}
+{"level":"info","message":"[Job 299] Updated partial recipe step 0 with image URL","timestamp":"2025-04-26 13:21:09:219"}
+{"level":"info","message":"Checking status for recipe generation: 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:21:19:2119"}
+{"level":"info","message":"Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe is in state: active, progress: 95%","timestamp":"2025-04-26 13:21:20:2120"}
+{"level":"info","message":"[Job 301] Uploading image...","timestamp":"2025-04-26 13:21:26:2126"}
+{"level":"info","message":"Uploading image to Supabase Storage at path: public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/2.png in bucket: recipe-images","timestamp":"2025-04-26 13:21:26:2126"}
+{"level":"info","message":"Image successfully uploaded. Public URL: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/2.png","timestamp":"2025-04-26 13:21:27:2127"}
+{"level":"info","message":"[Job 301] Image processing completed successfully.","timestamp":"2025-04-26 13:21:27:2127"}
+{"level":"info","message":"Merging partial recipe cache for 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:21:27:2127"}
+{"level":"info","message":"Updated step 2 image URL for 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:21:27:2127"}
+{"imageUrl":"https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/2.png","jobId":"301","level":"info","message":"Image job completed successfully","timestamp":"2025-04-26 13:21:27:2127"}
+{"level":"info","message":"Populated image_url for step 0: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/0.png","timestamp":"2025-04-26 13:21:27:2127"}
+{"error":"OpenAI API Error: 401 Incorrect API key provided: sk-proj-********************************************************************************************************************************************************diUA. You can find your API key at https://platform.openai.com/account/api-keys.","level":"error","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Image job step 1 completed with error:","timestamp":"2025-04-26 13:21:27:2127"}
+{"level":"info","message":"Populated image_url for step 2: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/2.png","timestamp":"2025-04-26 13:21:27:2127"}
+{"level":"info","message":"Populated image_url for step 3: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/3.png","timestamp":"2025-04-26 13:21:27:2127"}
+{"level":"info","message":"Populated image_url for step 4: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/4.png","timestamp":"2025-04-26 13:21:27:2127"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Using image from last step (4) as thumbnail: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/4.png","timestamp":"2025-04-26 13:21:27:2127"}
+{"level":"info","message":"Successfully updated partial recipe cache for 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe, progress: 88%","timestamp":"2025-04-26 13:21:27:2127"}
+{"level":"info","message":"[Job 301] Updated partial recipe step 2 with image URL","timestamp":"2025-04-26 13:21:27:2127"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Attempting to save GLOBAL recipe copy 4df364fb-3dde-42da-96c8-8c7d353c0335...","timestamp":"2025-04-26 13:21:28:2128"}
+{"level":"info","message":"Saving recipe ID 4df364fb-3dde-42da-96c8-8c7d353c0335 for user Global","timestamp":"2025-04-26 13:21:28:2128"}
+{"level":"info","message":"Recipe ID 4df364fb-3dde-42da-96c8-8c7d353c0335 saved/upserted successfully.","timestamp":"2025-04-26 13:21:28:2128"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] GLOBAL recipe copy 4df364fb-3dde-42da-96c8-8c7d353c0335 saved successfully.","timestamp":"2025-04-26 13:21:28:2128"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] User detected (d46a5b79-61e3-4e5b-8978-6f3b2f48efcc). Generating unique ID for user's recipe copy: d1cac7d3-56f5-4b90-9fc2-9706370b3a79","timestamp":"2025-04-26 13:21:28:2128"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Attempting to save user-specific recipe copy d1cac7d3-56f5-4b90-9fc2-9706370b3a79 for user d46a5b79-61e3-4e5b-8978-6f3b2f48efcc...","timestamp":"2025-04-26 13:21:28:2128"}
+{"level":"info","message":"Saving recipe ID d1cac7d3-56f5-4b90-9fc2-9706370b3a79 for user d46a5b79-61e3-4e5b-8978-6f3b2f48efcc","timestamp":"2025-04-26 13:21:28:2128"}
+{"level":"info","message":"Recipe ID d1cac7d3-56f5-4b90-9fc2-9706370b3a79 saved/upserted successfully.","timestamp":"2025-04-26 13:21:28:2128"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] User-specific recipe copy d1cac7d3-56f5-4b90-9fc2-9706370b3a79 saved successfully for user d46a5b79-61e3-4e5b-8978-6f3b2f48efcc.","timestamp":"2025-04-26 13:21:28:2128"}
+{"level":"info","message":"[Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe] Recipe generation process completed successfully: \"Spicy Pork Bulgogi\"","timestamp":"2025-04-26 13:21:28:2128"}
+{"jobId":"82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","level":"info","message":"Recipe job completed successfully: \"Spicy Pork Bulgogi\"","requestId":"82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:21:28:2128"}
+{"level":"info","message":"Checking status for recipe generation: 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:21:54:2154"}
+{"level":"info","message":"Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe is in state: completed, progress: 100%","timestamp":"2025-04-26 13:21:55:2155"}
+{"level":"info","message":"Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe completed. Verifying final data from DB for recipe ID: d1cac7d3-56f5-4b90-9fc2-9706370b3a79","timestamp":"2025-04-26 13:21:55:2155"}
+{"level":"info","message":"Successfully fetched final recipe d1cac7d3-56f5-4b90-9fc2-9706370b3a79 from DB for completed job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:21:55:2155"}
+{"level":"info","message":"Job 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe completed successfully.","timestamp":"2025-04-26 13:21:55:2155"}
+{"level":"info","message":"Recipe 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe has 5 steps with images:","timestamp":"2025-04-26 13:21:55:2155"}
+{"level":"info","message":"Step 0 image_url: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/0.png","timestamp":"2025-04-26 13:21:55:2155"}
+{"level":"info","message":"Step 1 image_url: NOT SET","timestamp":"2025-04-26 13:21:55:2155"}
+{"level":"info","message":"Step 2 image_url: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/2.png","timestamp":"2025-04-26 13:21:55:2155"}
+{"level":"info","message":"Step 3 image_url: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/3.png","timestamp":"2025-04-26 13:21:55:2155"}
+{"level":"info","message":"Step 4 image_url: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/4df364fb-3dde-42da-96c8-8c7d353c0335/4.png","timestamp":"2025-04-26 13:21:55:2155"}
+{"level":"info","message":"Cleaned up Redis cache for requestId: 82c8ce3e-db77-4b71-85c9-b0d7261c4dbe","timestamp":"2025-04-26 13:21:55:2155"}
+{"level":"info","message":"Workspaceing popular recipes with limit: 5","timestamp":"2025-04-26 13:26:04:264"}
+{"level":"info","message":"Fetching all recipe categories with counts","timestamp":"2025-04-26 13:26:06:266"}
+{"level":"info","message":"Workspaceing discover recipes with filters: category=undefined, tags=undefined, sort=recent, limit=20, offset=0, query=undefined","timestamp":"2025-04-26 13:26:11:2611"}
+{"level":"info","message":"Workspaceing popular recipes with limit: 5","timestamp":"2025-04-26 14:22:30:2230"}
+{"level":"info","message":"Fetching all recipe categories with counts","timestamp":"2025-04-26 14:22:32:2232"}
+{"level":"info","message":"Workspaceing discover recipes with filters: category=undefined, tags=undefined, sort=recent, limit=20, offset=0, query=undefined","timestamp":"2025-04-26 14:22:34:2234"}
+{"conversationId":"12c2da30-dfe4-4b76-8f30-67e5f88d1437","level":"info","message":"Chat message received","timestamp":"2025-04-26 14:26:04:264"}
+{"conversationId":"12c2da30-dfe4-4b76-8f30-67e5f88d1437","level":"info","message":"User message saved","messageId":"967b570b-af37-49f9-863e-fcd61253f469","timestamp":"2025-04-26 14:26:04:264"}
+{"conversationId":"12c2da30-dfe4-4b76-8f30-67e5f88d1437","jobId":"120","level":"info","message":"Chat message job added","timestamp":"2025-04-26 14:26:05:265"}
+{"level":"info","message":"[Worker] Processor function ENTERED for job: 120","timestamp":"2025-04-26 14:26:05:265"}
+{"conversationId":"12c2da30-dfe4-4b76-8f30-67e5f88d1437","jobId":"120","level":"info","message":"[Worker] Processing chat message job STARTED","timestamp":"2025-04-26 14:26:05:265"}
+{"level":"info","message":"[Worker] Chat queue is drained - all jobs processed.","timestamp":"2025-04-26 14:26:05:265"}
+{"jobId":"120","level":"info","message":"[Worker] Calling generateChatResponse...","timestamp":"2025-04-26 14:26:05:265"}
+{"jobId":"120","level":"info","message":"[Worker] generateChatResponse returned. Duration: 3369ms","timestamp":"2025-04-26 14:26:08:268"}
+{"jobId":"120","level":"info","message":"[Worker] Parsing response...","timestamp":"2025-04-26 14:26:09:269"}
+{"jobId":"120","level":"info","message":"[Worker] Response parsed successfully.","timestamp":"2025-04-26 14:26:09:269"}
+{"jobId":"120","level":"info","message":"[Worker] Processing chat message job COMPLETED SUCCESSFULLY. Total Duration: 3898ms","timestamp":"2025-04-26 14:26:09:269"}
+{"jobId":"120","level":"info","message":"[Worker] Chat job completed successfully event received","timestamp":"2025-04-26 14:26:09:269"}
+{"jobId":"120","level":"error","message":"Chat job completed but 'reply' is missing or invalid type","resultReplyType":"undefined","timestamp":"2025-04-26 14:26:09:269"}
+{"isAppError":false,"level":"error","message":"Error in handleChatMessage: Chat completed but no valid reply was generated.","statusCode":500,"timestamp":"2025-04-26 14:26:09:269"}
+{"conversationId":"12c2da30-dfe4-4b76-8f30-67e5f88d1437","level":"info","message":"Chat message received","timestamp":"2025-04-26 14:26:42:2642"}
+{"conversationId":"12c2da30-dfe4-4b76-8f30-67e5f88d1437","level":"info","message":"User message saved","messageId":"e5916c44-86e6-4df0-9d4a-0d453da2a84e","timestamp":"2025-04-26 14:26:42:2642"}
+{"conversationId":"12c2da30-dfe4-4b76-8f30-67e5f88d1437","jobId":"121","level":"info","message":"Chat message job added","timestamp":"2025-04-26 14:26:42:2642"}
+{"level":"info","message":"[Worker] Processor function ENTERED for job: 121","timestamp":"2025-04-26 14:26:42:2642"}
+{"conversationId":"12c2da30-dfe4-4b76-8f30-67e5f88d1437","jobId":"121","level":"info","message":"[Worker] Processing chat message job STARTED","timestamp":"2025-04-26 14:26:42:2642"}
+{"level":"info","message":"[Worker] Chat queue is drained - all jobs processed.","timestamp":"2025-04-26 14:26:42:2642"}
+{"jobId":"121","level":"info","message":"[Worker] Calling generateChatResponse...","timestamp":"2025-04-26 14:26:42:2642"}
+{"jobId":"121","level":"info","message":"[Worker] generateChatResponse returned. Duration: 4814ms","timestamp":"2025-04-26 14:26:47:2647"}
+{"jobId":"121","level":"info","message":"[Worker] Parsing response...","timestamp":"2025-04-26 14:26:47:2647"}
+{"jobId":"121","level":"info","message":"[Worker] Response parsed successfully.","timestamp":"2025-04-26 14:26:47:2647"}
+{"jobId":"121","level":"info","message":"[Worker] Processing chat message job COMPLETED SUCCESSFULLY. Total Duration: 5349ms","timestamp":"2025-04-26 14:26:47:2647"}
+{"jobId":"121","level":"info","message":"[Worker] Chat job completed successfully event received","timestamp":"2025-04-26 14:26:48:2648"}
+{"conversationId":"12c2da30-dfe4-4b76-8f30-67e5f88d1437","level":"info","message":"Assistant response saved and conversation updated","timestamp":"2025-04-26 14:26:48:2648"}
+{"jobId":"121","level":"info","message":"Chat job completed, response sent","timestamp":"2025-04-26 14:26:48:2648"}
+{"conversationId":"12c2da30-dfe4-4b76-8f30-67e5f88d1437","level":"info","message":"Chat message received","timestamp":"2025-04-26 14:27:51:2751"}
+{"conversationId":"12c2da30-dfe4-4b76-8f30-67e5f88d1437","level":"info","message":"User message saved","messageId":"cbe9ebbf-719a-423e-89dd-869bb14ecdf8","timestamp":"2025-04-26 14:27:51:2751"}
+{"conversationId":"12c2da30-dfe4-4b76-8f30-67e5f88d1437","jobId":"122","level":"info","message":"Chat message job added","timestamp":"2025-04-26 14:27:51:2751"}
+{"level":"info","message":"[Worker] Chat queue is drained - all jobs processed.","timestamp":"2025-04-26 14:27:52:2752"}
+{"level":"info","message":"[Worker] Processor function ENTERED for job: 122","timestamp":"2025-04-26 14:27:52:2752"}
+{"conversationId":"12c2da30-dfe4-4b76-8f30-67e5f88d1437","jobId":"122","level":"info","message":"[Worker] Processing chat message job STARTED","timestamp":"2025-04-26 14:27:52:2752"}
+{"jobId":"122","level":"info","message":"[Worker] Calling generateChatResponse...","timestamp":"2025-04-26 14:27:52:2752"}
+{"jobId":"122","level":"info","message":"[Worker] generateChatResponse returned. Duration: 3682ms","timestamp":"2025-04-26 14:27:55:2755"}
+{"jobId":"122","level":"info","message":"[Worker] Parsing response...","timestamp":"2025-04-26 14:27:56:2756"}
+{"jobId":"122","level":"info","message":"[Worker] Response parsed successfully.","timestamp":"2025-04-26 14:27:56:2756"}
+{"jobId":"122","level":"info","message":"[Worker] Processing chat message job COMPLETED SUCCESSFULLY. Total Duration: 4211ms","timestamp":"2025-04-26 14:27:56:2756"}
+{"jobId":"122","level":"info","message":"[Worker] Chat job completed successfully event received","timestamp":"2025-04-26 14:27:56:2756"}
+{"conversationId":"12c2da30-dfe4-4b76-8f30-67e5f88d1437","level":"info","message":"Assistant response saved and conversation updated","timestamp":"2025-04-26 14:27:56:2756"}
+{"jobId":"122","level":"info","message":"Chat job completed, response sent","timestamp":"2025-04-26 14:27:56:2756"}
+{"level":"info","message":"Queue system is active and connected.","timestamp":"2025-04-26 14:28:02:282"}
+{"level":"info","message":"Recipe generation requested via Queue for query: Chicken Tikka Masala, requestId: 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:02:282"}
+{"level":"info","message":"Recipe generation job 8cbc699b-a138-4732-8ed5-d8a27e33e95a added to queue","timestamp":"2025-04-26 14:28:02:282"}
+{"level":"info","message":"[Worker] Recipe Processor function ENTERED for job: 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:03:283"}
+{"globalRecipeId":"9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa","jobId":"8cbc699b-a138-4732-8ed5-d8a27e33e95a","level":"info","message":"Processing recipe job","requestId":"8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:03:283"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Generating content...","timestamp":"2025-04-26 14:28:03:283"}
+{"level":"info","message":"Checking status for recipe generation: 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:08:288"}
+{"level":"info","message":"Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a is in state: active, progress: 10%","timestamp":"2025-04-26 14:28:08:288"}
+{"level":"info","message":"Checking status for recipe generation: 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:13:2813"}
+{"level":"info","message":"Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a is in state: active, progress: 10%","timestamp":"2025-04-26 14:28:13:2813"}
+{"level":"info","message":"Checking status for recipe generation: 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:18:2818"}
+{"level":"info","message":"Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a is in state: active, progress: 10%","timestamp":"2025-04-26 14:28:18:2818"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Parsing content...","timestamp":"2025-04-26 14:28:21:2821"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Saving initial recipe data (for progressive display)...","timestamp":"2025-04-26 14:28:21:2821"}
+{"level":"info","message":"Initializing partial recipe cache for 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:21:2821"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Generating STEP images (6 steps)...","timestamp":"2025-04-26 14:28:21:2821"}
+{"level":"info","message":"Successfully updated partial recipe cache for 8cbc699b-a138-4732-8ed5-d8a27e33e95a, progress: 40%","timestamp":"2025-04-26 14:28:22:2822"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Queueing realistic image job for step 1...","timestamp":"2025-04-26 14:28:22:2822"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Queued realistic image generation job 304","timestamp":"2025-04-26 14:28:22:2822"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Queueing realistic image job for step 2...","timestamp":"2025-04-26 14:28:22:2822"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-26 14:28:22:2822"}
+{"level":"info","message":"[Worker] Image Processor function ENTERED for job: 304","timestamp":"2025-04-26 14:28:22:2822"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Queued realistic image generation job 305","timestamp":"2025-04-26 14:28:22:2822"}
+{"jobId":"304","level":"info","message":"Processing image job","recipeId":"9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa","stepIndex":0,"timestamp":"2025-04-26 14:28:22:2822"}
+{"level":"info","message":"[Job 304] Generating image...","prompt":"Step 1 for recipe 'Chicken Tikka Masala': Marinating chicken with spices. Realistic food photography showing the cooking process.","timestamp":"2025-04-26 14:28:23:2823"}
+{"level":"info","message":"Checking status for recipe generation: 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:23:2823"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Queueing realistic image job for step 3...","timestamp":"2025-04-26 14:28:23:2823"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-26 14:28:23:2823"}
+{"level":"info","message":"[Worker] Image Processor function ENTERED for job: 305","timestamp":"2025-04-26 14:28:23:2823"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Queued realistic image generation job 306","timestamp":"2025-04-26 14:28:23:2823"}
+{"level":"info","message":"Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a is in state: active, progress: 58%","timestamp":"2025-04-26 14:28:23:2823"}
+{"jobId":"305","level":"info","message":"Processing image job","recipeId":"9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa","stepIndex":1,"timestamp":"2025-04-26 14:28:23:2823"}
+{"level":"info","message":"[Job 305] Generating image...","prompt":"Step 2 for recipe 'Chicken Tikka Masala': Sautéing garlic and jalapeno. Realistic food photography showing the cooking process.","timestamp":"2025-04-26 14:28:23:2823"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Queueing realistic image job for step 4...","timestamp":"2025-04-26 14:28:23:2823"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-26 14:28:23:2823"}
+{"level":"info","message":"[Worker] Image Processor function ENTERED for job: 306","timestamp":"2025-04-26 14:28:23:2823"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Queued realistic image generation job 307","timestamp":"2025-04-26 14:28:23:2823"}
+{"jobId":"306","level":"info","message":"Processing image job","recipeId":"9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa","stepIndex":2,"timestamp":"2025-04-26 14:28:23:2823"}
+{"level":"info","message":"[Worker] Image Processor function ENTERED for job: 307","timestamp":"2025-04-26 14:28:24:2824"}
+{"level":"info","message":"[Job 306] Generating image...","prompt":"Step 3 for recipe 'Chicken Tikka Masala': Cooking marinated chicken. Realistic food photography showing the cooking process.","timestamp":"2025-04-26 14:28:24:2824"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Queueing realistic image job for step 5...","timestamp":"2025-04-26 14:28:24:2824"}
+{"jobId":"307","level":"info","message":"Processing image job","recipeId":"9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa","stepIndex":3,"timestamp":"2025-04-26 14:28:24:2824"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Queued realistic image generation job 308","timestamp":"2025-04-26 14:28:24:2824"}
+{"level":"info","message":"[Job 307] Generating image...","prompt":"Step 4 for recipe 'Chicken Tikka Masala': Simmering chicken with tomato sauce. Realistic food photography showing the cooking process.","timestamp":"2025-04-26 14:28:24:2824"}
+{"level":"info","message":"[Worker] Image Processor function ENTERED for job: 308","timestamp":"2025-04-26 14:28:24:2824"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Queueing realistic image job for step 6...","timestamp":"2025-04-26 14:28:24:2824"}
+{"jobId":"308","level":"info","message":"Processing image job","recipeId":"9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa","stepIndex":4,"timestamp":"2025-04-26 14:28:24:2824"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Queued realistic image generation job 309","timestamp":"2025-04-26 14:28:24:2824"}
+{"level":"info","message":"[Job 308] Generating image...","prompt":"Step 5 for recipe 'Chicken Tikka Masala': Adding cream and cilantro to the skillet. Realistic food photography showing the cooking process.","timestamp":"2025-04-26 14:28:24:2824"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Waiting for 6 image jobs to complete...","timestamp":"2025-04-26 14:28:25:2825"}
+{"level":"info","message":"[Worker] Image Processor function ENTERED for job: 309","timestamp":"2025-04-26 14:28:25:2825"}
+{"jobId":"309","level":"info","message":"Processing image job","recipeId":"9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa","stepIndex":5,"timestamp":"2025-04-26 14:28:25:2825"}
+{"level":"info","message":"[Job 309] Generating image...","prompt":"Step 6 for recipe 'Chicken Tikka Masala': Serving Chicken Tikka Masala with rice. Realistic food photography showing the cooking process.","timestamp":"2025-04-26 14:28:25:2825"}
+{"level":"info","message":"Checking status for recipe generation: 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:28:2828"}
+{"level":"info","message":"Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a is in state: active, progress: 95%","timestamp":"2025-04-26 14:28:28:2828"}
+{"level":"info","message":"[Job 305] Downloading image...","timestamp":"2025-04-26 14:28:37:2837"}
+{"level":"info","message":"[Job 306] Downloading image...","timestamp":"2025-04-26 14:28:37:2837"}
+{"level":"info","message":"[Job 306] Uploading image...","timestamp":"2025-04-26 14:28:39:2839"}
+{"level":"info","message":"Uploading image to Supabase Storage at path: public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/2.png in bucket: recipe-images","timestamp":"2025-04-26 14:28:39:2839"}
+{"level":"info","message":"[Job 305] Uploading image...","timestamp":"2025-04-26 14:28:40:2840"}
+{"level":"info","message":"Uploading image to Supabase Storage at path: public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/1.png in bucket: recipe-images","timestamp":"2025-04-26 14:28:40:2840"}
+{"level":"info","message":"[Job 308] Downloading image...","timestamp":"2025-04-26 14:28:40:2840"}
+{"level":"info","message":"[Job 307] Downloading image...","timestamp":"2025-04-26 14:28:40:2840"}
+{"level":"info","message":"Image successfully uploaded. Public URL: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/1.png","timestamp":"2025-04-26 14:28:40:2840"}
+{"level":"info","message":"Image successfully uploaded. Public URL: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/2.png","timestamp":"2025-04-26 14:28:40:2840"}
+{"level":"info","message":"[Job 308] Uploading image...","timestamp":"2025-04-26 14:28:40:2840"}
+{"level":"info","message":"[Job 305] Image processing completed successfully.","timestamp":"2025-04-26 14:28:40:2840"}
+{"level":"info","message":"Uploading image to Supabase Storage at path: public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/4.png in bucket: recipe-images","timestamp":"2025-04-26 14:28:40:2840"}
+{"level":"info","message":"Merging partial recipe cache for 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:41:2841"}
+{"level":"info","message":"Updated step 1 image URL for 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:41:2841"}
+{"imageUrl":"https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/1.png","jobId":"305","level":"info","message":"Image job completed successfully","timestamp":"2025-04-26 14:28:41:2841"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-26 14:28:41:2841"}
+{"level":"info","message":"[Job 306] Image processing completed successfully.","timestamp":"2025-04-26 14:28:41:2841"}
+{"level":"info","message":"[Job 307] Uploading image...","timestamp":"2025-04-26 14:28:41:2841"}
+{"level":"info","message":"Uploading image to Supabase Storage at path: public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/3.png in bucket: recipe-images","timestamp":"2025-04-26 14:28:41:2841"}
+{"level":"info","message":"Successfully updated partial recipe cache for 8cbc699b-a138-4732-8ed5-d8a27e33e95a, progress: 50%","timestamp":"2025-04-26 14:28:41:2841"}
+{"level":"info","message":"[Job 305] Updated partial recipe step 1 with image URL","timestamp":"2025-04-26 14:28:41:2841"}
+{"level":"info","message":"Merging partial recipe cache for 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:41:2841"}
+{"level":"info","message":"Updated step 2 image URL for 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:41:2841"}
+{"imageUrl":"https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/2.png","jobId":"306","level":"info","message":"Image job completed successfully","timestamp":"2025-04-26 14:28:41:2841"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-26 14:28:41:2841"}
+{"level":"info","message":"Successfully updated partial recipe cache for 8cbc699b-a138-4732-8ed5-d8a27e33e95a, progress: 60%","timestamp":"2025-04-26 14:28:41:2841"}
+{"level":"info","message":"[Job 306] Updated partial recipe step 2 with image URL","timestamp":"2025-04-26 14:28:41:2841"}
+{"level":"info","message":"Image successfully uploaded. Public URL: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/3.png","timestamp":"2025-04-26 14:28:41:2841"}
+{"level":"info","message":"Image successfully uploaded. Public URL: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/4.png","timestamp":"2025-04-26 14:28:41:2841"}
+{"level":"info","message":"[Job 309] Downloading image...","timestamp":"2025-04-26 14:28:41:2841"}
+{"level":"info","message":"[Job 307] Image processing completed successfully.","timestamp":"2025-04-26 14:28:41:2841"}
+{"level":"info","message":"[Job 308] Image processing completed successfully.","timestamp":"2025-04-26 14:28:42:2842"}
+{"level":"info","message":"Merging partial recipe cache for 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:42:2842"}
+{"level":"info","message":"Updated step 3 image URL for 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:42:2842"}
+{"imageUrl":"https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/3.png","jobId":"307","level":"info","message":"Image job completed successfully","timestamp":"2025-04-26 14:28:42:2842"}
+{"level":"info","message":"Merging partial recipe cache for 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:42:2842"}
+{"level":"info","message":"Updated step 4 image URL for 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:42:2842"}
+{"imageUrl":"https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/4.png","jobId":"308","level":"info","message":"Image job completed successfully","timestamp":"2025-04-26 14:28:42:2842"}
+{"level":"info","message":"Successfully updated partial recipe cache for 8cbc699b-a138-4732-8ed5-d8a27e33e95a, progress: 70%","timestamp":"2025-04-26 14:28:42:2842"}
+{"level":"info","message":"[Job 307] Updated partial recipe step 3 with image URL","timestamp":"2025-04-26 14:28:42:2842"}
+{"level":"info","message":"Successfully updated partial recipe cache for 8cbc699b-a138-4732-8ed5-d8a27e33e95a, progress: 70%","timestamp":"2025-04-26 14:28:42:2842"}
+{"level":"info","message":"[Job 308] Updated partial recipe step 4 with image URL","timestamp":"2025-04-26 14:28:42:2842"}
+{"level":"info","message":"[Job 309] Uploading image...","timestamp":"2025-04-26 14:28:43:2843"}
+{"level":"info","message":"Uploading image to Supabase Storage at path: public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/5.png in bucket: recipe-images","timestamp":"2025-04-26 14:28:43:2843"}
+{"level":"info","message":"Image successfully uploaded. Public URL: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/5.png","timestamp":"2025-04-26 14:28:44:2844"}
+{"level":"info","message":"[Job 304] Downloading image...","timestamp":"2025-04-26 14:28:44:2844"}
+{"level":"info","message":"[Job 309] Image processing completed successfully.","timestamp":"2025-04-26 14:28:44:2844"}
+{"level":"info","message":"Merging partial recipe cache for 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:44:2844"}
+{"level":"info","message":"Updated step 5 image URL for 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:44:2844"}
+{"imageUrl":"https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/5.png","jobId":"309","level":"info","message":"Image job completed successfully","timestamp":"2025-04-26 14:28:44:2844"}
+{"level":"info","message":"Image queue is drained - all jobs processed.","timestamp":"2025-04-26 14:28:44:2844"}
+{"level":"info","message":"Successfully updated partial recipe cache for 8cbc699b-a138-4732-8ed5-d8a27e33e95a, progress: 80%","timestamp":"2025-04-26 14:28:44:2844"}
+{"level":"info","message":"[Job 309] Updated partial recipe step 5 with image URL","timestamp":"2025-04-26 14:28:44:2844"}
+{"level":"info","message":"[Job 304] Uploading image...","timestamp":"2025-04-26 14:28:45:2845"}
+{"level":"info","message":"Uploading image to Supabase Storage at path: public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/0.png in bucket: recipe-images","timestamp":"2025-04-26 14:28:45:2845"}
+{"level":"info","message":"Image successfully uploaded. Public URL: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/0.png","timestamp":"2025-04-26 14:28:45:2845"}
+{"level":"info","message":"[Job 304] Image processing completed successfully.","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"Merging partial recipe cache for 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"Updated step 0 image URL for 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:46:2846"}
+{"imageUrl":"https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/0.png","jobId":"304","level":"info","message":"Image job completed successfully","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"Populated image_url for step 0: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/0.png","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"Populated image_url for step 1: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/1.png","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"Populated image_url for step 2: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/2.png","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"Populated image_url for step 3: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/3.png","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"Populated image_url for step 4: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/4.png","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"Populated image_url for step 5: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/5.png","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Using image from last step (5) as thumbnail: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/5.png","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"Successfully updated partial recipe cache for 8cbc699b-a138-4732-8ed5-d8a27e33e95a, progress: 90%","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"[Job 304] Updated partial recipe step 0 with image URL","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Attempting to save GLOBAL recipe copy 9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa...","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"Saving recipe ID 9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa for user Global","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"Recipe ID 9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa saved/upserted successfully.","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] GLOBAL recipe copy 9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa saved successfully.","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] User detected (d46a5b79-61e3-4e5b-8978-6f3b2f48efcc). Generating unique ID for user's recipe copy: f20bc1aa-d3df-4206-8182-ea10d3b2e7b5","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Attempting to save user-specific recipe copy f20bc1aa-d3df-4206-8182-ea10d3b2e7b5 for user d46a5b79-61e3-4e5b-8978-6f3b2f48efcc...","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"Saving recipe ID f20bc1aa-d3df-4206-8182-ea10d3b2e7b5 for user d46a5b79-61e3-4e5b-8978-6f3b2f48efcc","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"Recipe ID f20bc1aa-d3df-4206-8182-ea10d3b2e7b5 saved/upserted successfully.","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] User-specific recipe copy f20bc1aa-d3df-4206-8182-ea10d3b2e7b5 saved successfully for user d46a5b79-61e3-4e5b-8978-6f3b2f48efcc.","timestamp":"2025-04-26 14:28:46:2846"}
+{"level":"info","message":"[Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a] Recipe generation process completed successfully: \"Chicken Tikka Masala\"","timestamp":"2025-04-26 14:28:46:2846"}
+{"jobId":"8cbc699b-a138-4732-8ed5-d8a27e33e95a","level":"info","message":"Recipe job completed successfully: \"Chicken Tikka Masala\"","requestId":"8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:28:47:2847"}
+{"level":"info","message":"Checking status for recipe generation: 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:29:03:293"}
+{"level":"info","message":"Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a is in state: completed, progress: 100%","timestamp":"2025-04-26 14:29:03:293"}
+{"level":"info","message":"Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a completed. Verifying final data from DB for recipe ID: f20bc1aa-d3df-4206-8182-ea10d3b2e7b5","timestamp":"2025-04-26 14:29:03:293"}
+{"level":"info","message":"Successfully fetched final recipe f20bc1aa-d3df-4206-8182-ea10d3b2e7b5 from DB for completed job 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:29:03:293"}
+{"level":"info","message":"Job 8cbc699b-a138-4732-8ed5-d8a27e33e95a completed successfully.","timestamp":"2025-04-26 14:29:03:293"}
+{"level":"info","message":"Recipe 8cbc699b-a138-4732-8ed5-d8a27e33e95a has 6 steps with images:","timestamp":"2025-04-26 14:29:03:293"}
+{"level":"info","message":"Step 0 image_url: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/0.png","timestamp":"2025-04-26 14:29:03:293"}
+{"level":"info","message":"Step 1 image_url: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/1.png","timestamp":"2025-04-26 14:29:03:293"}
+{"level":"info","message":"Step 2 image_url: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/2.png","timestamp":"2025-04-26 14:29:03:293"}
+{"level":"info","message":"Step 3 image_url: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/3.png","timestamp":"2025-04-26 14:29:03:293"}
+{"level":"info","message":"Step 4 image_url: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/4.png","timestamp":"2025-04-26 14:29:03:293"}
+{"level":"info","message":"Step 5 image_url: https://kwdnztyhexydoaicjepd.supabase.co/storage/v1/object/public/recipe-images/public/steps/9d6e8e4b-827a-42e3-8662-2e2bfd96c1fa/5.png","timestamp":"2025-04-26 14:29:03:293"}
+{"level":"info","message":"Cleaned up Redis cache for requestId: 8cbc699b-a138-4732-8ed5-d8a27e33e95a","timestamp":"2025-04-26 14:29:03:293"}
+{"level":"info","message":"Workspaceing popular recipes with limit: 5","timestamp":"2025-04-26 14:39:47:3947"}
+{"level":"info","message":"Fetching all recipe categories with counts","timestamp":"2025-04-26 14:39:50:3950"}
+{"level":"info","message":"Workspaceing discover recipes with filters: category=undefined, tags=undefined, sort=recent, limit=20, offset=0, query=undefined","timestamp":"2025-04-26 14:39:51:3951"}
