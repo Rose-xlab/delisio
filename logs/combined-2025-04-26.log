@@ -1371,3 +1371,12 @@
 {"level":"info","message":"Workspaceing popular recipes with limit: 5","timestamp":"2025-04-26 14:39:47:3947"}
 {"level":"info","message":"Fetching all recipe categories with counts","timestamp":"2025-04-26 14:39:50:3950"}
 {"level":"info","message":"Workspaceing discover recipes with filters: category=undefined, tags=undefined, sort=recent, limit=20, offset=0, query=undefined","timestamp":"2025-04-26 14:39:51:3951"}
+{"level":"info","message":"Chat worker process started...","timestamp":"2025-04-26 15:46:37:4637"}
+{"level":"info","message":"Redis client connected successfully to Upstash Redis","timestamp":"2025-04-26 15:46:38:4638"}
+{"level":"info","message":"[Worker] Chat queue worker process connected to Redis.","timestamp":"2025-04-26 15:46:38:4638"}
+{"level":"info","message":"[Worker] Chat queue is drained - all jobs processed.","timestamp":"2025-04-26 15:46:38:4638"}
+{"level":"info","message":"Supabase client initialized successfully.","timestamp":"2025-04-26 15:46:39:4639"}
+{"level":"info","message":"Image worker process started...","timestamp":"2025-04-26 15:46:39:4639"}
+{"level":"info","message":"Redis client connected successfully to Upstash Redis","timestamp":"2025-04-26 15:46:39:4639"}
+{"level":"info","message":"Supabase client initialized successfully.","timestamp":"2025-04-26 15:46:39:4639"}
+{"level":"info","message":"Recipe worker process started...","timestamp":"2025-04-26 15:46:39:4639"}
