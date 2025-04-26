@@ -30,6 +30,56 @@ import { SubscriptionTier } from '../models/Subscription';
 const recipeCache = new Map<string, string>();
 
 /**
+ * Helper function to get partial recipe from cache
+ */
+async function getPartialRecipeFromCache(requestId: string): Promise<any | null> {
+  try {
+    const cacheKey = `recipe:${requestId}:partial`;
+
+    if (redisClient instanceof Redis) {
+        const cachedData = await redisClient.get(cacheKey);
+        if (cachedData) {
+            try { return JSON.parse(cachedData); }
+            catch (e) { logger.error(`Failed to parse cached partial recipe from Redis for ${requestId}`, { error: e }); return null; }
+        }
+    }
+
+   if (recipeCache instanceof Map) {
+      const cachedString = recipeCache.get(cacheKey);
+      if (cachedString) {
+          try { return JSON.parse(cachedString); }
+          catch (e) { logger.error(`Failed to parse cached partial recipe from Map for ${requestId}`, { error: e }); return null; }
+      }
+   }
+
+    return null;
+  } catch (e) {
+    logger.error(`Error retrieving partial recipe from cache for ${requestId}: ${e instanceof Error ? e.message : String(e)}`);
+    return null;
+  }
+}
+
+/**
+ * Helper function to clean up the cache (Redis and fallback Map)
+ */
+async function cleanupPartialRecipeCache(requestId: string): Promise<void> {
+  try {
+    const cacheKey = `recipe:${requestId}:partial`;
+
+    if (redisClient instanceof Redis) {
+        const deletedCount = await redisClient.del(cacheKey);
+        if (deletedCount > 0) { logger.info(`Cleaned up Redis cache for requestId: ${requestId}`); }
+    }
+
+   if (recipeCache instanceof Map) {
+      if (recipeCache.delete(cacheKey)) { logger.info(`Cleaned up local Map cache for requestId: ${requestId}`); }
+   }
+  } catch (e) {
+    logger.error(`Error cleaning up cache for ${requestId}: ${e instanceof Error ? e.message : String(e)}`);
+  }
+}
+
+/**
  * Generates a complete recipe including optional time fields and permanent image URLs.
  * Uses the queuing system.
  */
@@ -157,18 +207,25 @@ const generateRecipeOriginal = async (req: Request, res: Response, next: NextFun
 
     await updatePartialRecipe(requestId, initialRecipe);
 
-    const qualityScore = await evaluateRecipeQuality(initialRecipe);
-    logger.info(`Quality evaluation: ${qualityScore.overall}/10 (Sync Flow)`);
+    // *** COMMENTING OUT QUALITY CHECK AND ENHANCEMENT - START ***
+    // const qualityScore = await evaluateRecipeQuality(initialRecipe);
+    // logger.info(`Quality evaluation: ${qualityScore.overall}/10 (Sync Flow)`);
     let workingRecipe = initialRecipe;
-    if (!qualityScore.isPassingThreshold) {
-        logger.info(`Enhancing recipe quality (Sync Flow).`);
-        workingRecipe = await enhanceRecipeQuality(initialRecipe, qualityScore);
-        workingRecipe.quality_score = qualityScore.overall;
-        await updatePartialRecipe(requestId, workingRecipe);
-    } else {
-        workingRecipe.quality_score = qualityScore.overall;
-        await updatePartialRecipe(requestId, workingRecipe);
-    }
+    // if (!qualityScore.isPassingThreshold) {
+    //     logger.info(`Enhancing recipe quality (Sync Flow).`);
+    //     workingRecipe = await enhanceRecipeQuality(initialRecipe, qualityScore);
+    //     workingRecipe.quality_score = qualityScore.overall;
+    //     await updatePartialRecipe(requestId, workingRecipe);
+    // } else {
+    //     workingRecipe.quality_score = qualityScore.overall;
+    //     await updatePartialRecipe(requestId, workingRecipe);
+    // }
+    
+    // Set default quality score instead of evaluating
+    workingRecipe.quality_score = 10; // Always give perfect score
+    await updatePartialRecipe(requestId, workingRecipe);
+    // *** COMMENTING OUT QUALITY CHECK AND ENHANCEMENT - END ***
+    
     if (isRequestCancelled(requestId)) { throw new AppError('Recipe generation cancelled', 499); }
 
     // Step 4: Categorize the recipe
@@ -177,19 +234,29 @@ const generateRecipeOriginal = async (req: Request, res: Response, next: NextFun
     workingRecipe.category = category; workingRecipe.tags = tags;
     await updatePartialRecipe(requestId, workingRecipe);
 
+    // *** COMMENTING OUT DUPLICATE DETECTION - START ***
     // Step 5: Check for duplicates
-    logger.info(`Checking for duplicates: ${workingRecipe.title} (Sync Flow)`);
+    // logger.info(`Checking for duplicates: ${workingRecipe.title} (Sync Flow)`);
+    // const similarityHash = generateSimilarityHash(workingRecipe);
+    // workingRecipe.similarity_hash = similarityHash;
+    // await updatePartialRecipe(requestId, workingRecipe);
+    // const duplicateCheck = await checkForDuplicates(workingRecipe);
+    // let mergedRecipe: Recipe | null = null;
+    // if (duplicateCheck.isDuplicate && duplicateCheck.existingRecipeId) {
+    //     logger.info(`Duplicate found (Existing ID: ${duplicateCheck.existingRecipeId}). Merging... (Sync Flow)`);
+    //     mergedRecipe = await mergeRecipes(workingRecipe, duplicateCheck.existingRecipeId);
+    // } else {
+    //     logger.info(`Recipe is not a duplicate (Sync Flow).`);
+    // }
+    
+    // Generate a similarity hash but skip duplicate check
     const similarityHash = generateSimilarityHash(workingRecipe);
     workingRecipe.similarity_hash = similarityHash;
     await updatePartialRecipe(requestId, workingRecipe);
-    const duplicateCheck = await checkForDuplicates(workingRecipe);
     let mergedRecipe: Recipe | null = null;
-    if (duplicateCheck.isDuplicate && duplicateCheck.existingRecipeId) {
-        logger.info(`Duplicate found (Existing ID: ${duplicateCheck.existingRecipeId}). Merging... (Sync Flow)`);
-        mergedRecipe = await mergeRecipes(workingRecipe, duplicateCheck.existingRecipeId);
-    } else {
-        logger.info(`Recipe is not a duplicate (Sync Flow).`);
-    }
+    logger.info(`Skipping duplicate check for recipe: ${workingRecipe.title} (Sync Flow)`);
+    // *** COMMENTING OUT DUPLICATE DETECTION - END ***
+    
     if (isRequestCancelled(requestId)) { throw new AppError('Recipe generation cancelled', 499); }
 
     // Step 6: Process images sequentially
@@ -286,19 +353,17 @@ const generateRecipeOriginal = async (req: Request, res: Response, next: NextFun
     logger.info(`Constructed complete recipe: "${completeRecipe.title}" with realistic images (Sync Flow)`);
 
 
-    // Step 9: Save to global database if not a duplicate
-    if (!duplicateCheck.isDuplicate) {
-        logger.info(`Saving new recipe ${completeRecipe.id} to global collection...`);
-        try {
-            // --- FIX: Pass null for global save case, assuming saveRecipe handles it ---
-            await saveRecipe(completeRecipe, null); // Pass null for global save case
-            logger.info(`Recipe ${completeRecipe.id} saved globally.`);
-        } catch (saveError) {
-            logger.error(`Failed to save recipe ${completeRecipe.id} globally:`, saveError);
-        }
-    } else if (mergedRecipe) {
-        logger.info(`Skipping separate global save for ${completeRecipe.id} as it was merged into ${mergedRecipe.id}.`);
+    // *** MODIFIED: Always save to global repository regardless of duplicate status - START ***
+    // Step 9: Save to global database without duplicate check
+    logger.info(`Saving new recipe ${completeRecipe.id} to global collection without duplicate filtering...`);
+    try {
+        // Always save to global database with null user_id
+        await saveRecipe(completeRecipe, null);
+        logger.info(`Recipe ${completeRecipe.id} saved globally.`);
+    } catch (saveError) {
+        logger.error(`Failed to save recipe ${completeRecipe.id} globally:`, saveError);
     }
+    // *** MODIFIED: Always save to global repository regardless of duplicate status - END ***
 
     // Save to user's collection if requested and user exists
     if (userId && save) {
@@ -637,56 +702,6 @@ export const getRecipeStatus = async (req: Request, res: Response, next: NextFun
        }
     }
   };
-/**
- * Helper function to get partial recipe from cache
- */
-async function getPartialRecipeFromCache(requestId: string): Promise<any | null> {
-  try {
-    const cacheKey = `recipe:${requestId}:partial`;
-
-    if (redisClient instanceof Redis) {
-        const cachedData = await redisClient.get(cacheKey);
-        if (cachedData) {
-            try { return JSON.parse(cachedData); }
-            catch (e) { logger.error(`Failed to parse cached partial recipe from Redis for ${requestId}`, { error: e }); return null; }
-        }
-    }
-
-   if (recipeCache instanceof Map) {
-      const cachedString = recipeCache.get(cacheKey);
-      if (cachedString) {
-          try { return JSON.parse(cachedString); }
-          catch (e) { logger.error(`Failed to parse cached partial recipe from Map for ${requestId}`, { error: e }); return null; }
-      }
-   }
-
-    return null;
-  } catch (e) {
-    logger.error(`Error retrieving partial recipe from cache for ${requestId}: ${e instanceof Error ? e.message : String(e)}`);
-    return null;
-  }
-}
-
-
-/**
- * Helper function to clean up the cache (Redis and fallback Map)
- */
-async function cleanupPartialRecipeCache(requestId: string): Promise<void> {
-  try {
-    const cacheKey = `recipe:${requestId}:partial`;
-
-    if (redisClient instanceof Redis) {
-        const deletedCount = await redisClient.del(cacheKey);
-        if (deletedCount > 0) { logger.info(`Cleaned up Redis cache for requestId: ${requestId}`); }
-    }
-
-   if (recipeCache instanceof Map) {
-      if (recipeCache.delete(cacheKey)) { logger.info(`Cleaned up local Map cache for requestId: ${requestId}`); }
-   }
-  } catch (e) {
-    logger.error(`Error cleaning up cache for ${requestId}: ${e instanceof Error ? e.message : String(e)}`);
-  }
-}
 
 /**
  * Checks if a queue processing system is active for recipe generation

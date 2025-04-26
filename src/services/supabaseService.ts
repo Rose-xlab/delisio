@@ -1,8 +1,8 @@
 // src/services/supabaseService.ts
 
-
 import { supabase } from '../config/supabase';
-import { Recipe, RecipeStep, NutritionInfo } from '../models/Recipe'; // Updated model
+// Make sure Recipe type includes thumbnail_url (updated in Step 2)
+import { Recipe, RecipeStep, NutritionInfo } from '../models/Recipe';
 import { User, UserPreferences } from '../models/User'; // Assuming path is correct
 import { TablesInsert, Tables, Json } from '../types/supabase';
 import { logger } from '../utils/logger';
@@ -69,7 +69,7 @@ export const deleteRecipeImages = async (recipeId: string): Promise<void> => {
 
 /**
  * Saves a recipe to Supabase
- * FIXED: userId parameter now accepts string | null
+ * Includes the new thumbnail_url field
  */
 export const saveRecipe = async (recipe: Recipe, userId: string | null): Promise<Recipe> => {
     if (!recipe.id) { throw new Error('Recipe object must have an ID before saving.'); }
@@ -79,6 +79,8 @@ export const saveRecipe = async (recipe: Recipe, userId: string | null): Promise
 
         // Log the steps data being saved
         logger.debug(`[saveRecipe] Steps data being saved for recipe ${recipe.id}:`, { steps: recipe.steps });
+        // Log the thumbnail URL being saved
+        logger.debug(`[saveRecipe] Thumbnail URL being saved for recipe ${recipe.id}: ${recipe.thumbnail_url}`);
 
         const recipeData: TablesInsert<'recipes'> = {
             id: recipe.id,
@@ -90,15 +92,17 @@ export const saveRecipe = async (recipe: Recipe, userId: string | null): Promise
             steps: recipe.steps as unknown as Json,
             nutrition: recipe.nutrition as unknown as Json,
             query: recipe.query,
-            created_at: recipe.createdAt.toISOString(),
+            // Use createdAt from recipe object if available, otherwise toISOString might fail if not Date
+            created_at: recipe.createdAt instanceof Date ? recipe.createdAt.toISOString() : new Date().toISOString(),
             prep_time_minutes: recipe.prepTime ?? null,
             cook_time_minutes: recipe.cookTime ?? null,
             total_time_minutes: recipe.totalTime ?? null,
-            category: (recipe as any).category ?? null,
-            tags: (recipe as any).tags ?? null,
-            similarity_hash: (recipe as any).similarity_hash ?? null,
-            quality_score: (recipe as any).quality_score ?? null,
+            category: recipe.category ?? null,
+            tags: recipe.tags ?? null,
+            similarity_hash: recipe.similarity_hash ?? null,
+            quality_score: recipe.quality_score ?? null,
             views: recipe.views || 0,
+            thumbnail_url: recipe.thumbnail_url ?? null, // <-- MODIFIED: Save the thumbnail URL
         };
 
         const { data, error } = await supabase.from('recipes').upsert(recipeData, { onConflict: 'id' }).select().single();
@@ -110,7 +114,8 @@ export const saveRecipe = async (recipe: Recipe, userId: string | null): Promise
         // Log the data returned by Supabase to confirm
         logger.debug(`[saveRecipe] Supabase upsert response for recipe ${recipe.id}:`, { responseData: data });
 
-        return recipe; // Return the original recipe object passed in
+        // Return the original recipe object passed in (which now includes thumbnail_url if generated)
+        return recipe;
     } catch (error) { logger.error(`Error saving recipe ID ${recipe.id}:`, error); throw new Error(`Failed to save recipe: ${(error as Error).message}`); }
 };
 
@@ -121,6 +126,10 @@ export const deleteRecipe = async (recipeId: string, userId: string): Promise<vo
   try {
     logger.info(`Deleting recipe ID ${recipeId} for user ${userId}`);
 
+    // *** NOTE: Deletion logic might need review based on dual-save ***
+    // If recipes are global (user_id=null), this check might prevent users from deleting their copies
+    // Or prevent deletion altogether unless you implement admin roles.
+    // For now, keeping original logic but flagging for review.
     const { data: recipe, error: getError } = await supabase
       .from('recipes')
       .select('user_id')
@@ -138,19 +147,24 @@ export const deleteRecipe = async (recipeId: string, userId: string): Promise<vo
 
     // Allow deletion only if user_id matches (null user_id recipes likely need admin deletion)
     if (recipe.user_id !== userId) {
+      // This will likely block deletion of user-specific copies if the check is done against the global copy ID
+      // And will block deletion of global copies by non-admins. Needs careful thought based on your rules.
       logger.error(`User ${userId} attempted to delete recipe ${recipeId} which belongs to user ${recipe.user_id}`);
-      throw new Error('Unauthorized: Cannot delete recipe that belongs to another user');
+      throw new Error('Unauthorized: Cannot delete recipe that belongs to another user or is global');
     }
 
+    // Delete associated favorites first
     const { error: favError } = await supabase
       .from('favorites')
       .delete()
-      .eq('recipe_id', recipeId);
+      .eq('recipe_id', recipeId); // Delete all favorites referencing this recipe ID
 
     if (favError) {
+      // Log but maybe don't fail the whole deletion
       logger.error('Error removing recipe from favorites during deletion', { recipeId, error: favError });
     }
 
+    // Delete the actual recipe row
     const { error: deleteError } = await supabase
       .from('recipes')
       .delete()
@@ -161,19 +175,20 @@ export const deleteRecipe = async (recipeId: string, userId: string): Promise<vo
       throw deleteError;
     }
 
+    // Attempt to delete associated images
     try {
       await deleteRecipeImages(recipeId);
     } catch (imageError) {
-      logger.error('Error deleting recipe images, but recipe was deleted', { recipeId, error: imageError });
+      logger.error('Error deleting recipe images, but recipe row was deleted', { recipeId, error: imageError });
     }
 
     logger.info(`Recipe ID ${recipeId} deleted successfully.`);
   } catch (error) {
     logger.error(`Error deleting recipe ID ${recipeId}:`, error);
     // Check if the error message indicates permission issue
-     if (error instanceof Error && error.message.includes('Unauthorized')) {
-         throw new Error(error.message); // Re-throw specific error
-     }
+      if (error instanceof Error && error.message.includes('Unauthorized')) {
+          throw new Error(error.message); // Re-throw specific error
+      }
     throw new Error(`Failed to delete recipe: ${(error as Error).message}`);
   }
 };
@@ -181,9 +196,13 @@ export const deleteRecipe = async (recipeId: string, userId: string): Promise<vo
 
 /**
  * Fetches user recipes from Supabase
+ * NOTE: This logic assumes the dual-save method is used,
+ * where user recipes have their own row and user_id.
+ * If you switched to the favorites/junction table method, this needs changing.
  */
 export const getUserRecipes = async (userId: string): Promise<Recipe[]> => {
   try {
+    // Selects recipes directly linked to the user_id
     const { data, error } = await supabase.from('recipes').select('*').eq('user_id', userId).order('created_at', { ascending: false });
     if (error) { logger.error('Error fetching user recipes', {userId, error }); throw error; }
     if (!data) { return []; }
@@ -197,6 +216,7 @@ export const getUserRecipes = async (userId: string): Promise<Recipe[]> => {
       logger.debug("Sample recipe steps from getUserRecipes:", { steps: data[0].steps });
     }
 
+    // Map data, including the new thumbnail_url
     return data.map((item: Tables<'recipes'>): Recipe => ({
       id: item.id,
       title: item.title,
@@ -213,6 +233,8 @@ export const getUserRecipes = async (userId: string): Promise<Recipe[]> => {
       tags: item.tags as string[] | undefined,
       views: item.views ?? 0,
       quality_score: item.quality_score ?? undefined,
+      thumbnail_url: item.thumbnail_url ?? undefined, // Include thumbnail_url
+      similarity_hash: item.similarity_hash ?? undefined, // Keep other fields
     }));
   } catch (error) { logger.error('Error fetching user recipes:', { userId, error }); throw new Error(`Failed to fetch recipes: ${(error as Error).message}`); }
 };
@@ -233,6 +255,7 @@ export const getRecipeById = async (recipeId: string): Promise<Recipe | null> =>
     });
     logger.debug(`Retrieved steps for recipe ${recipeId}:`, { steps: data.steps });
 
+    // Increment view count (consider if this should only apply to global copy?)
     try {
       await supabase
         .from('recipes')
@@ -242,6 +265,7 @@ export const getRecipeById = async (recipeId: string): Promise<Recipe | null> =>
       logger.error('Error incrementing view count:', { recipeId, viewError });
     }
 
+    // Map data, including thumbnail_url
     return {
       id: data.id,
       title: data.title,
@@ -256,19 +280,22 @@ export const getRecipeById = async (recipeId: string): Promise<Recipe | null> =>
       totalTime: data.total_time_minutes ?? undefined,
       category: data.category ?? undefined,
       tags: data.tags as string[] | undefined,
-      views: data.views ?? 0,
+      views: data.views ?? 0, // Return updated view count (or original if update failed)
       quality_score: data.quality_score ?? undefined,
       similarity_hash: data.similarity_hash ?? undefined,
+      thumbnail_url: data.thumbnail_url ?? undefined, // Include thumbnail_url
     };
   } catch (error) { logger.error('Error fetching recipe by ID:', { recipeId, error }); throw new Error(`Failed to fetch recipe: ${(error as Error).message}`);}
 };
 
 /**
  * Gets recipes for discovery based on filters AND optional search query
+ * (Fetches only global recipes where user_id is null)
  */
 export const getDiscoverRecipes = async ({ category, tags, sort = 'recent', limit = 20, offset = 0, query }: { category?: string; tags?: string[]; sort?: string; limit?: number; offset?: number; query?: string; }): Promise<Recipe[]> => {
   try {
     logger.info(`Workspaceing discover recipes with filters: category=${category}, tags=${tags?.join(',')}, sort=${sort}, limit=${limit}, offset=${offset}, query=${query}`);
+    // Correctly fetches only global recipes
     let queryBuilder = supabase.from('recipes').select('*').is('user_id', null);
     if (category && category !== 'all') { queryBuilder = queryBuilder.eq('category', category); }
     if (tags && tags.length > 0) { queryBuilder = queryBuilder.contains('tags', tags); }
@@ -280,6 +307,7 @@ export const getDiscoverRecipes = async ({ category, tags, sort = 'recent', limi
     if (error) { logger.error('Error fetching discover recipes', { error }); throw error; }
     if (!data) { return []; }
     if (data.length > 0) logger.debug("Sample discover recipe steps:", { steps: data[0].steps });
+    // Map data, including thumbnail_url
     return data.map((item: Tables<'recipes'>): Recipe => ({
       id: item.id, title: item.title, servings: item.servings ?? 0, ingredients: item.ingredients ?? [],
       steps: item.steps ? (item.steps as unknown as RecipeStep[]) : [],
@@ -287,20 +315,24 @@ export const getDiscoverRecipes = async ({ category, tags, sort = 'recent', limi
       query: item.query ?? '', createdAt: new Date(item.created_at ?? Date.now()),
       prepTime: item.prep_time_minutes ?? undefined, cookTime: item.cook_time_minutes ?? undefined, totalTime: item.total_time_minutes ?? undefined,
       category: item.category ?? undefined, tags: item.tags as string[] | undefined, views: item.views ?? 0, quality_score: item.quality_score ?? undefined,
+      thumbnail_url: item.thumbnail_url ?? undefined, // Include thumbnail_url
     }));
   } catch (error) { logger.error('Error fetching discover recipes:', error); throw new Error(`Failed to fetch discover recipes: ${(error as Error).message}`); }
 };
 
 /**
  * Gets popular recipes
+ * (Fetches only global recipes where user_id is null)
  */
 export const getPopularRecipes = async (limit: number = 10): Promise<Recipe[]> => {
   try {
     logger.info(`Workspaceing popular recipes with limit: ${limit}`);
+    // Correctly fetches only global recipes
     const { data, error } = await supabase.from('recipes').select('*').is('user_id', null).order('views', { ascending: false, nullsFirst: false }).limit(limit);
     if (error) { logger.error('Error fetching popular recipes', { error }); throw error; }
     if (!data) { return []; }
     if (data.length > 0) logger.debug("Sample popular recipe steps:", { steps: data[0].steps });
+    // Map data, including thumbnail_url
     return data.map((item: Tables<'recipes'>): Recipe => ({
       id: item.id, title: item.title, servings: item.servings ?? 0, ingredients: item.ingredients ?? [],
       steps: item.steps ? (item.steps as unknown as RecipeStep[]) : [],
@@ -308,16 +340,19 @@ export const getPopularRecipes = async (limit: number = 10): Promise<Recipe[]> =
       query: item.query ?? '', createdAt: new Date(item.created_at ?? Date.now()),
       prepTime: item.prep_time_minutes ?? undefined, cookTime: item.cook_time_minutes ?? undefined, totalTime: item.total_time_minutes ?? undefined,
       category: item.category ?? undefined, tags: item.tags as string[] | undefined, views: item.views ?? 0, quality_score: item.quality_score ?? undefined,
+      thumbnail_url: item.thumbnail_url ?? undefined, // Include thumbnail_url
     }));
   } catch (error) { logger.error('Error fetching popular recipes:', error); throw new Error(`Failed to fetch popular recipes: ${(error as Error).message}`); }
 };
 
 /**
  * Gets recipes by category
+ * (Fetches only global recipes where user_id is null)
  */
 export const getCategoryRecipes = async (categoryId: string, { limit = 20, offset = 0, sort = 'recent' }: { limit?: number; offset?: number; sort?: string; }): Promise<Recipe[]> => {
   try {
     logger.info(`Workspaceing recipes for category: ${categoryId} with limit=${limit}, offset=${offset}, sort=${sort}`);
+    // Correctly fetches only global recipes
     let queryBuilder = supabase.from('recipes').select('*').is('user_id', null).eq('category', categoryId);
     if (sort === 'popular') { queryBuilder = queryBuilder.order('views', { ascending: false, nullsFirst: false }); }
     else { queryBuilder = queryBuilder.order('created_at', { ascending: false }); }
@@ -326,6 +361,7 @@ export const getCategoryRecipes = async (categoryId: string, { limit = 20, offse
     if (error) { logger.error('Error fetching category recipes', { categoryId, error }); throw error; }
     if (!data) { return []; }
     if (data.length > 0) logger.debug("Sample category recipe steps:", { steps: data[0].steps });
+    // Map data, including thumbnail_url
     return data.map((item: Tables<'recipes'>): Recipe => ({
       id: item.id, title: item.title, servings: item.servings ?? 0, ingredients: item.ingredients ?? [],
       steps: item.steps ? (item.steps as unknown as RecipeStep[]) : [],
@@ -333,6 +369,7 @@ export const getCategoryRecipes = async (categoryId: string, { limit = 20, offse
       query: item.query ?? '', createdAt: new Date(item.created_at ?? Date.now()),
       prepTime: item.prep_time_minutes ?? undefined, cookTime: item.cook_time_minutes ?? undefined, totalTime: item.total_time_minutes ?? undefined,
       category: item.category ?? undefined, tags: item.tags as string[] | undefined, views: item.views ?? 0, quality_score: item.quality_score ?? undefined,
+      thumbnail_url: item.thumbnail_url ?? undefined, // Include thumbnail_url
     }));
   } catch (error) { logger.error('Error fetching category recipes:', { categoryId, error }); throw new Error(`Failed to fetch category recipes: ${(error as Error).message}`); }
 };
@@ -346,9 +383,11 @@ export const getAllCategories = async (): Promise<{ id: string; name: string; co
     const { data, error } = await supabase.rpc('get_category_counts');
     if (error) { logger.error('Error fetching category counts via RPC', { error }); throw error; }
     if (!data) { return []; }
+    // Ensure data is treated as the expected array type
+    const categoryCounts = data as { category: string | null; recipe_count: number | null }[];
     return recipeCategories.map(category => {
-      const countEntry = data.find((item: { category: string | null; recipe_count: number | null }) => item.category === category.id);
-      return { id: category.id, name: category.name, count: countEntry?.recipe_count ? Number(countEntry.recipe_count) : 0 };
+        const countEntry = categoryCounts.find(item => item.category === category.id);
+        return { id: category.id, name: category.name, count: countEntry?.recipe_count ? Number(countEntry.recipe_count) : 0 };
     });
   } catch (error) { logger.error('Error fetching all categories:', error); throw new Error(`Failed to fetch categories: ${(error as Error).message}`); }
 };
@@ -418,12 +457,18 @@ export const getSearchHistory = async (userId: string, limit: number = 10): Prom
  */
 export const addFavoriteRecipe = async (userId: string, recipeId: string): Promise<void> => {
   try {
-    // First, check if the recipe exists globally
-    const { error: recipeError } = await supabase.from('recipes').select('id').eq('id', recipeId).single();
-    if (recipeError) {
-      if (recipeError.code === 'PGRST116') throw new Error('Recipe not found');
-      throw recipeError;
+    // First, check if the recipe exists (can check either global or user copy ID)
+    const { error: recipeError } = await supabase.from('recipes').select('id').eq('id', recipeId).maybeSingle(); // Use maybeSingle to handle not found
+    if (recipeError && recipeError.code !== 'PGRST116') { // Ignore 'not found' if needed, but better to ensure it exists
+        logger.error('Error checking recipe existence before adding favorite', { recipeId, error: recipeError });
+        throw recipeError;
     }
+    if (!recipeError && !await supabase.from('recipes').select('id').eq('id', recipeId).maybeSingle()) {
+        // Handle case where maybeSingle returns null data without error (should be caught by PGRST116 usually)
+        throw new Error('Recipe not found');
+    }
+
+
     // Now add the favorite
     const favoriteData: TablesInsert<'favorites'> = { user_id: userId, recipe_id: recipeId };
     const { error } = await supabase.from('favorites').insert(favoriteData);
@@ -454,18 +499,25 @@ export const getFavoriteRecipes = async (userId: string): Promise<Recipe[]> => {
     if (!favoriteData || favoriteData.length === 0) return [];
     const recipeIds = favoriteData.map(item => item.recipe_id).filter((id): id is string => id !== null);
     if (recipeIds.length === 0) return [];
+
+    // Fetch the actual recipes using the collected IDs
+    // This implicitly fetches global recipe data since favorites link to recipe IDs
     const { data: recipesData, error: recipesError } = await supabase.from('recipes').select('*').in('id', recipeIds);
     if (recipesError) { logger.error('Error fetching favorite recipes', { userId, error: recipesError }); throw recipesError; }
     if (!recipesData) return [];
     if (recipesData.length > 0) logger.debug("Sample favorite recipe steps:", { steps: recipesData[0].steps });
+
+    // Map data, including thumbnail_url and setting isFavorite flag
     return recipesData.map((item: Tables<'recipes'>): Recipe => ({
         id: item.id, title: item.title, servings: item.servings ?? 0, ingredients: item.ingredients ?? [],
         steps: item.steps ? (item.steps as unknown as RecipeStep[]) : [],
         nutrition: item.nutrition ? (item.nutrition as unknown as NutritionInfo) : { calories: 0, protein: '0g', fat: '0g', carbs: '0g' },
         query: item.query ?? '', createdAt: new Date(item.created_at ?? Date.now()),
         prepTime: item.prep_time_minutes ?? undefined, cookTime: item.cook_time_minutes ?? undefined, totalTime: item.total_time_minutes ?? undefined,
-        isFavorite: true,
+        isFavorite: true, // Set flag as true because these were fetched via favorites table
         category: item.category ?? undefined, tags: item.tags as string[] | undefined, views: item.views ?? 0, quality_score: item.quality_score ?? undefined,
+        thumbnail_url: item.thumbnail_url ?? undefined, // Include thumbnail_url
+        similarity_hash: item.similarity_hash ?? undefined, // Keep other fields
     }));
   } catch (error) { logger.error('Error fetching favorite recipes:', { userId, error }); throw new Error(`Failed to fetch favorites: ${(error as Error).message}`); }
 };
