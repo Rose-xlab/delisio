@@ -100,6 +100,12 @@ app.get('/health', (req, res) => {
   });
 });
 
+// ✅ Add this here
+app.get('/', (req, res) => {
+    const name = process.env.NAME || 'World';
+    res.send(`Hello ${name}!`);
+  });
+
 // 404 handler for undefined routes
 // This should be after all defined routes
 app.use((req, res, next) => {
@@ -119,11 +125,7 @@ addSentryErrorHandler(app);
 // NOTE: This should be the LAST middleware added
 app.use(errorHandler);
 
-app.get('/', (req, res) => {
-    const name = process.env.NAME || 'World';
-    res.send(`Hello ${name}!`);
-  });
-  
+
 
 // Export the configured app instance
 export default app;
