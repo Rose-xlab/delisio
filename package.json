@@ -5,20 +5,18 @@
   "private": true,
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc",
-    "dev:server": "set PORT=3002 && nodemon --watch src --ext ts,json --exec ts-node src/server.ts",
-    "dev:chat-worker": "nodemon --watch src --ext ts,json --exec ts-node src/workers/chat.worker.ts",
-    "dev:image-worker": "nodemon --watch src --ext ts,json --exec ts-node src/workers/image.worker.ts",
-    "dev:recipe-worker": "nodemon --watch src --ext ts,json --exec ts-node src/workers/recipe.worker.ts",
-    "dev": "concurrently \"npm:dev:server\" \"npm:dev:chat-worker\" \"npm:dev:image-worker\" \"npm:dev:recipe-worker\"",
-    "start:server": "node dist/server.js",
-    "start:chat-worker": "node dist/workers/chat.worker.js",
-    "start:image-worker": "node dist/workers/image.worker.js",
-    "start:recipe-worker": "node dist/workers/recipe.worker.js",
-    "start": "concurrently \"npm:start:server\" \"npm:start:chat-worker\" \"npm:start:image-worker\" \"npm:start:recipe-worker\"",
-    "postinstall": "npm run build",
-    "gen:types": "npx supabase gen types typescript --project-id kwdnztyhexydoaicjepd --schema public,auth > src/types/supabase.ts"
-  },
+  "build": "tsc",
+  "dev:server": "set PORT=3002 && nodemon --watch src --ext ts,json --exec ts-node src/server.ts",
+  "dev:chat-worker": "nodemon --watch src --ext ts,json --exec ts-node src/workers/chat.worker.ts",
+  "dev:image-worker": "nodemon --watch src --ext ts,json --exec ts-node src/workers/image.worker.ts",
+  "dev:recipe-worker": "nodemon --watch src --ext ts,json --exec ts-node src/workers/recipe.worker.ts",
+  "dev": "concurrently \"npm:dev:server\" \"npm:dev:chat-worker\" \"npm:dev:image-worker\" \"npm:dev:recipe-worker\"",
+  
+  "start": "node dist/server.js",
+  
+  "postinstall": "npm run build",
+  "gen:types": "npx supabase gen types typescript --project-id kwdnztyhexydoaicjepd --schema public,auth > src/types/supabase.ts"
+},
   "author": "Your Name",
   "license": "MIT",
   "dependencies": {
