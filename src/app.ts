@@ -119,5 +119,11 @@ addSentryErrorHandler(app);
 // NOTE: This should be the LAST middleware added
 app.use(errorHandler);
 
+app.get('/', (req, res) => {
+    const name = process.env.NAME || 'World';
+    res.send(`Hello ${name}!`);
+  });
+  
+
 // Export the configured app instance
 export default app;
