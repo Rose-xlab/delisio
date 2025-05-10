@@ -1,3 +1,5 @@
+//C:\Users\mukas\Downloads\delisio\delisio\src\config\sentry.ts
+
 import * as Sentry from '@sentry/node';
 // Removed: import * as Tracing from '@sentry/tracing'; - Deprecated
 import express from 'express';

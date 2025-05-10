@@ -1,13 +1,10 @@
-// src/controllers/chatControllers.ts
 import { Request, Response, NextFunction } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../config/supabase';
-import chatQueue from '../queues/chatQueue'; // Assuming this import is correct
-import { AppError } from '../middleware/errorMiddleware';
+import chatQueue from '../queues/chatQueue';
+import { AppError } from '../middleware/errorMiddleware'; // Assuming AppError is here
 import { logger } from '../utils/logger';
-// Import the actual Result Type from the queue definition
-import { ChatJobResult } from '../queues/chatQueue';
-
+import { ChatJobResult } from '../queues/chatQueue'; // Import the actual Result Type
 
 /**
  * Handles incoming chat messages, queues them for processing,
@@ -19,13 +16,12 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
     const userId = req.user?.id; // Use optional chaining
     const messageId = uuidv4();
 
-    // Check if conversation_id is provided (moved validation here for clarity)
     if (!conversation_id) {
       throw new AppError('Missing conversation_id in request', 400);
     }
-    const conversationId: string = conversation_id; // Assign after check
+    const conversationId: string = conversation_id;
 
-    logger.info(`Chat message received`, { conversationId });
+    logger.info(`Chat message received`, { conversationId, userId });
 
     if (userId) {
       try {
@@ -36,153 +32,188 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
       } catch (dbError) {
         const errorMsg = dbError instanceof Error ? dbError.message : String(dbError);
         logger.error(`Error saving user message: ${errorMsg}`, { conversationId });
-        // Optionally decide if this DB error should halt processing
-        // throw new AppError('Failed to save user message', 500);
+        // Not halting processing for this error, AI response is prioritized.
       }
     } else {
       logger.info(`Anonymous user message received, not saving to DB`, { conversationId });
     }
 
-    // Add job to chat queue
     const job = await chatQueue.add(
-      'process-message', // Correct job name literal matching NameType
-      { // Job Data
-        message, conversationId, messageHistory: message_history, userId
-      },
-      // --- FIX APPLIED IN ORIGINAL CODE ---
-      // Assert options object as 'any' to bypass incorrect type check for 'timeout'
-      { // Job Options
-        timeout: 30000,       // This SHOULD be valid in JobsOptions
+      'process-message',
+      { message, conversationId, messageHistory: message_history, userId },
+      {
+        timeout: 30000, // Job processing timeout in BullMQ
         removeOnComplete: 500,
         removeOnFail: 1000,
         attempts: 2
-      } as any // Add 'as any' assertion here
+      } as any // Keep 'as any' if types are problematic, or ensure types align
     );
 
     logger.info(`Chat message job added`, { jobId: job.id, conversationId });
 
-    // Poll for job completion
+    // Wait for job completion (using waitUntilFinished is often preferred over polling if QueueEvents is set up)
+    // However, sticking to polling as per your original structure for now.
+    // If you have QueueEvents set up for chatQueue, consider:
+    // const result = await job.waitUntilFinished(chatQueueEvents, timeoutMs); -> this would need chatQueueEvents
+    
     const startTime = Date.now();
-    const timeoutMs = 25000; // Reduced timeout for polling loop itself
+    const pollingTimeoutMs = 25000; // Controller's own timeout for waiting for the job
 
-    while (Date.now() - startTime < timeoutMs) {
-      await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms between polls
+    while (Date.now() - startTime < pollingTimeoutMs) {
+      await new Promise(resolve => setTimeout(resolve, 500)); // Poll interval
 
-      const currentJob = await chatQueue.getJob(job.id!); // Use non-null assertion, job ID should exist
+      const currentJob = await chatQueue.getJob(job.id!);
       if (!currentJob) {
-        logger.warn(`Job not found polling, might be removed or completed`, { jobId: job.id });
-        // Consider if we should break or continue polling briefly
-        continue; // Continue polling for a short duration in case of race condition
+        logger.warn(`Job not found during polling, might have been removed or completed very quickly`, { jobId: job.id });
+        // If it's gone, it might have completed and been removed.
+        // It's hard to know the status here without QueueEvents or if removeOnComplete is very fast.
+        // Let's assume if it's gone, we might miss its state; the timeout will eventually catch it.
+        // For a short period, let's try again.
+        if (Date.now() - startTime > 5000 && !currentJob) { // e.g. if not found after 5s of polling
+            logger.error(`Job ${job.id} persistently not found during polling. Assuming lost or error.`, { conversationId });
+            throw new AppError('Chat processing job disappeared unexpectedly.', 500, "I'm sorry, there was a hiccup processing your message. Please try again.");
+        }
+        continue;
       }
 
       const state = await currentJob.getState();
-      logger.debug(`Polling chat job: State=${state}`, { jobId: job.id }); // Debug log for state
+      logger.debug(`Polling chat job: State=${state}`, { jobId: job.id });
 
       if (state === 'completed') {
-        const result = await currentJob.returnvalue as ChatJobResult; // Use assertion
+        const result = currentJob.returnvalue as ChatJobResult; // Use job.returnvalue directly
 
-        if (result?.error) {
-          // Log handled error from worker, but don't throw here unless critical
-          logger.warn(`Chat job completed with handled error: ${result.error}`, { jobId: job.id });
-        }
-
-        // --- UPDATED CHECK ---
-        // Check if the result object exists and if the 'reply' property is specifically a string.
-        // This allows empty strings "" as valid replies, preventing the previous error.
+        // result.reply is the user-facing message (could be success or a user-friendly error message from worker/gptService)
+        // result.error is the technical error string, if any, from worker/gptService
+        
         if (result && typeof result.reply === 'string') {
-        // --- END OF UPDATE ---
-            if (userId) {
-                try {
-                  // Save assistant response (only if user is logged in?) - Review this logic
-                  // Assuming AI response should be saved regardless of user login for history?
-                  await supabase.from('messages').insert({
-                    id: uuidv4(), conversation_id: conversationId, user_id: null, role: 'assistant',
-                    content: result.reply,
-                    metadata: { suggestions: result.suggestions ?? [] } // Ensure metadata is saved correctly
-                  });
-                  // Update conversation timestamp only if user is logged in
-                  await supabase.from('conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId);
-                  logger.info(`Assistant response saved and conversation updated`, { conversationId });
-                } catch (dbError) {
-                  const errorMsg = dbError instanceof Error ? dbError.message : String(dbError);
-                  logger.error(`Error saving assistant message or updating conversation: ${errorMsg}`, { conversationId });
-                  // Decide if this should cause a 500 response or just be logged
-                }
-            } else {
-                logger.info(`Assistant response generated for anonymous user, not saving to DB`, { conversationId });
-            }
+          // Successfully got a reply string. It might be an apology if result.error is also set.
+          if (result.error) {
+            // This means the worker handled an error (e.g., from gptService) and set a technical error message,
+            // but still provided a user-facing reply.
+            logger.warn(`Chat job ${job.id} completed with a user-facing reply ("${result.reply}") AND a technical error: ${result.error}`, { conversationId });
+            // We proceed to send the result.reply to the user. The technical result.error is logged.
+            // The client will receive the user-facing reply.
+          } else {
+            logger.info(`Chat job ${job.id} completed successfully with reply.`, { conversationId });
+          }
 
-            logger.info(`Chat job completed, response sent`, { jobId: job.id });
-            return res.status(200).json({
-                reply: result.reply,
-                suggestions: result.suggestions ?? [] // Ensure suggestions are handled correctly
-            });
+          // Save assistant message logic (conditionally if user is logged in)
+          if (userId) { // Check if it's an authenticated user's conversation
+             try {
+                await supabase.from('messages').insert({
+                    id: uuidv4(),
+                    conversation_id: conversationId,
+                    user_id: null, // Assistant messages have no user_id
+                    role: 'assistant',
+                    content: result.reply,
+                    metadata: { suggestions: result.suggestions ?? [] }
+                });
+                await supabase.from('conversations')
+                              .update({ updated_at: new Date().toISOString() })
+                              .eq('id', conversationId);
+                logger.info(`Assistant response saved and conversation updated for user`, { conversationId, userId });
+             } catch (dbError) {
+                const errorMsg = dbError instanceof Error ? dbError.message : String(dbError);
+                logger.error(`Error saving assistant message or updating conversation for user: ${errorMsg}`, { conversationId, userId });
+                // Non-critical for the response to the user, but good to monitor.
+             }
+          } else {
+             // For anonymous users, we generated a reply but don't save it to their specific records (as they have none)
+             // The conversationId here would be ephemeral or managed client-side for anonymous users.
+             logger.info(`Assistant response generated for anonymous conversation, not saving to DB`, { conversationId });
+          }
+          
+          return res.status(200).json({
+            reply: result.reply,
+            suggestions: result.suggestions ?? [] // Ensure suggestions default to empty array if null/undefined for client
+          });
+
         } else {
-            // This block is now only reached if result is null/undefined or result.reply is not a string
-            logger.error(`Chat job completed but 'reply' is missing or invalid type`, { jobId: job.id, resultReplyType: typeof result?.reply });
-            throw new Error('Chat completed but no valid reply was generated.'); // Updated error message slightly
+          // Job completed, but result.reply is NOT a string or result is null.
+          // This is the scenario our gptService changes aim to prevent.
+          // If we reach here, it implies gptService or the worker failed to produce the standard {reply, error, suggestions} structure.
+          const workerTechError = result?.error; // Get technical error from worker if available
+          const messageToThrow = workerTechError || 'Chat completed but the worker did not provide a valid reply content.';
+          logger.error(`Chat job ${job.id} completed but 'reply' is missing, null, or not a string. Technical error: ${messageToThrow}`, {
+            jobId: job.id,
+            resultReplyType: typeof result?.reply,
+            fullResult: result, // Log the full result for debugging
+            conversationId
+          });
+          throw new AppError(messageToThrow, 500, result?.reply || "I'm sorry, I couldn't formulate a response due to an internal error.");
         }
 
       } else if (state === 'failed') {
-        const reason = currentJob.failedReason || 'Unknown reason';
-        logger.error(`Chat job failed: ${reason}`, { jobId: job.id });
-        // Propagate a more specific error message if possible
-        throw new AppError(`Chat message processing failed: ${reason}`, 500); // Use AppError for status code
+        const reason = currentJob.failedReason || 'Unknown reason for job failure';
+        logger.error(`Chat job ${job.id} failed: ${reason}`, { conversationId });
+        // The job itself failed after retries in BullMQ.
+        // The 'reply' from the job, if any, would be from the last attempt's catch block in the worker.
+        // Let's try to get the ChatJobResult from the failed job if it's available (it might be).
+        const failedJobResult = currentJob.returnvalue as ChatJobResult | undefined;
+        const userFacingReplyForFailedJob = failedJobResult?.reply || "I'm sorry, the message processing failed after several attempts. Please try again.";
+        const technicalErrorForFailedJob = failedJobResult?.error || reason;
+
+        throw new AppError(technicalErrorForFailedJob, 500, userFacingReplyForFailedJob);
       }
-      // Continue polling if state is active, waiting, delayed, etc.
+      // Continue polling if job is in other states like 'active', 'waiting', 'delayed'
     }
 
-    // Timeout reached for polling loop
-    logger.warn(`Chat job polling timed out after ${timeoutMs}ms`, { jobId: job.id });
+    // Polling loop timed out
+    logger.warn(`Chat job polling timed out after ${pollingTimeoutMs}ms`, { jobId: job.id, conversationId });
 
     // Optional: Check job status one last time after timeout
     const timedOutJob = await chatQueue.getJob(job.id!);
     if (timedOutJob) {
       const finalState = await timedOutJob.getState();
+      logger.warn(`Job ${job.id} status after polling timeout: ${finalState}`, { conversationId });
       if (finalState === 'completed') {
-          const finalResult = await timedOutJob.returnvalue as ChatJobResult;
-          if (finalResult && typeof finalResult.reply === 'string') {
-              logger.info(`Returning result from job completed just after polling timeout`, { jobId: job.id });
-              // Note: DB saving logic might be missed here if it depends on userId from req
-              return res.status(200).json({
-                  reply: finalResult.reply,
-                  suggestions: finalResult.suggestions ?? []
-              });
-          } else {
-              logger.error(`Job completed post-timeout but missing valid reply`, { jobId: job.id });
-          }
-      } else {
-          logger.warn(`Job found post-timeout, final state: ${finalState}`, { jobId: job.id });
-          // Optionally try to remove/fail the job if it's stuck
-          // try { await timedOutJob.moveToFailed({ message: 'Processing timed out' }, true); } catch(moveError) { logger.error('Failed to move timed out job to failed state', { jobId: job.id, moveError });}
+        const finalResult = timedOutJob.returnvalue as ChatJobResult;
+        if (finalResult && typeof finalResult.reply === 'string') {
+          logger.info(`Returning result from job ${job.id} completed just after polling timeout`, { conversationId });
+          // DB saving logic for assistant message could be added here too if necessary
+          return res.status(200).json({
+            reply: finalResult.reply,
+            suggestions: finalResult.suggestions ?? []
+          });
+        } else {
+          logger.error(`Job ${job.id} completed post-timeout but missing valid reply`, { conversationId });
+        }
+      } else if (finalState === 'failed') {
+         const reason = timedOutJob.failedReason || 'Unknown reason post-timeout';
+         logger.error(`Job ${job.id} found FAILED post-timeout: ${reason}`, { conversationId });
+         throw new AppError(`Chat processing failed (found post-timeout): ${reason}`, 500, "I'm sorry, processing your message took too long and failed. Please try again.");
       }
+      // If job is still active or waiting, it truly timed out from controller's perspective
     }
 
-    // If timeout reached and job didn't complete successfully just after, return timeout error
-    throw new AppError('Chat message processing timed out', 408); // 408 Request Timeout
+    throw new AppError('Chat message processing timed out from controller.', 408, "I'm sorry, your request took too long to process. Please try again.");
 
   } catch (error) {
-    // Centralized error handling
     const isAppError = error instanceof AppError;
     const statusCode = isAppError ? error.statusCode : 500;
-    // Use the specific error message from AppError or the generic one from Error
-    const errorMsg = error instanceof Error ? error.message : 'Unknown error processing chat';
+    const technicalErrorMsg = error instanceof Error ? error.message : 'Unknown error processing chat';
+    
+    // Determine the user-facing reply
+    let userFacingReply = "I'm sorry, I encountered an unexpected issue. Please try again.";
+    if (isAppError && error.userFacingReply) {
+        userFacingReply = error.userFacingReply;
+    } else if (statusCode === 408) {
+        userFacingReply = "I'm sorry, your request took too long to process. Please try again.";
+    }
 
-    // Log the categorized error
-    logger.error(`Error in handleChatMessage: ${errorMsg}`, { statusCode, isAppError });
+    logger.error(`Error in handleChatMessage: ${technicalErrorMsg}`, { statusCode, isAppError, originalError: error });
 
-    // Ensure response is sent only once
     if (!res.headersSent) {
-        return res.status(statusCode).json({
-            // Use a user-friendly reply for client
-            reply: "I'm sorry, I encountered an issue. Please try again.",
-            // Provide the actual error message in the error field (for debugging/logging on client if needed)
-            error: errorMsg,
-            suggestions: null // Ensure suggestions field is present even on error
-        });
+      return res.status(statusCode).json({
+        reply: userFacingReply,
+        error: technicalErrorMsg, // Technical error for logging/debugging on client if needed
+        suggestions: null
+      });
     } else {
-        // If headers already sent, pass to Express default error handler
-        next(error);
+      // If headers already sent, Express default error handler will deal with it.
+      // This usually means an error occurred in streaming or after response started.
+      logger.error('Headers already sent, cannot send error response to client. Passing to next.', { technicalErrorMsg });
+      next(error);
     }
   }
 };
@@ -198,7 +229,6 @@ export const getChatQueueStatus = async (_req: Request, res: Response, next: Nex
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : 'Unknown error';
     logger.error(`Error getting chat queue status: ${errorMsg}`);
-    // Pass AppError to central error handler
     next(new AppError(`Failed get chat queue status: ${errorMsg}`, 500));
   }
 };
