@@ -1,22 +1,16 @@
 // src/services/subscriptionService.ts
-import { stripe, STRIPE_PLANS, isStripeConfigured } from '../config/stripe'; // Stripe config
+import { stripe, STRIPE_PLANS, isStripeConfigured } from '../config/stripe';
 import { supabase } from '../config/supabase';
 import { logger } from '../utils/logger';
 import {
   Subscription,
   SubscriptionTier,
   SubscriptionStatus,
-  FeatureLimits, // Ensure this is your updated interface from models/Subscription.ts
-  SUBSCRIPTION_FEATURE_LIMITS, // Ensure this is your updated constant
+  FeatureLimits,
+  SUBSCRIPTION_FEATURE_LIMITS,
   SubscriptionResponse,
-  // AiChatUsageRecord // Optional if you type the result of DB queries
 } from '../models/Subscription';
-// import { User } from '@supabase/supabase-js'; // Not directly used here, but good for reference
 
-/**
- * Get user's subscription from the local Supabase 'subscriptions' table.
- * This table should be kept in sync with RevenueCat via webhooks.
- */
 export const getUserSubscription = async (userId: string): Promise<Subscription | null> => {
   try {
     const { data, error } = await supabase
@@ -25,7 +19,7 @@ export const getUserSubscription = async (userId: string): Promise<Subscription 
       .eq('user_id', userId)
       .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116: 'Row not found'
+    if (error && error.code !== 'PGRST116') {
       logger.error(`Error getting user subscription for ${userId}:`, { message: error.message, code: error.code });
       return null;
     }
@@ -38,8 +32,8 @@ export const getUserSubscription = async (userId: string): Promise<Subscription 
     return {
       id: data.id,
       userId: data.user_id,
-      stripeCustomerId: data.stripe_customer_id ?? undefined, // Kept for structure
-      stripeSubscriptionId: data.stripe_subscription_id ?? undefined, // Kept for structure
+      stripeCustomerId: data.stripe_customer_id ?? undefined,
+      stripeSubscriptionId: data.stripe_subscription_id ?? undefined,
       tier: data.tier as SubscriptionTier,
       status: data.status as SubscriptionStatus,
       currentPeriodStart: new Date(data.current_period_start),
@@ -54,14 +48,9 @@ export const getUserSubscription = async (userId: string): Promise<Subscription 
   }
 };
 
-/**
- * Create a free subscription entry in the local Supabase 'subscriptions' table
- * and initialize usage records for both recipes and AI chat.
- */
 export const createFreeSubscription = async (userId: string): Promise<Subscription | null> => {
   try {
     const now = new Date();
-    // Free tier period, e.g., 1 month. Adjust as needed.
     const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds());
 
     const subscriptionDataToInsert = {
@@ -80,41 +69,43 @@ export const createFreeSubscription = async (userId: string): Promise<Subscripti
       .single();
 
     if (subInsertError) {
-      // It's possible a subscription was created by a concurrent request or webhook. Try fetching.
-      if (subInsertError.code === '23505') { // Unique violation
+      if (subInsertError.code === '23505') {
         logger.warn(`Unique violation creating free subscription for ${userId}, likely exists. Fetching.`);
-        return await getUserSubscription(userId); // Attempt to fetch existing
+        return await getUserSubscription(userId);
       }
       logger.error(`Error creating free subscription in DB for user ${userId}:`, subInsertError);
       return null;
     }
 
+    const currentPeriodStartISO = subInsertData.current_period_start ? new Date(subInsertData.current_period_start).toISOString() : now.toISOString();
+    const currentPeriodEndISO = subInsertData.current_period_end ? new Date(subInsertData.current_period_end).toISOString() : periodEnd.toISOString();
+
+
     // Initialize recipe usage
     const { error: recipeUsageError } = await supabase
-      .from('recipe_usage') // Your existing table
+      .from('recipe_usage')
       .insert({
         user_id: userId,
         count: 0,
-        period_start: subscriptionDataToInsert.current_period_start,
-        period_end: subscriptionDataToInsert.current_period_end,
+        period_start: currentPeriodStartISO,
+        period_end: currentPeriodEndISO,
       });
-    if (recipeUsageError && recipeUsageError.code !== '23505') { // Ignore unique violation if already initialized
+    if (recipeUsageError && recipeUsageError.code !== '23505') {
       logger.error(`Error initializing recipe_usage for new free subscription (user ${userId}):`, recipeUsageError);
     }
 
-    // **** NEW: Initialize AI chat usage ****
+    // Initialize AI chat usage
     const { error: chatUsageError } = await supabase
-      .from('ai_chat_usage') // Your new table
+      .from('ai_chat_usage')
       .insert({
         user_id: userId,
         count: 0,
-        period_start: subscriptionDataToInsert.current_period_start,
-        period_end: subscriptionDataToInsert.current_period_end,
+        period_start: currentPeriodStartISO,
+        period_end: currentPeriodEndISO,
       });
-    if (chatUsageError && chatUsageError.code !== '23505') { // Ignore unique violation
+    if (chatUsageError && chatUsageError.code !== '23505') {
       logger.error(`Error initializing ai_chat_usage for new free subscription (user ${userId}):`, chatUsageError);
     }
-    // **** END NEW ****
 
     logger.info(`Free subscription and initial usage records created/ensured for user ${userId}`);
     return {
@@ -134,7 +125,6 @@ export const createFreeSubscription = async (userId: string): Promise<Subscripti
   }
 };
 
-// --- Recipe Usage Functions (Keep as is) ---
 export const getUserRecipeUsage = async (userId: string, periodStart: Date): Promise<number> => {
   try {
     const { data, error } = await supabase
@@ -178,49 +168,37 @@ export const trackRecipeGeneration = async (userId: string): Promise<boolean> =>
   }
 };
 
-// ---- NEW AI CHAT USAGE FUNCTIONS ----
-/**
- * Get user's current AI chat reply usage for the given period from `ai_chat_usage` table.
- */
 export const getAiChatUsageCount = async (userId: string, periodStart: Date): Promise<number> => {
   try {
     const { data, error } = await supabase
-      .from('ai_chat_usage') // Use the new table name
+      .from('ai_chat_usage')
       .select('count')
       .eq('user_id', userId)
       .eq('period_start', periodStart.toISOString())
       .single();
-
-    if (error && error.code !== 'PGRST116') { // PGRST116: Row not found
+    if (error && error.code !== 'PGRST116') {
       logger.error(`Error getting AI chat usage for user ${userId}, period ${periodStart.toISOString()}:`, error);
       return 0;
     }
-    return data?.count || 0; // If no record for the period, usage is 0
+    return data?.count || 0;
   } catch (error) {
     logger.error(`Unexpected error in getAiChatUsageCount for user ${userId}:`, error);
     return 0;
   }
 };
 
-/**
- * Track AI chat reply generation usage by calling the RPC function `increment_ai_chat_usage`.
- * This is called AFTER an AI reply has been successfully generated for a free user.
- */
 export const trackAiChatReplyGeneration = async (userId: string): Promise<boolean> => {
   try {
-    const subscription = await getUserSubscription(userId); // To get current period start/end
+    const subscription = await getUserSubscription(userId);
     if (!subscription) {
       logger.error(`Could not find subscription for user ${userId} to track AI chat reply.`);
       return false;
     }
-
-    // Call your new RPC function for AI chat usage
     const { error } = await supabase.rpc('increment_ai_chat_usage', {
       p_user_id: userId,
       p_period_start: subscription.currentPeriodStart.toISOString(),
       p_period_end: subscription.currentPeriodEnd.toISOString(),
     });
-
     if (error) {
       logger.error(`Error tracking AI chat reply for user ${userId} via RPC:`, error);
       return false;
@@ -233,38 +211,26 @@ export const trackAiChatReplyGeneration = async (userId: string): Promise<boolea
   }
 };
 
-
-// ---- MODIFIED getSubscriptionStatus ----
-/**
- * Get user's subscription status with usage information for both recipes and AI chat.
- * This is called by the Flutter app's SubscriptionProvider.
- */
 export const getSubscriptionStatus = async (userId: string): Promise<SubscriptionResponse | null> => {
   try {
-    const subscription = await getUserSubscription(userId); // This will create a free sub if none exists
-
+    const subscription = await getUserSubscription(userId);
     if (!subscription) {
       logger.error(`Failed to get or create subscription for user ${userId} in getSubscriptionStatus. Critical error.`);
-      // This state should ideally not be reached if getUserSubscription works as expected.
       return null;
     }
 
     const userTier = subscription.tier;
     const limits = SUBSCRIPTION_FEATURE_LIMITS[userTier] || SUBSCRIPTION_FEATURE_LIMITS.free;
 
-    // Recipe usage
     const recipeUsageCount = await getUserRecipeUsage(userId, subscription.currentPeriodStart);
     const recipeLimit = limits.recipeGenerationsPerMonth;
     const recipeRemaining = recipeLimit === Infinity ? -1 : Math.max(0, recipeLimit - recipeUsageCount);
 
-    // AI Chat Reply usage
     let aiChatUsageCount = 0;
-    if (userTier === 'free') { // Only count AI replies strictly for the 'free' tier against its specific limit
+    if (userTier === 'free') {
       aiChatUsageCount = await getAiChatUsageCount(userId, subscription.currentPeriodStart);
     }
     const aiChatLimit = limits.aiChatRepliesPerPeriod;
-    // For paid tiers, if aiChatLimit is Infinity, remaining is -1 (unlimited)
-    // For free tier, it's calculated.
     const aiChatRemaining = aiChatLimit === Infinity ? -1 : Math.max(0, aiChatLimit - aiChatUsageCount);
 
     logger.info(`Subscription status for user ${userId}: Tier=${userTier}, Recipes (U/L/R): ${recipeUsageCount}/${recipeLimit === Infinity ? 'Inf' : recipeLimit}/${recipeRemaining === -1 ? 'Inf' : recipeRemaining}, AI Chat (U/L/R): ${aiChatUsageCount}/${aiChatLimit === Infinity ? 'Inf' : aiChatLimit}/${aiChatRemaining === -1 ? 'Inf' : aiChatRemaining}`);
@@ -274,11 +240,9 @@ export const getSubscriptionStatus = async (userId: string): Promise<Subscriptio
       status: subscription.status,
       currentPeriodEnd: subscription.currentPeriodEnd.toISOString(),
       cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
-
       recipeGenerationsLimit: recipeLimit === Infinity ? -1 : recipeLimit,
       recipeGenerationsUsed: recipeUsageCount,
       recipeGenerationsRemaining: recipeRemaining,
-
       aiChatRepliesLimit: aiChatLimit === Infinity ? -1 : aiChatLimit,
       aiChatRepliesUsed: aiChatUsageCount,
       aiChatRepliesRemaining: aiChatRemaining,
@@ -291,12 +255,13 @@ export const getSubscriptionStatus = async (userId: string): Promise<Subscriptio
 
 /**
  * Resets all usage counters (recipes, AI chat) for a user for a new billing period.
- * This should be triggered by a webhook (e.g., from RevenueCat on RENEWAL, INITIAL_PURCHASE, PRODUCT_CHANGE).
+ * This should be triggered by a webhook or an admin action.
+ * Renamed from resetUsageCountersForNewPeriod to resetUsageCounter to match expected import.
  */
-export const resetUsageCountersForNewPeriod = async (userId: string, newPeriodStart: Date, newPeriodEnd: Date): Promise<void> => {
+export const resetUsageCounter = async (userId: string, newPeriodStart: Date, newPeriodEnd: Date): Promise<void> => {
   logger.info(`Resetting all usage counters for user ${userId} for period starting ${newPeriodStart.toISOString()}`);
   try {
-    // Reset recipe usage by inserting/updating to 0 for the new period
+    // Reset recipe usage
     const { error: recipeError } = await supabase
       .from('recipe_usage')
       .upsert({
@@ -305,7 +270,7 @@ export const resetUsageCountersForNewPeriod = async (userId: string, newPeriodSt
         period_start: newPeriodStart.toISOString(),
         period_end: newPeriodEnd.toISOString(),
         updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id, period_start' }); // Assumes UNIQUE constraint on (user_id, period_start)
+      }, { onConflict: 'user_id, period_start' });
 
     if (recipeError) {
       logger.error(`Error resetting recipe_usage for user ${userId}, period ${newPeriodStart.toISOString()}:`, recipeError);
@@ -322,7 +287,7 @@ export const resetUsageCountersForNewPeriod = async (userId: string, newPeriodSt
         period_start: newPeriodStart.toISOString(),
         period_end: newPeriodEnd.toISOString(),
         updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id, period_start' }); // Assumes UNIQUE constraint on (user_id, period_start)
+      }, { onConflict: 'user_id, period_start' });
 
     if (chatError) {
       logger.error(`Error resetting ai_chat_usage for user ${userId}, period ${newPeriodStart.toISOString()}:`, chatError);
@@ -330,27 +295,26 @@ export const resetUsageCountersForNewPeriod = async (userId: string, newPeriodSt
       logger.info(`AI chat usage counter reset for user ${userId}, period starting ${newPeriodStart.toISOString()}`);
     }
   } catch (error) {
-    logger.error(`Unexpected error in resetUsageCountersForNewPeriod for user ${userId}:`, error);
+    logger.error(`Unexpected error in resetUsageCounter for user ${userId}:`, error);
   }
 };
 
-
 // ---- STRIPE RELATED FUNCTIONS ----
-// These are kept as per original request but noted as Stripe-specific.
-// If RevenueCat is the sole IAP, these are likely unused for actual payment processing.
-
+// Kept for structure as requested, but with warnings about RevenueCat usage.
 export const getOrCreateStripeCustomer = async (userId: string): Promise<string | null> => {
-  // Commenting out the core logic as it's Stripe specific and likely not needed with RevenueCat
-  // If you still use Stripe for other reasons, this would need to be evaluated.
   logger.warn(`[STRIPE-SPECIFIC] getOrCreateStripeCustomer called for user ${userId}. This is likely unused if RevenueCat is the IAP handler.`);
   if (!isStripeConfigured()) {
     logger.error('[STRIPE-SPECIFIC] Stripe is not configured.');
     return null;
   }
-  // ... original Stripe customer creation logic ...
-  // This would involve fetching from 'users' table (which is auth.users) and creating customer in Stripe.
-  // This function needs significant review if you are purely on RevenueCat.
-  return null; // Placeholder
+  // ... (Original Stripe logic would go here if it were still active for some purpose)
+  // For now, assume it's not primary path with RevenueCat.
+  const userSubscription = await getUserSubscription(userId); // Check if already have one from local DB
+    if (userSubscription?.stripeCustomerId) {
+        return userSubscription.stripeCustomerId;
+    }
+    // If you need to create one (e.g. for a direct Stripe product not via RC), implement user fetch & Stripe customer.create
+  return null;
 };
 
 export const createCheckoutSession = async (
@@ -361,8 +325,8 @@ export const createCheckoutSession = async (
 ): Promise<string | null> => {
   logger.warn(`[STRIPE-SPECIFIC] createCheckoutSession called for user ${userId}. This is unused if RevenueCat handles payments.`);
   if (!isStripeConfigured()) return null;
-  // ... original Stripe checkout session logic ...
-  return null; // Placeholder
+  // ... (Original Stripe checkout session logic)
+  return null;
 };
 
 export const createCustomerPortalSession = async (
@@ -371,16 +335,15 @@ export const createCustomerPortalSession = async (
 ): Promise<string | null> => {
   logger.warn(`[STRIPE-SPECIFIC] createCustomerPortalSession called for user ${userId}. RevenueCat typically handles subscription management links.`);
   if (!isStripeConfigured()) return null;
-  // ... original Stripe portal session logic ...
-  return null; // Placeholder
+  // ... (Original Stripe portal session logic)
+  return null;
 };
 
 export const cancelSubscription = async (userId: string): Promise<boolean> => {
-  logger.warn(`[STRIPE-SPECIFIC] cancelSubscription (Stripe) called for user ${userId}. RevenueCat handles subscription lifecycle.`);
+  logger.warn(`[STRIPE-SPECIFIC] cancelSubscription (Stripe) called for user ${userId}. RevenueCat handles subscription lifecycle via app stores/webhooks.`);
   if (!isStripeConfigured()) return false;
-  // ... original Stripe cancellation logic ...
-  // For RevenueCat, cancellations happen via app stores, and webhooks update your DB.
-  return false; // Placeholder
+  // ... (Original Stripe cancellation logic)
+  return false;
 };
 
 export const updateSubscriptionFromStripe = async (
@@ -391,13 +354,28 @@ export const updateSubscriptionFromStripe = async (
   cancelAtPeriodEnd: boolean,
   tier: SubscriptionTier
 ): Promise<boolean> => {
-  logger.warn(`[STRIPE-SPECIFIC] updateSubscriptionFromStripe called. This should be replaced by RevenueCat webhook logic.`);
-  // ... original logic to update DB from Stripe event ...
-  // This will be superseded by RevenueCat webhook handling.
-  return false; // Placeholder
+  logger.warn(`[STRIPE-SPECIFIC] updateSubscriptionFromStripe called. This should be replaced by RevenueCat webhook logic for IAP subscriptions.`);
+  // ... (Original logic to update DB from Stripe event)
+  // This will be superseded by RevenueCat webhook handling for subscriptions managed by RevenueCat.
+  try {
+    const { error } = await supabase
+      .from('subscriptions')
+      .update({
+        status: status,
+        current_period_start: currentPeriodStart.toISOString(),
+        current_period_end: currentPeriodEnd.toISOString(),
+        cancel_at_period_end: cancelAtPeriodEnd,
+        tier: tier,
+        updated_at: new Date().toISOString()
+      })
+      .eq('stripe_subscription_id', stripeSubscriptionId);
+    if (error) {
+      logger.error(`[STRIPE-SPECIFIC] Error updating subscription from Stripe webhook (Stripe ID: ${stripeSubscriptionId}):`, error);
+      return false;
+    }
+    return true;
+  } catch(error) {
+    logger.error(`[STRIPE-SPECIFIC] Unexpected error in updateSubscriptionFromStripe (Stripe ID: ${stripeSubscriptionId}):`, error);
+    return false;
+  }
 };
-
-// resetUsageCounter function was already present and is used by Stripe webhook logic.
-// We've created a more specific resetUsageCountersForNewPeriod for RevenueCat webhooks.
-// The old resetUsageCounter might be redundant or can be merged.
-// For clarity, I've kept the new `resetUsageCountersForNewPeriod`.

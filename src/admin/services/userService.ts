@@ -1,7 +1,7 @@
 // src/admin/services/userService.ts
 import { supabase } from '../../config/supabase';
 import { logger } from '../../utils/logger';
-import { resetUsageCounter } from '../../services/subscriptionService'; // Assuming this path is correct
+import { resetUsageCounter } from '../../services/subscriptionService'; 
 
 /**
  * Get list of users with pagination and filters
