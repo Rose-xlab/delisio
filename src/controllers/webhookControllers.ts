@@ -1,463 +1,243 @@
 // src/controllers/webhookControllers.ts
 import { Request, Response, NextFunction } from 'express';
-import Stripe from 'stripe'; // Import the Stripe namespace for types
-import { stripe, isStripeConfigured, STRIPE_PLANS } from '../config/stripe'; // Added STRIPE_PLANS assuming it's needed for mapping
-import {
-  updateSubscriptionFromStripe,
-  resetUsageCounter,
-  // getUserSubscription // This import seems unused in the provided webhook logic
-} from '../services/subscriptionService';
-// Removed AppError import as it seems unused here
-// import { AppError } from '../middleware/errorMiddleware';
-import { logger } from '../utils/logger';
 import { supabase } from '../config/supabase';
+import { logger } from '../utils/logger';
+import { AppError } from '../middleware/errorMiddleware'; // If you want to use AppError for internal errors
+import { 
+    getUserSubscription, // To fetch existing sub details if needed
+    createFreeSubscription, // To ensure a user record exists or to revert to free
+    resetUsageCountersForNewPeriod // Crucial for resetting limits on new period
+} from '../services/subscriptionService';
 import { SubscriptionTier, SubscriptionStatus } from '../models/Subscription';
+import crypto from 'crypto'; // For webhook signature verification, though RevenueCat might use a simpler auth header.
 
-// Define proper interfaces for Stripe objects to avoid type issues
-interface StripeSubscriptionObject {
-  id: string;
-  status: string;
-  customer: string;
-  items?: {
-    data?: Array<{
-      price?: {
-        id?: string;
-      };
-    }>;
+// Define a simplified type for the expected RevenueCat event structure.
+// Refer to RevenueCat's official documentation for the complete and accurate payload structure.
+interface RevenueCatEventPayload {
+  api_version: string;
+  event: {
+    id: string; // Event ID
+    type: string; // e.g., INITIAL_PURCHASE, RENEWAL, CANCELLATION, PRODUCT_CHANGE, EXPIRATION, SUBSCRIBER_ALIAS, TEST
+    app_user_id: string; // YOUR internal user ID, if you set it as App User ID in RevenueCat SDK
+    original_app_user_id: string; // Original App User ID
+    aliases?: string[];
+
+    product_id?: string; // Store-specific product ID
+    entitlement_ids?: string[] | null; // Array of active entitlement identifiers
+    
+    period_type?: string; // NORMAL, INTRO, TRIAL
+    purchased_at_ms?: number;
+    original_purchased_at_ms?: number;
+    grace_period_expires_at_ms?: number | null;
+    expiration_at_ms?: number | null; // When access expires
+    store?: 'APP_STORE' | 'PLAY_STORE' | 'STRIPE' | 'MAC_APP_STORE' | 'AMAZON' | 'PROMOTIONAL';
+    is_sandbox?: boolean;
+    
+    // For transfers/aliases
+    original_app_user_id_new?: string;
+
+    // For renewals, period start/end might be important
+    // RevenueCat docs suggest checking entitlement status rather than relying solely on event dates for access.
+    // However, for resetting usage, period start/end from the event or current subscription is key.
+    // These might not be directly in all events, sometimes you fetch current CustomerInfo.
+    // For simplicity, we'll assume the webhook gives enough or we fetch current state.
+    event_timestamp_ms: number;
+    presented_offering_id?: string | null;
+    price_in_purchased_currency?: number;
+    currency?: string | null;
+
+    // If it's a cancellation or expiration
+    unsubscribe_detected_at_ms?: number | null;
+    billing_issues_detected_at_ms?: number | null;
   };
-  current_period_start: number;
-  current_period_end: number;
-  cancel_at_period_end: boolean;
 }
 
-interface StripeInvoiceObject {
-  id: string;
-  subscription?: string;
-  customer?: string;
-}
-
-interface StripeCustomerObject {
-  deleted?: boolean;
-  metadata?: {
-    userId?: string;
-  };
-}
-
-/**
- * Handle Stripe webhook events
- */
-export const handleStripeWebhook = async (
-  req: Request,
-  res: Response,
-  next: NextFunction // next seems unused, consider removing if not needed by other middleware
-): Promise<void> => {
-  try {
-    // Check if Stripe is configured
-    if (!isStripeConfigured()) {
-      logger.error('Stripe webhook received but Stripe is not configured');
-      res.status(503).json({ received: false, error: 'Payment system not configured' });
-      return;
-    }
-
-    const signature = req.headers['stripe-signature'];
-
-    if (!signature) {
-      logger.error('Stripe webhook received without signature');
-      res.status(400).json({ received: false, error: 'Webhook signature missing' });
-      return;
-    }
-
-    // Stripe webhook secret should be in environment variables
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-    if (!webhookSecret) {
-      logger.error('Stripe webhook secret not configured');
-      res.status(500).json({ received: false, error: 'Webhook secret not configured' });
-      return;
-    }
-
-    // Raw body required for signature verification
-    // Ensure middleware is configured: express.raw({ type: 'application/json' })
-    // Use req.rawBody if available, otherwise req.body (ensure raw body middleware runs before this)
-    const rawBody = (req as any).rawBody || req.body; // Adjust if your raw body middleware uses a different property name
-    const event = stripe!.webhooks.constructEvent(rawBody, signature, webhookSecret);
-
-    logger.info(`Received Stripe webhook: ${event.type}`);
-
-    // Handle different event types using type-safe objects
-    switch (event.type) {
-      case 'customer.subscription.created':
-        // Fix: Convert to unknown first, then to our custom type
-        await handleSubscriptionCreated(event.data.object as unknown as StripeSubscriptionObject);
-        break;
-
-      case 'customer.subscription.updated':
-        // Fix: Convert to unknown first, then to our custom type
-        await handleSubscriptionUpdated(event.data.object as unknown as StripeSubscriptionObject);
-        break;
-
-      case 'customer.subscription.deleted':
-        // Fix: Convert to unknown first, then to our custom type
-        await handleSubscriptionDeleted(event.data.object as unknown as StripeSubscriptionObject);
-        break;
-
-      case 'invoice.payment_succeeded':
-        await handlePaymentSucceeded(event.data.object as unknown as StripeInvoiceObject);
-        break;
-
-      case 'invoice.payment_failed':
-        await handlePaymentFailed(event.data.object as unknown as StripeInvoiceObject);
-        break;
-
-      // Add other event types as needed
-
-      default:
-        logger.info(`Unhandled webhook event type: ${event.type}`);
-    }
-
-    // Respond to Stripe that the webhook was received successfully
-    res.status(200).json({ received: true });
-
-  } catch (error: any) { // Catch specific errors if needed (e.g., StripeSignatureVerificationError)
-    logger.error('Error handling Stripe webhook:', error);
-    // Respond directly to Stripe with an error status
-    // Avoid calling next(error) as Stripe expects a direct 2xx or 4xx/5xx response
-    res.status(400).json({ received: false, error: `Webhook error: ${error.message || 'Unknown error'}` });
+// Helper to map RevenueCat entitlement IDs to your internal SubscriptionTier
+// This needs to be customized based on YOUR RevenueCat entitlement identifiers.
+const mapRevenueCatEntitlementsToTier = (entitlementIds?: string[] | null): SubscriptionTier => {
+  if (!entitlementIds || entitlementIds.length === 0) {
+    return 'free';
   }
+  // Example: Your "Pro" plan in Flutter uses 'MyOfferings.pro' which is "TestPro"
+  if (entitlementIds.includes('TestPro')) { // This should be your actual "pro" entitlement ID from RevenueCat
+    return 'premium'; // Maps to your internal 'premium' tier
+  }
+  // Add other mappings if you have, e.g., a 'basic' tier entitlement from RevenueCat
+  // if (entitlementIds.includes('your_basic_entitlement_id_in_rc')) {
+  //   return 'basic';
+  // }
+  return 'free'; // Default if no recognized paid entitlements are active
 };
 
-/**
- * Handle subscription created event
- */
-async function handleSubscriptionCreated(subscription: StripeSubscriptionObject): Promise<void> {
-  try {
-    // Get user ID from customer metadata
-    const customerId = subscription.customer;
-    const customer = await stripe!.customers.retrieve(customerId) as unknown as StripeCustomerObject;
 
-    // Check for deleted customer
-    if (customer.deleted) {
-      logger.error('Customer deleted, cannot process subscription created:', customerId);
-      return;
-    }
+export const handleRevenueCatWebhook = async (req: Request, res: Response, next: NextFunction) => {
+  // 1. Verify Webhook Authorization/Signature (IMPORTANT)
+  // RevenueCat sends an 'Authorization' header with a Bearer token (your webhook secret).
+  const authHeader = req.headers.authorization;
+  const revenueCatWebhookSecret = process.env.REVENUECAT_WEBHOOK_SECRET; // Set this in your .env
 
-    // Type-safe metadata access
-    const userId = customer.metadata?.userId;
-
-    if (!userId) {
-      logger.error(`User ID not found in customer metadata for customer: ${customerId}, subscription: ${subscription.id}`);
-      return;
-    }
-
-    // Get subscription details
-    const stripeSubscriptionId = subscription.id;
-    const status = mapStripeStatusToInternal(subscription.status);
-    const currentPeriodStart = new Date(subscription.current_period_start * 1000);
-    const currentPeriodEnd = new Date(subscription.current_period_end * 1000);
-    const cancelAtPeriodEnd = subscription.cancel_at_period_end;
-
-    // Map subscription plan to tier (ensure items exist)
-    const priceId = subscription.items?.data?.[0]?.price?.id;
-    if (!priceId) {
-        logger.error(`Price ID not found on subscription items for subscription: ${stripeSubscriptionId}`);
-        return;
-    }
-    const tier = mapStripePriceToTier(priceId);
-
-    logger.info(`Subscription created: ${stripeSubscriptionId} for user ${userId}, tier: ${tier}, status: ${status}`);
-
-    // Update subscription in database (ensure record for userId exists, potentially created by getOrCreateStripeCustomer)
-    // Using update assumes a record (e.g., free tier) was already created for the user.
-    const { error: updateError } = await supabase.from('subscriptions').update({
-      stripe_subscription_id: stripeSubscriptionId,
-      tier,
-      status,
-      current_period_start: currentPeriodStart.toISOString(),
-      current_period_end: currentPeriodEnd.toISOString(),
-      cancel_at_period_end: cancelAtPeriodEnd,
-      updated_at: new Date().toISOString()
-    }).eq('user_id', userId); // Match on user_id
-
-    if (updateError) {
-        logger.error(`Failed to update subscription ${stripeSubscriptionId} in DB for user ${userId} on creation:`, updateError);
-        // Decide how to handle this - webhook might retry, or log for manual check.
-        return; // Stop processing if DB update fails
-    }
-
-    // Initialize usage tracking for the new period
-    await resetUsageCounter(userId, currentPeriodStart, currentPeriodEnd);
-
-  } catch (error) {
-    logger.error(`Error handling 'customer.subscription.created' webhook for sub ID ${subscription?.id}:`, error);
-    // Don't re-throw, allow Stripe to potentially retry if applicable based on response code.
+  if (!revenueCatWebhookSecret) {
+    logger.error('REVENUECAT_WEBHOOK_SECRET is not configured on the server.');
+    return res.status(500).send('Webhook error: Server misconfiguration.');
   }
-}
 
-/**
- * Handle subscription updated event
- */
-async function handleSubscriptionUpdated(subscription: StripeSubscriptionObject): Promise<void> {
-  try {
-    const stripeSubscriptionId = subscription.id;
-
-    // Find the user ID associated with this subscription in our database
-    // It's safer to look up by stripe_subscription_id which should be unique
-    const { data: subscriptionData, error: subscriptionError } = await supabase
-      .from('subscriptions')
-      .select('user_id') // Select only the user_id
-      .eq('stripe_subscription_id', stripeSubscriptionId)
-      .single(); // Expect exactly one match
-
-    if (subscriptionError || !subscriptionData?.user_id) {
-      logger.error(`Subscription ${stripeSubscriptionId} not found in database or user_id missing during update. Error: ${subscriptionError?.message}`);
-      return; // Cannot proceed without linking to our user
-    }
-
-    const userId = subscriptionData.user_id;
-
-    // Get updated details
-    const status = mapStripeStatusToInternal(subscription.status);
-    const currentPeriodStart = new Date(subscription.current_period_start * 1000);
-    const currentPeriodEnd = new Date(subscription.current_period_end * 1000);
-    const cancelAtPeriodEnd = subscription.cancel_at_period_end;
-
-    // Map subscription plan to tier (ensure items exist)
-    const priceId = subscription.items?.data?.[0]?.price?.id;
-     if (!priceId) {
-        logger.error(`Price ID not found on subscription items during update for subscription: ${stripeSubscriptionId}`);
-        return; // Cannot determine tier
-    }
-    const tier = mapStripePriceToTier(priceId);
-
-    logger.info(`Subscription updated event: ${stripeSubscriptionId} for user ${userId}, status: ${status}, tier: ${tier}, cancel_at_end: ${cancelAtPeriodEnd}`);
-
-    // Update subscription in database using the dedicated service function
-    const updateSuccess = await updateSubscriptionFromStripe(
-      stripeSubscriptionId,
-      status,
-      currentPeriodStart,
-      currentPeriodEnd,
-      cancelAtPeriodEnd,
-      tier
-    );
-
-    if (!updateSuccess) {
-      logger.error(`Failed to update subscription ${stripeSubscriptionId} in DB via service function during update event.`);
-      // Decide handling - maybe raise alert?
-    }
-
-    // Optional: Reset usage if the period start date has changed significantly, indicating a renewal or plan change mid-cycle.
-    // This might be better handled explicitly in 'invoice.payment_succeeded'.
-    // Compare currentPeriodStart with previous period start if needed.
-
-  } catch (error) {
-    logger.error(`Error handling 'customer.subscription.updated' webhook for sub ID ${subscription?.id}:`, error);
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    logger.warn('RevenueCat webhook: Missing or malformed Authorization header.');
+    return res.status(401).send('Webhook error: Authorization header missing or malformed.');
   }
-}
 
-/**
- * Handle subscription deleted event (usually means cancellation is immediate or at end of trial without payment method)
- */
-async function handleSubscriptionDeleted(subscription: StripeSubscriptionObject): Promise<void> {
+  const token = authHeader.substring(7); // Remove "Bearer "
+  if (token !== revenueCatWebhookSecret) {
+    logger.error('RevenueCat webhook: Invalid Authorization token (secret mismatch).');
+    return res.status(403).send('Webhook error: Invalid token.');
+  }
+  // --- Signature verification passed (using shared secret token) ---
+
+  const rcEventPayload = req.body as RevenueCatEventPayload;
+  const event = rcEventPayload.event;
+
+  if (!event || !event.app_user_id || !event.type) {
+    logger.error('RevenueCat webhook: Invalid payload structure.', { body: req.body });
+    return res.status(400).send('Webhook error: Invalid payload.');
+  }
+
+  logger.info(`Processing RevenueCat event type: ${event.type} for app_user_id: ${event.app_user_id}`);
+
   try {
-    const stripeSubscriptionId = subscription.id;
+    const appUserId = event.app_user_id; // This is the ID you set in Flutter with Purchases.logIn()
 
-    // Find the user ID associated with this subscription
-    const { data: subscriptionData, error: subscriptionError } = await supabase
-      .from('subscriptions')
-      .select('user_id')
-      .eq('stripe_subscription_id', stripeSubscriptionId)
+    // Find your internal Supabase user_id from the app_user_id (stored in your 'profiles' table)
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id') // This 'id' is your internal auth.users.id
+      .eq('user_app_id', appUserId) // Match against the RevenueCat App User ID
       .single();
 
-    if (subscriptionError || !subscriptionData?.user_id) {
-      logger.warn(`Subscription ${stripeSubscriptionId} not found in database during deletion webhook. May have already been handled or never fully created.`);
-      return; // Can't proceed without user_id
+    if (profileError || !profile) {
+      logger.error(`RevenueCat Webhook: Profile not found for app_user_id ${appUserId}. Error: ${profileError?.message}`);
+      // This might happen if a webhook arrives before your profile record is created or synced.
+      // Depending on the event, you might want to retry later or log for investigation.
+      return res.status(404).send(`User profile not found for app_user_id: ${appUserId}. Webhook for event ${event.type} cannot be fully processed.`);
+    }
+    const internalUserId = profile.id;
+
+    // Default values, to be updated based on event
+    let newTier: SubscriptionTier = 'free';
+    let newStatus: SubscriptionStatus = 'active';
+    let periodStart: Date = new Date(); // Fallback
+    let periodEnd: Date = new Date(new Date().setMonth(new Date().getMonth() + 1)); // Fallback
+    let cancelAtPeriodEnd = false;
+    let needsUsageReset = false;
+
+    // Determine new tier based on the event's active entitlements
+    newTier = mapRevenueCatEntitlementsToTier(event.entitlement_ids);
+
+    // It's often more reliable to fetch current CustomerInfo from RevenueCat API here
+    // to get the absolute latest dates and status, rather than just relying on event payload dates.
+    // However, for simplicity, we'll use event dates if available or fetch existing sub.
+    const existingSubscription = await getUserSubscription(internalUserId);
+
+    if (event.purchased_at_ms) periodStart = new Date(event.purchased_at_ms);
+    else if (existingSubscription) periodStart = existingSubscription.currentPeriodStart;
+
+    if (event.expiration_at_ms) periodEnd = new Date(event.expiration_at_ms);
+    else if (existingSubscription) periodEnd = existingSubscription.currentPeriodEnd;
+
+
+    switch (event.type) {
+      case 'INITIAL_PURCHASE':
+      case 'RENEWAL':
+        newStatus = 'active';
+        cancelAtPeriodEnd = false;
+        needsUsageReset = true; // New period starts, reset usage
+        // Use period_start and period_end from RevenueCat if available in the event,
+        // otherwise, you might need to fetch CustomerInfo for accurate dates.
+        // For renewals, the period usually rolls over.
+        logger.info(`RC Event ${event.type}: User ${internalUserId} to tier ${newTier}, status ${newStatus}. Usage reset.`);
+        break;
+
+      case 'PRODUCT_CHANGE': // e.g., upgrade/downgrade
+        newStatus = 'active';
+        cancelAtPeriodEnd = false;
+        needsUsageReset = true; // Tier changed, reset usage for the new tier's period
+        logger.info(`RC Event ${event.type}: User ${internalUserId} changed to tier ${newTier}, status ${newStatus}. Usage reset.`);
+        break;
+
+      case 'CANCELLATION': // User has indicated they want to cancel, but access might continue
+        newStatus = existingSubscription?.status || 'active'; // Keep current status until expiration
+        cancelAtPeriodEnd = true;
+        logger.info(`RC Event ${event.type}: User ${internalUserId} tier ${newTier} subscription set to cancel at period end.`);
+        break;
+
+      case 'EXPIRATION': // Access has ended
+        newStatus = 'canceled'; // Or 'expired'
+        newTier = 'free'; // Revert to free tier
+        cancelAtPeriodEnd = true; // Ensure this is set
+        needsUsageReset = true; // Reset usage for the new "free" period that effectively starts now
+        // For the new free period:
+        periodStart = new Date();
+        periodEnd = new Date(new Date().setMonth(new Date().getMonth() + 1));
+        logger.info(`RC Event ${event.type}: User ${internalUserId} subscription expired. Downgraded to free. Usage reset for new free period.`);
+        break;
+      
+      case 'BILLING_ISSUE':
+        newStatus = 'past_due';
+        logger.info(`RC Event ${event.type}: User ${internalUserId} has billing issue. Status set to past_due.`);
+        break;
+
+      // Other important events:
+      // SUBSCRIBER_ALIAS: When app_user_ids are merged.
+      // TEST: For test events from RevenueCat dashboard.
+      default:
+        logger.info(`RC Webhook: Received unhandled event type: ${event.type} for app_user_id ${appUserId}.`);
+        return res.status(200).send(`Webhook received (event type ${event.type} acknowledged but not specifically handled).`);
     }
 
-    const userId = subscriptionData.user_id;
-
-    logger.info(`Subscription deleted event: ${stripeSubscriptionId} for user ${userId}. Downgrading to free.`);
-
-    // Downgrade user to free tier in our database
-    // Set status to 'canceled' or revert to 'free'/'active' depending on desired logic
-    const now = new Date();
-    // Set a nominal period for the free tier starting now
-    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
-
-    const { error: updateError } = await supabase.from('subscriptions').update({
-      tier: 'free',
-      status: 'canceled', // Or 'active' if free plan should be active immediately
-      stripe_subscription_id: null, // Remove link to the deleted Stripe subscription
-      current_period_start: now.toISOString(),
-      current_period_end: nextMonth.toISOString(), // Set a new period for the free plan
-      cancel_at_period_end: false, // Reset this flag
-      updated_at: now.toISOString()
-    }).eq('user_id', userId);
-
-    if (updateError) {
-        logger.error(`Failed to downgrade user ${userId} to free tier in DB after subscription ${stripeSubscriptionId} deletion:`, updateError);
-        return;
-    }
-
-    // Reset usage counter for the new (free tier) period
-    await resetUsageCounter(userId, now, nextMonth);
-
-  } catch (error) {
-    logger.error(`Error handling 'customer.subscription.deleted' webhook for sub ID ${subscription?.id}:`, error);
-  }
-}
-
-/**
- * Handle payment succeeded event (typically indicates renewal)
- */
-async function handlePaymentSucceeded(invoice: StripeInvoiceObject): Promise<void> {
-  try {
-    // Check if it's related to a subscription
-    const stripeSubscriptionId = invoice.subscription;
-    if (!stripeSubscriptionId) {
-      logger.info(`Invoice ${invoice.id} payment succeeded, but not related to a subscription.`);
-      return; // Ignore invoices not for subscriptions
-    }
-
-    // Find the user ID associated with this subscription
-    const { data: subscriptionData, error: subscriptionError } = await supabase
+    // Update or insert into your `subscriptions` table
+    const { data: upsertData, error: upsertError } = await supabase
       .from('subscriptions')
-      .select('user_id')
-      .eq('stripe_subscription_id', stripeSubscriptionId)
+      .upsert({
+        user_id: internalUserId, // This is the linking key
+        tier: newTier,
+        status: newStatus,
+        current_period_start: periodStart.toISOString(),
+        current_period_end: periodEnd.toISOString(),
+        cancel_at_period_end: cancelAtPeriodEnd,
+        // revenuecat_app_user_id: appUserId, // Optional: if you want to store it here too
+        updated_at: new Date().toISOString(),
+        // If it's an insert (first time for this user_id in subscriptions table),
+        // set created_at. Supabase upsert might handle this if column defaults are set.
+        // Otherwise, you might need to fetch first, then update or insert.
+        // For simplicity, upsert will update if user_id exists, or insert if not.
+        // Ensure your subscriptions table has a UNIQUE constraint on user_id for upsert to work as expected
+        // or handle insert/update logic more explicitly.
+      }, { onConflict: 'user_id' }) // Assuming user_id is unique and you want to update if it exists
+      .select()
       .single();
 
-    if (subscriptionError || !subscriptionData?.user_id) {
-      logger.error(`Subscription ${stripeSubscriptionId} (from invoice ${invoice.id}) not found in database during payment succeeded.`);
-      return; // Cannot proceed
+    if (upsertError) {
+      logger.error(`RC Webhook: Failed to upsert subscription for user_id ${internalUserId} (app_user_id ${appUserId}). Error: ${upsertError.message}`);
+      return next(new AppError(`Failed to update subscription for user ${internalUserId} from webhook`, 500));
     }
 
-    const userId = subscriptionData.user_id;
+    logger.info(`RC Webhook: Subscription record upserted for user_id ${internalUserId} to tier ${newTier}, status ${newStatus}.`);
 
-    logger.info(`Payment succeeded via invoice ${invoice.id} for subscription: ${stripeSubscriptionId}, user: ${userId}. Updating status and period.`);
-
-    // Fetch the subscription details from Stripe to get the *new* period dates
-    const stripeResponse = await stripe!.subscriptions.retrieve(stripeSubscriptionId);
-    // Cast to our custom interface to avoid type issues
-    const updatedSubscription = stripeResponse as unknown as StripeSubscriptionObject;
-
-    const currentPeriodStart = new Date(updatedSubscription.current_period_start * 1000);
-    const currentPeriodEnd = new Date(updatedSubscription.current_period_end * 1000);
-    const status = mapStripeStatusToInternal(updatedSubscription.status); // Should usually be 'active' after payment
-
-    // Update status to active and set the new period dates in our database
-    const { error: updateError } = await supabase.from('subscriptions').update({
-      status: status, // Update status just in case it wasn't active
-      current_period_start: currentPeriodStart.toISOString(),
-      current_period_end: currentPeriodEnd.toISOString(),
-      updated_at: new Date().toISOString()
-    }).eq('user_id', userId); // Match by user_id
-
-    if (updateError) {
-       logger.error(`Failed to update subscription period/status in DB for user ${userId} after successful payment for invoice ${invoice.id}:`, updateError);
-       return; // Stop if DB update fails
+    if (needsUsageReset) {
+      await resetUsageCountersForNewPeriod(internalUserId, periodStart, periodEnd);
     }
 
-    // Reset usage counter for the new billing period that just started
-    await resetUsageCounter(userId, currentPeriodStart, currentPeriodEnd);
+    res.status(200).send('RevenueCat webhook processed successfully.');
 
   } catch (error) {
-    logger.error(`Error handling 'invoice.payment_succeeded' webhook for invoice ID ${invoice?.id}:`, error);
-  }
-}
-
-/**
- * Handle payment failed event
- */
-async function handlePaymentFailed(invoice: StripeInvoiceObject): Promise<void> {
-  try {
-    // Check if it's related to a subscription
-    const stripeSubscriptionId = invoice.subscription;
-    if (!stripeSubscriptionId) {
-       logger.info(`Invoice ${invoice.id} payment failed, but not related to a subscription.`);
-      return; // Ignore non-subscription invoices
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error('Error processing RevenueCat webhook:', { error: errorMsg, eventType: req.body?.event?.type, appUserId: req.body?.event?.app_user_id });
+    // It's crucial to respond with 2xx to RevenueCat even if there's an internal error,
+    // to prevent retries for already processed or unprocessable events, unless the error is transient.
+    // However, for persistent errors, logging is key.
+    if (!res.headersSent) {
+      // A 500 might cause RevenueCat to retry. A 4xx might not. Check RC docs.
+      // For critical processing errors, a 500 is appropriate to signal an issue.
+      res.status(500).send('Internal server error processing webhook.');
     }
-
-    // Find the user ID associated with this subscription
-    const { data: subscriptionData, error: subscriptionError } = await supabase
-      .from('subscriptions')
-      .select('user_id')
-      .eq('stripe_subscription_id', stripeSubscriptionId)
-      .single();
-
-    if (subscriptionError || !subscriptionData?.user_id) {
-      logger.error(`Subscription ${stripeSubscriptionId} (from invoice ${invoice.id}) not found in database during payment failed.`);
-      return; // Cannot proceed
-    }
-
-    const userId = subscriptionData.user_id;
-
-    // Determine the correct status based on the subscription's status after failure
-    // Stripe might set it to 'past_due' or 'unpaid'
-    const stripeResponse = await stripe!.subscriptions.retrieve(stripeSubscriptionId);
-    // Cast to our custom interface to avoid type issues
-    const subscription = stripeResponse as unknown as StripeSubscriptionObject;
-    const status = mapStripeStatusToInternal(subscription.status); // Use the actual status from Stripe
-
-    logger.info(`Payment failed via invoice ${invoice.id} for subscription: ${stripeSubscriptionId}, user: ${userId}. Setting status to '${status}'.`);
-
-    // Update status in our database (e.g., 'past_due', 'incomplete')
-    const { error: updateError } = await supabase.from('subscriptions').update({
-      status: status, // Use the mapped status
-      updated_at: new Date().toISOString()
-    }).eq('user_id', userId); // Match by user_id
-
-    if (updateError) {
-        logger.error(`Failed to update subscription status in DB for user ${userId} after failed payment for invoice ${invoice.id}:`, updateError);
-    }
-
-    // Optionally: Notify the user about the payment failure.
-
-  } catch (error) {
-    logger.error(`Error handling 'invoice.payment_failed' webhook for invoice ID ${invoice?.id}:`, error);
   }
-}
-
-/**
- * Map Stripe subscription status to internal status defined in models/Subscription.ts
- */
-function mapStripeStatusToInternal(stripeStatus: string): SubscriptionStatus {
-  switch (stripeStatus) {
-    case 'active':
-      return 'active';
-    case 'canceled': // Means terminated immediately or after period end based on cancel_at_period_end
-      return 'canceled';
-    case 'past_due':
-      return 'past_due';
-    case 'incomplete':
-      return 'incomplete';
-    case 'incomplete_expired':
-      return 'canceled'; // Or map to a specific 'expired' status if you have one
-    case 'trialing':
-      return 'trialing';
-    case 'unpaid': // Often follows past_due if payment continues to fail
-      return 'past_due'; // Or map to 'unpaid' if you add it to SubscriptionStatus
-    default:
-      logger.warn(`Unhandled Stripe subscription status encountered: ${stripeStatus}`);
-      return 'incomplete'; // Default fallback
-  }
-}
-
-/**
- * Map Stripe price ID to our internal subscription tier
- */
-function mapStripePriceToTier(priceId: string): SubscriptionTier {
-  // Retrieve plan IDs from config/env for flexibility
-  const basicPriceId = process.env.STRIPE_BASIC_PRICE_ID || STRIPE_PLANS.BASIC; // Example using STRIPE_PLANS config
-  const premiumPriceId = process.env.STRIPE_PREMIUM_PRICE_ID || STRIPE_PLANS.PREMIUM;
-
-  switch (priceId) {
-    case basicPriceId:
-      return 'basic';
-    case premiumPriceId:
-      return 'premium';
-    // Add other price IDs if needed (e.g., annual plans)
-    default:
-      logger.warn(`Unknown Stripe Price ID encountered: ${priceId}. Defaulting to 'free' tier.`);
-      return 'free'; // Default to 'free' if price ID doesn't match known paid plans
-  }
-}
+};

@@ -1,234 +1,247 @@
+// src/controllers/chatControllers.ts
 import { Request, Response, NextFunction } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../config/supabase';
-import chatQueue from '../queues/chatQueue';
-import { AppError } from '../middleware/errorMiddleware'; // Assuming AppError is here
+import chatQueue from '../queues/chatQueue'; // Your BullMQ instance for chat
+import { AppError } from '../middleware/errorMiddleware';
 import { logger } from '../utils/logger';
-import { ChatJobResult } from '../queues/chatQueue'; // Import the actual Result Type
+import { ChatJobResult }from '../queues/chatQueue'; // Ensure this type is correctly defined for your job's return value
 
-/**
- * Handles incoming chat messages, queues them for processing,
- * and waits for the response within a timeout period.
- */
+// Import necessary services and models for subscription and limits
+import {
+  getUserSubscription,
+  getAiChatUsageCount,
+  trackAiChatReplyGeneration,
+} from '../services/subscriptionService';
+import { SUBSCRIPTION_FEATURE_LIMITS, SubscriptionTier } from '../models/Subscription';
+
 export const handleChatMessage = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { conversation_id, message, message_history } = req.body;
-    const userId = req.user?.id; // Use optional chaining
-    const messageId = uuidv4();
+    const userId = req.user?.id; // Attached by your auth middleware
+    const clientAssignedMessageId = uuidv4(); // Or use an ID from client if provided
 
     if (!conversation_id) {
-      throw new AppError('Missing conversation_id in request', 400);
+      return next(new AppError('Missing conversation_id in request', 400));
     }
     const conversationId: string = conversation_id;
+    logger.info(`Chat message received for conversation ${conversationId}`, { userId: userId || 'anonymous' });
 
-    logger.info(`Chat message received`, { conversationId, userId });
+    // ---- AI REPLY LIMIT CHECK FOR LOGGED-IN USERS ----
+    if (userId) {
+      // Fetch the user's current subscription details (this also creates a 'free' record if none exists)
+      const subscription = await getUserSubscription(userId);
+      
+      if (!subscription) {
+        // This should be rare if getUserSubscription correctly creates a free tier.
+        logger.error(`Critical: User ${userId} has no subscription record even after attempting fetch/create. Blocking chat reply.`);
+        return next(new AppError('Your subscription information could not be retrieved. Please try again later.', 500));
+      }
 
+      const userTier = subscription.tier;
+
+      if (userTier === 'free') {
+        const limits = SUBSCRIPTION_FEATURE_LIMITS.free; // Get limits for 'free' tier
+        const currentPeriodStart = subscription.currentPeriodStart; // Vital for correct usage period
+
+        // Ensure periodStart is valid before querying usage
+        if (!currentPeriodStart) {
+            logger.error(`User ${userId} (free) has a subscription record but 'currentPeriodStart' is missing. Cannot accurately check AI reply limit.`);
+            return next(new AppError('Subscription data is incomplete. Unable to verify chat limits at this time.', 500));
+        }
+        
+        const aiRepliesUsed = await getAiChatUsageCount(userId, currentPeriodStart);
+        logger.info(`User ${userId} (free) AI replies used: ${aiRepliesUsed} (Limit: ${limits.aiChatRepliesPerPeriod}) for period starting ${currentPeriodStart.toISOString()}`);
+
+        if (aiRepliesUsed >= limits.aiChatRepliesPerPeriod) {
+          logger.warn(`User ${userId} (free) has reached AI reply limit of ${limits.aiChatRepliesPerPeriod}.`);
+          return res.status(402).json({ // 402 Payment Required
+            reply: `You have reached your limit of ${limits.aiChatRepliesPerPeriod} free AI replies for this period. Please upgrade.`,
+            error: "AI_REPLY_LIMIT_REACHED", // Custom error code for client
+            suggestions: [], // Maintain consistent response structure
+          });
+        }
+      }
+    }
+    // ---- END AI REPLY LIMIT CHECK ----
+
+    // Save user message (only if user is logged in)
     if (userId) {
       try {
         await supabase.from('messages').insert({
-          id: messageId, conversation_id: conversationId, user_id: userId, role: 'user', content: message
+          id: clientAssignedMessageId,
+          conversation_id: conversationId,
+          user_id: userId,
+          role: 'user',
+          content: message,
+          // metadata: {} // Add if you have metadata for user messages
         });
-        logger.info(`User message saved`, { messageId, conversationId });
+        logger.info(`User message ${clientAssignedMessageId} saved for conversation ${conversationId}`);
       } catch (dbError) {
         const errorMsg = dbError instanceof Error ? dbError.message : String(dbError);
-        logger.error(`Error saving user message: ${errorMsg}`, { conversationId });
-        // Not halting processing for this error, AI response is prioritized.
+        logger.error(`Error saving user message ${clientAssignedMessageId} for conversation ${conversationId}: ${errorMsg}`);
+        // Continue processing for AI reply even if user message save fails for some reason (optional)
       }
     } else {
-      logger.info(`Anonymous user message received, not saving to DB`, { conversationId });
+      logger.info(`Anonymous user message for conversation ${conversationId}, not saving user message to DB.`);
     }
 
+    // Add job to the chat queue
     const job = await chatQueue.add(
-      'process-message',
-      { message, conversationId, messageHistory: message_history, userId },
-      {
-        timeout: 30000, // Job processing timeout in BullMQ
+      'process-message', // Job name
+      { // Job data
+        message,
+        conversationId,
+        messageHistory: message_history || [], // Ensure it's an array
+        userId, // Pass userId to the worker (can be null for anonymous)
+      },
+      { // Job options from your original code
+        timeout: 30000,
         removeOnComplete: 500,
         removeOnFail: 1000,
-        attempts: 2
-      } as any // Keep 'as any' if types are problematic, or ensure types align
+        attempts: 2,
+        jobId: uuidv4() // Ensure a unique job ID
+      }
     );
+    logger.info(`Chat message job ${job.id} added to queue for conversation ${conversationId}`);
 
-    logger.info(`Chat message job added`, { jobId: job.id, conversationId });
-
-    // Wait for job completion (using waitUntilFinished is often preferred over polling if QueueEvents is set up)
-    // However, sticking to polling as per your original structure for now.
-    // If you have QueueEvents set up for chatQueue, consider:
-    // const result = await job.waitUntilFinished(chatQueueEvents, timeoutMs); -> this would need chatQueueEvents
-    
+    // Polling logic (as provided in your original file, with minor logging improvements)
     const startTime = Date.now();
-    const pollingTimeoutMs = 25000; // Controller's own timeout for waiting for the job
+    const pollingTimeoutMs = 25000;
 
     while (Date.now() - startTime < pollingTimeoutMs) {
-      await new Promise(resolve => setTimeout(resolve, 500)); // Poll interval
-
+      await new Promise(resolve => setTimeout(resolve, 500));
       const currentJob = await chatQueue.getJob(job.id!);
+
       if (!currentJob) {
-        logger.warn(`Job not found during polling, might have been removed or completed very quickly`, { jobId: job.id });
-        // If it's gone, it might have completed and been removed.
-        // It's hard to know the status here without QueueEvents or if removeOnComplete is very fast.
-        // Let's assume if it's gone, we might miss its state; the timeout will eventually catch it.
-        // For a short period, let's try again.
-        if (Date.now() - startTime > 5000 && !currentJob) { // e.g. if not found after 5s of polling
-            logger.error(`Job ${job.id} persistently not found during polling. Assuming lost or error.`, { conversationId });
-            throw new AppError('Chat processing job disappeared unexpectedly.', 500, "I'm sorry, there was a hiccup processing your message. Please try again.");
+        logger.warn(`Job ${job.id} not found during polling for conv ${conversationId}. It might have completed/failed and been removed.`);
+        // If job disappears quickly, it might be due to fast completion/failure and removeOnComplete/removeOnFail settings.
+        // A more robust solution might involve QueueEvents or checking if the job was known to have finished.
+        // For now, if it's gone after a short while, assume the worst to avoid client hanging.
+        if (Date.now() - startTime > 3000) { // Short grace period
+            logger.error(`Job ${job.id} (conv ${conversationId}) persistently not found. Assuming lost or an error.`);
+            throw new AppError('Chat processing job disappeared unexpectedly.', 500, "I'm sorry, there was a technical hiccup. Please try sending your message again.");
         }
         continue;
       }
 
       const state = await currentJob.getState();
-      logger.debug(`Polling chat job: State=${state}`, { jobId: job.id });
+      logger.debug(`Polling chat job ${job.id}: State=${state} for conversation ${conversationId}`);
 
       if (state === 'completed') {
-        const result = currentJob.returnvalue as ChatJobResult; // Use job.returnvalue directly
+        const result = currentJob.returnvalue as ChatJobResult;
 
-        // result.reply is the user-facing message (could be success or a user-friendly error message from worker/gptService)
-        // result.error is the technical error string, if any, from worker/gptService
-        
         if (result && typeof result.reply === 'string') {
-          // Successfully got a reply string. It might be an apology if result.error is also set.
           if (result.error) {
-            // This means the worker handled an error (e.g., from gptService) and set a technical error message,
-            // but still provided a user-facing reply.
-            logger.warn(`Chat job ${job.id} completed with a user-facing reply ("${result.reply}") AND a technical error: ${result.error}`, { conversationId });
-            // We proceed to send the result.reply to the user. The technical result.error is logged.
-            // The client will receive the user-facing reply.
+            logger.warn(`Chat job ${job.id} (conv ${conversationId}) completed with reply but also technical error: ${result.error}`);
           } else {
-            logger.info(`Chat job ${job.id} completed successfully with reply.`, { conversationId });
+            logger.info(`Chat job ${job.id} completed successfully for conversation ${conversationId}.`);
           }
 
-          // Save assistant message logic (conditionally if user is logged in)
-          if (userId) { // Check if it's an authenticated user's conversation
-             try {
-                await supabase.from('messages').insert({
-                    id: uuidv4(),
-                    conversation_id: conversationId,
-                    user_id: null, // Assistant messages have no user_id
-                    role: 'assistant',
-                    content: result.reply,
-                    metadata: { suggestions: result.suggestions ?? [] }
-                });
-                await supabase.from('conversations')
-                              .update({ updated_at: new Date().toISOString() })
-                              .eq('id', conversationId);
-                logger.info(`Assistant response saved and conversation updated for user`, { conversationId, userId });
-             } catch (dbError) {
-                const errorMsg = dbError instanceof Error ? dbError.message : String(dbError);
-                logger.error(`Error saving assistant message or updating conversation for user: ${errorMsg}`, { conversationId, userId });
-                // Non-critical for the response to the user, but good to monitor.
-             }
+          // ---- TRACK AI REPLY USAGE FOR FREE USER (AFTER successful generation) ----
+          if (userId) {
+            // Re-fetch subscription to ensure we're using the latest tier info
+            // as it might have changed due to a concurrent webhook event (though less likely mid-chat).
+            const subscription = await getUserSubscription(userId);
+            if (subscription?.tier === 'free') {
+              // Only track if the AI successfully provided a reply
+              await trackAiChatReplyGeneration(userId);
+            }
+          }
+          // ---- END TRACKING ----
+
+          // Save assistant's message (only if user is logged in)
+          if (userId) {
+            try {
+              await supabase.from('messages').insert({
+                id: uuidv4(), // New ID for assistant message
+                conversation_id: conversationId,
+                user_id: null, // Assistant messages are not tied to a user_id
+                role: 'assistant',
+                content: result.reply,
+                metadata: { suggestions: result.suggestions ?? [] },
+              });
+              await supabase
+                .from('conversations')
+                .update({ updated_at: new Date().toISOString() })
+                .eq('id', conversationId);
+              logger.info(`Assistant response saved and conversation ${conversationId} updated for user ${userId}.`);
+            } catch (dbError) {
+              const errorMsg = dbError instanceof Error ? dbError.message : String(dbError);
+              logger.error(`Error saving assistant message or updating conversation ${conversationId} for user ${userId}: ${errorMsg}`);
+            }
           } else {
-             // For anonymous users, we generated a reply but don't save it to their specific records (as they have none)
-             // The conversationId here would be ephemeral or managed client-side for anonymous users.
-             logger.info(`Assistant response generated for anonymous conversation, not saving to DB`, { conversationId });
+            logger.info(`Assistant response for anonymous conversation ${conversationId}, not saving AI message to DB.`);
           }
           
           return res.status(200).json({
             reply: result.reply,
-            suggestions: result.suggestions ?? [] // Ensure suggestions default to empty array if null/undefined for client
+            suggestions: result.suggestions ?? [],
           });
 
-        } else {
-          // Job completed, but result.reply is NOT a string or result is null.
-          // This is the scenario our gptService changes aim to prevent.
-          // If we reach here, it implies gptService or the worker failed to produce the standard {reply, error, suggestions} structure.
-          const workerTechError = result?.error; // Get technical error from worker if available
-          const messageToThrow = workerTechError || 'Chat completed but the worker did not provide a valid reply content.';
-          logger.error(`Chat job ${job.id} completed but 'reply' is missing, null, or not a string. Technical error: ${messageToThrow}`, {
-            jobId: job.id,
-            resultReplyType: typeof result?.reply,
-            fullResult: result, // Log the full result for debugging
-            conversationId
-          });
-          throw new AppError(messageToThrow, 500, result?.reply || "I'm sorry, I couldn't formulate a response due to an internal error.");
+        } else { // Job completed but result or result.reply is invalid
+          const workerTechError = result?.error || 'Chat worker returned invalid result structure.';
+          logger.error(`Chat job ${job.id} (conv ${conversationId}) completed but 'reply' is missing/invalid. TechError: ${workerTechError}`, { result });
+          throw new AppError(workerTechError, 500, result?.reply || "I'm sorry, I couldn't formulate a response due to an internal error.");
         }
-
       } else if (state === 'failed') {
-        const reason = currentJob.failedReason || 'Unknown reason for job failure';
-        logger.error(`Chat job ${job.id} failed: ${reason}`, { conversationId });
-        // The job itself failed after retries in BullMQ.
-        // The 'reply' from the job, if any, would be from the last attempt's catch block in the worker.
-        // Let's try to get the ChatJobResult from the failed job if it's available (it might be).
+        const reason = currentJob.failedReason || 'Unknown reason for job failure.';
+        logger.error(`Chat job ${job.id} (conv ${conversationId}) failed: ${reason}`);
         const failedJobResult = currentJob.returnvalue as ChatJobResult | undefined;
-        const userFacingReplyForFailedJob = failedJobResult?.reply || "I'm sorry, the message processing failed after several attempts. Please try again.";
+        const userFacingReplyForFailedJob = failedJobResult?.reply || "I'm sorry, message processing failed. Please try again.";
         const technicalErrorForFailedJob = failedJobResult?.error || reason;
-
         throw new AppError(technicalErrorForFailedJob, 500, userFacingReplyForFailedJob);
       }
-      // Continue polling if job is in other states like 'active', 'waiting', 'delayed'
+      // Continue polling for 'active', 'waiting', 'delayed'
     }
 
     // Polling loop timed out
-    logger.warn(`Chat job polling timed out after ${pollingTimeoutMs}ms`, { jobId: job.id, conversationId });
+    logger.warn(`Chat job ${job.id} polling timed out for conversation ${conversationId} after ${pollingTimeoutMs}ms.`);
+    // Optionally check job status one last time (as in your original)
+    throw new AppError('Chat message processing timed out.', 408, "I'm sorry, your request took too long. Please try again.");
 
-    // Optional: Check job status one last time after timeout
-    const timedOutJob = await chatQueue.getJob(job.id!);
-    if (timedOutJob) {
-      const finalState = await timedOutJob.getState();
-      logger.warn(`Job ${job.id} status after polling timeout: ${finalState}`, { conversationId });
-      if (finalState === 'completed') {
-        const finalResult = timedOutJob.returnvalue as ChatJobResult;
-        if (finalResult && typeof finalResult.reply === 'string') {
-          logger.info(`Returning result from job ${job.id} completed just after polling timeout`, { conversationId });
-          // DB saving logic for assistant message could be added here too if necessary
-          return res.status(200).json({
-            reply: finalResult.reply,
-            suggestions: finalResult.suggestions ?? []
-          });
-        } else {
-          logger.error(`Job ${job.id} completed post-timeout but missing valid reply`, { conversationId });
-        }
-      } else if (finalState === 'failed') {
-         const reason = timedOutJob.failedReason || 'Unknown reason post-timeout';
-         logger.error(`Job ${job.id} found FAILED post-timeout: ${reason}`, { conversationId });
-         throw new AppError(`Chat processing failed (found post-timeout): ${reason}`, 500, "I'm sorry, processing your message took too long and failed. Please try again.");
-      }
-      // If job is still active or waiting, it truly timed out from controller's perspective
-    }
-
-    throw new AppError('Chat message processing timed out from controller.', 408, "I'm sorry, your request took too long to process. Please try again.");
-
-  } catch (error) {
+  } catch (error) { // Centralized error handling
     const isAppError = error instanceof AppError;
     const statusCode = isAppError ? error.statusCode : 500;
     const technicalErrorMsg = error instanceof Error ? error.message : 'Unknown error processing chat';
-    
-    // Determine the user-facing reply
-    let userFacingReply = "I'm sorry, I encountered an unexpected issue. Please try again.";
-    if (isAppError && error.userFacingReply) {
-        userFacingReply = error.userFacingReply;
-    } else if (statusCode === 408) {
-        userFacingReply = "I'm sorry, your request took too long to process. Please try again.";
-    }
+    const userFacingReply = (isAppError && error.userFacingReply)
+        ? error.userFacingReply
+        : "I'm sorry, an unexpected issue occurred. Please try again later.";
 
-    logger.error(`Error in handleChatMessage: ${technicalErrorMsg}`, { statusCode, isAppError, originalError: error });
+    logger.error(`Error in handleChatMessage controller: ${technicalErrorMsg}`, {
+      statusCode,
+      isAppError,
+      originalError: error,
+      requestBody: req.body,
+      userId: req.user?.id
+    });
 
     if (!res.headersSent) {
       return res.status(statusCode).json({
         reply: userFacingReply,
-        error: technicalErrorMsg, // Technical error for logging/debugging on client if needed
-        suggestions: null
+        error: technicalErrorMsg, // For client-side logging/debugging if needed
+        suggestions: [], // Ensure consistent response structure
       });
     } else {
-      // If headers already sent, Express default error handler will deal with it.
-      // This usually means an error occurred in streaming or after response started.
-      logger.error('Headers already sent, cannot send error response to client. Passing to next.', { technicalErrorMsg });
-      next(error);
+      logger.error('Headers already sent in handleChatMessage, cannot send error response to client. Passing to next.', { technicalErrorMsg });
+      next(error); // Pass to Express default error handler
     }
   }
 };
 
 /**
- * Gets status of the chat queue
+ * Gets status of the chat queue itself
  */
 export const getChatQueueStatus = async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    if (!chatQueue) { throw new AppError('Chat queue not initialized', 500); }
+    if (!chatQueue) { // Check if chatQueue is initialized
+      throw new AppError('Chat queue is not available.', 500);
+    }
     const jobCounts = await chatQueue.getJobCounts('waiting', 'active', 'delayed', 'paused', 'completed', 'failed');
     res.status(200).json({ isQueueActive: true, counts: jobCounts });
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : 'Unknown error';
     logger.error(`Error getting chat queue status: ${errorMsg}`);
-    next(new AppError(`Failed get chat queue status: ${errorMsg}`, 500));
+    next(new AppError(`Failed to get chat queue status: ${errorMsg}`, error instanceof AppError ? error.statusCode : 500));
   }
 };

@@ -1,23 +1,14 @@
 // src/routes/webhookRoutes.ts
 import express from 'express';
-import { handleStripeWebhook } from '../controllers/webhookControllers';
+import { handleRevenueCatWebhook } from '../controllers/webhookControllers';
 
 const router = express.Router();
 
-/**
- * @route   POST /api/webhooks/stripe
- * @desc    Handle Stripe webhook events
- * @access  Public (but verified with Stripe signature)
- */
-router.post('/stripe', express.raw({ type: 'application/json' }), async (req, res, next) => {
-  try {
-    await handleStripeWebhook(req, res, next);
-  } catch (error) {
-    // Handle webhook errors directly instead of using next()
-    // Stripe expects a quick response, even for errors
-    console.error('Webhook error:', error);
-    res.status(400).json({ received: false, error: 'Webhook error' });
-  }
-});
+// Define the route for RevenueCat webhooks
+// The path '/revenuecat' is an example; use whatever path you configure in RevenueCat dashboard
+router.post('/revenuecat', handleRevenueCatWebhook);
+
+// If you had other webhook routes (e.g., for Stripe, if still needed for other purposes),
+// they would also be defined here. But for IAP, we focus on RevenueCat.
 
 export default router;

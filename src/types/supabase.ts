@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -740,6 +740,36 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_chat_usage: {
+        Row: {
+          count: number
+          created_at: string
+          id: string
+          period_end: string
+          period_start: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          id?: string
+          period_end: string
+          period_start: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           created_at: string
@@ -867,6 +897,33 @@ export type Database = {
           stripe_payment_method_id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          user_app_id: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id: string
+          updated_at?: string
+          user_app_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_app_id?: string | null
+          username?: string | null
         }
         Relationships: []
       }
@@ -1229,6 +1286,14 @@ export type Database = {
       has_reached_recipe_limit: {
         Args: { p_user_id: string; p_tier: string }
         Returns: boolean
+      }
+      increment_ai_chat_usage: {
+        Args: {
+          p_user_id: string
+          p_period_start: string
+          p_period_end: string
+        }
+        Returns: undefined
       }
       increment_recipe_usage: {
         Args: {
