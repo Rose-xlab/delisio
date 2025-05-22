@@ -1,15 +1,36 @@
 // src/controllers/subscriptionControllers.ts
 import { Request, Response, NextFunction } from 'express';
+
 import { 
   getUserSubscription, 
   createCheckoutSession, 
   createCustomerPortalSession,
   getSubscriptionStatus,
-  cancelSubscription
+  cancelSubscription,
+  subscriptionSync
 } from '../services/subscriptionService';
+
 import { AppError } from '../middleware/errorMiddleware';
 import { logger } from '../utils/logger';
 import { isStripeConfigured } from '../config/stripe';
+
+//
+export type SubscriptionTier = 'free' | 'pro';
+
+
+/**
+ * Subscription status values
+ */
+export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'incomplete' | 'trialing';
+
+//
+export interface SubscriptionSyncParams {
+  userId: string;
+  tier: SubscriptionTier;
+  status: SubscriptionStatus;
+  currentPeriodStart: Date;
+  currentPeriodEnd: Date;
+}
 
 /**
  * Get user's subscription status and usage information
@@ -38,6 +59,73 @@ export const getSubscriptionDetails = async (
   } catch (error) {
     logger.error('Error getting subscription details:', error);
     next(new AppError('Failed to get subscription details', 500));
+  }
+};
+
+/*
+*
+* Sync subscription status
+*/
+
+
+export const subscriptionSyncController = async (
+  req: Request, // Consider typing req.body if you have a specific DTO
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return next(new AppError('Authentication required', 401));
+    }
+
+    // Extract all necessary parameters from the request body
+    // You'll need to ensure these are actually sent by the client
+    const {
+      tier,
+      status,
+      currentPeriodStart, // This will likely be a string from JSON, needs conversion
+      currentPeriodEnd,   // This will also likely be a string, needs conversion
+      cancelAtPeriodEnd,
+    } = req.body;
+
+    // **Crucial: Validate the incoming data**
+    // This is a simplified check; use a validation library like Joi or Zod in a real app.
+    if (!tier || !status || !currentPeriodStart || !currentPeriodEnd || typeof cancelAtPeriodEnd !== 'boolean') {
+      return next(new AppError('Missing or invalid subscription data in request body', 400));
+    }
+
+    // Construct the params object for the service
+    const syncParams: SubscriptionSyncParams = {
+      userId,
+      tier: tier as SubscriptionTier, // Add type assertion or proper validation/parsing
+      status: status as SubscriptionStatus, // Add type assertion or proper validation/parsing
+      currentPeriodStart: new Date(currentPeriodStart), // Convert string to Date
+      currentPeriodEnd: new Date(currentPeriodEnd),     // Convert string to Date
+    };
+
+    const subscription = await subscriptionSync(syncParams);
+
+    if (!subscription) {
+      // The service function already logs errors, so we can be a bit more generic here
+      return next(new AppError('Unable to sync subscription status', 500));
+    }
+
+    res.status(200).json({
+      message: 'Subscription synced successfully',
+      subscription: subscription,
+    });
+
+  } catch (error) {
+    // Log the actual error for debugging
+    logger.error('Error in subscriptionSyncController:', error);
+
+    // Avoid sending detailed error internals to the client in production
+    if (error instanceof AppError) {
+      return next(error);
+    }
+    next(new AppError('Failed to sync subscription details due to an unexpected error', 500));
   }
 };
 

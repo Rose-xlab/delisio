@@ -5,8 +5,10 @@ import {
   getSubscriptionDetails,
   createCheckoutSessionController,
   createCustomerPortalSessionController,
-  cancelSubscriptionController
+  cancelSubscriptionController,
+  subscriptionSyncController
 } from '../controllers/subscriptionControllers';
+
 
 const router = express.Router();
 
@@ -18,6 +20,15 @@ const router = express.Router();
 router.get('/status', authenticate, async (req, res, next) => {
   try {
     await getSubscriptionDetails(req, res, next);
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+router.put('/sync/subscriptions', authenticate, async (req, res, next) => {
+  try {
+    await subscriptionSyncController(req, res, next);
   } catch (error) {
     next(error);
   }

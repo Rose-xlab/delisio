@@ -11,6 +11,16 @@ import {
   SubscriptionResponse,
 } from '../models/Subscription';
 
+
+export interface SubscriptionSyncParams {
+  userId: string;
+  tier: string;
+  status:string;
+  currentPeriodStart: Date;
+  currentPeriodEnd: Date;
+}
+
+
 export const getUserSubscription = async (userId: string): Promise<Subscription | null> => {
   try {
     const { data, error } = await supabase
@@ -267,6 +277,75 @@ export const getSubscriptionStatus = async (userId: string): Promise<Subscriptio
     };
   } catch (error) {
     logger.error(`Error getting full subscription status for user ${userId}:`, error);
+    return null;
+  }
+};
+
+export const subscriptionSync = async (params: SubscriptionSyncParams): Promise<Subscription | null> => {
+  const {
+    userId,
+    tier,
+    status,
+    currentPeriodStart,
+    currentPeriodEnd,
+  } = params;
+
+  try {
+    const subscriptionUpsertData = {
+      user_id: userId,
+      tier,
+      status,
+      current_period_start: currentPeriodStart.toISOString(),
+      current_period_end: currentPeriodEnd.toISOString(),
+      updated_at: new Date().toISOString(), // Explicitly set updated_at for consistency
+    };
+
+    // Upsert the subscription.
+    // If a row with the same user_id exists, it will be updated.
+    // Otherwise, a new row will be inserted.
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .upsert(subscriptionUpsertData, {
+        onConflict: 'user_id', // Specify the column(s) to check for conflict
+      })
+      .select()
+      .single();
+
+    if (error) {
+      logger.error(`Error upserting subscription for user ${userId}:`, error);
+      return null;
+    }
+
+    if (!data) {
+      // This case should ideally not be reached if upsert is successful and select().single() is used.
+      logger.error(`No data returned after upserting subscription for user ${userId}, though no explicit error was thrown.`);
+      return null;
+    }
+    
+    logger.info(`Subscription synced successfully for user ${userId}. ID: ${data.id}`);
+
+    // Note: If this sync results in a new subscription or a new billing period,
+    // you might need to initialize/reset usage counters here or as a subsequent step,
+    // similar to what createFreeSubscription does, or by calling resetUsageCounter.
+    // For example, if it's a newly inserted record (e.g., data.created_at is very recent or equals data.updated_at)
+    // or if data.current_period_start has changed from a previous known state.
+    // This function currently only handles the subscription record itself.
+
+    return {
+      id: data.id,
+      userId: data.user_id,
+      stripeCustomerId: data.stripe_customer_id ?? undefined,
+      stripeSubscriptionId: data.stripe_subscription_id ?? undefined,
+      tier: data.tier as SubscriptionTier,
+      status: data.status as SubscriptionStatus,
+      currentPeriodStart: new Date(data.current_period_start),
+      currentPeriodEnd: new Date(data.current_period_end),
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at),
+      cancelAtPeriodEnd: data.cancel_at_period_end,
+    };
+  } catch (error) {
+    logger.error(`Unexpected error in subscriptionSync for user ${userId}:`, error);
     return null;
   }
 };
