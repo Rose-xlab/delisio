@@ -26,7 +26,7 @@ router.get('/status', authenticate, async (req, res, next) => {
 });
 
 
-router.put('/sync/subscriptions', authenticate, async (req, res, next) => {
+router.put('/sync', authenticate, async (req, res, next) => {
   try {
     await subscriptionSyncController(req, res, next);
   } catch (error) {

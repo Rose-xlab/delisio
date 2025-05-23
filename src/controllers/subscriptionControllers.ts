@@ -89,7 +89,13 @@ export const subscriptionSyncController = async (
       currentPeriodEnd,   // This will also likely be a string, needs conversion
       cancelAtPeriodEnd,
     } = req.body;
-
+     
+    console.log("================================= SUB CONTROLLER CALLED ===========================")
+    console.log( tier,
+      status,
+      currentPeriodStart, // This will likely be a string from JSON, needs conversion
+      currentPeriodEnd,   // This will also likely be a string, needs conversion
+      cancelAtPeriodEnd)
     // **Crucial: Validate the incoming data**
     // This is a simplified check; use a validation library like Joi or Zod in a real app.
     if (!tier || !status || !currentPeriodStart || !currentPeriodEnd || typeof cancelAtPeriodEnd !== 'boolean') {
