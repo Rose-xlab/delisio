@@ -1,4 +1,6 @@
-import openai, { OpenAI, GPT_MODEL } from './openaiClient'; // Assuming GPT_MODEL is correctly defined/imported
+//C:\Users\mukas\Downloads\delisio\delisio\src\services\gptService.ts
+
+import openai, { OpenAI, GPT_MODEL } from './openaiClient';
 import { buildRecipePrompt, buildChatPrompt } from '../utils/promptBuilder';
 import { logger } from '../utils/logger'; // Import your logger
 
