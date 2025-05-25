@@ -354,7 +354,7 @@ export const generateChatResponse = async (
       model: GPT_MODEL,
       messages: messages,
       temperature: 0.7,
-      max_tokens: 500,
+      max_tokens: 1024,
       top_p: 1,
       frequency_penalty: 0.1,
       presence_penalty: 0.1,
