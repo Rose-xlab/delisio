@@ -1,4 +1,3 @@
-//C:\Users\mukas\Downloads\delisio\delisio\src\controllers\chatControllers.ts
 import { Request, Response, NextFunction } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../config/supabase';
@@ -13,8 +12,7 @@ import {
 } from '../services/subscriptionService';
 import { SUBSCRIPTION_FEATURE_LIMITS } from '../models/Subscription';
 
-// Import TablesInsert for explicit Supabase insert typing
-import { Database } from '../types/supabase'; // Adjusted path assuming types/supabase.ts
+import { Database } from '../types/supabase';
 type MessageInsert = Database['public']['Tables']['messages']['Insert'];
 
 export const handleChatMessage = async (req: Request, res: Response, next: NextFunction) => {
@@ -29,7 +27,6 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
     const conversationId: string = conversation_id;
     logger.info(`Chat message received for conversation ${conversationId}`, { userId: userId || 'anonymous', messageLength: message?.length });
 
-    // ---- AI REPLY LIMIT CHECK FOR LOGGED-IN USERS ----
     if (userId) {
       const subscription = await getUserSubscription(userId);
       if (!subscription) {
@@ -57,7 +54,6 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
         }
       }
     }
-    // ---- END AI REPLY LIMIT CHECK ----
 
     if (userId) {
       try {
@@ -92,13 +88,13 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
     const job = await chatQueue.add(
       'process-message',
       jobData,
-      { // Reverted to 'as any' to address the 'timeout' property issue, assuming it's functionally needed/handled by your BullMQ version
+      {
         timeout: 30000,
         removeOnComplete: 500,
         removeOnFail: 1000,
         attempts: 2,
         jobId: uuidv4()
-      } as any
+      } as any // Keeping 'as any' if it was specifically working around a JobsOptions typing issue for 'timeout'
     );
     logger.info(`Chat message job ${job.id} added to queue for conversation ${conversationId}`);
 
@@ -124,15 +120,19 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
       if (state === 'completed') {
         const jobReturnValue = currentJob.returnvalue;
 
+        // ***** ENHANCED LOGGING as requested *****
         logger.info(
           `[Controller] Job ${job.id} is 'completed'. Polling attempt. Raw returnvalue from BullMQ:`,
           {
-            rawReturnValue: jobReturnValue,
-            typeOfRawReturnValue: typeof jobReturnValue,
+            rawReturnValue: jobReturnValue, // Log the raw value
+            typeOfRawReturnValue: typeof jobReturnValue, // Log its type
             isReturnValueNull: jobReturnValue === null,
             isReturnValueUndefined: typeof jobReturnValue === 'undefined',
+            // Optionally stringify for complex objects, but be mindful of log size
+            // stringifiedReturnValue: (typeof jobReturnValue === 'object' && jobReturnValue !== null) ? JSON.stringify(jobReturnValue) : String(jobReturnValue)
           }
         );
+        // ***** END ENHANCED LOGGING *****
 
         const result = jobReturnValue as ChatJobResult;
 
@@ -180,6 +180,7 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
           });
         } else {
           const workerTechError = result?.error || 'Chat worker returned invalid result structure.';
+          // Log the actual result object received by the controller for better debugging
           logger.error(`Chat job ${job.id} (conv ${conversationId}) completed but 'reply' is missing/invalid. Actual reply type: ${typeof result?.reply}. TechError: ${workerTechError}`, { retrievedResultObject: result });
           throw new AppError(
             workerTechError,
@@ -193,19 +194,18 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
         const failedJobResult = currentJob.returnvalue as ChatJobResult | undefined;
         const userFacingReplyForFailedJob = failedJobResult?.reply || "I'm sorry, message processing failed after multiple attempts. Please try again.";
         const technicalErrorForFailedJob = failedJobResult?.error || reason;
-        // Removed: cleanupPartialRecipeCache(job.id!); // This is not relevant for chat controller
         throw new AppError(technicalErrorForFailedJob, 500, userFacingReplyForFailedJob);
       }
     }
 
     logger.warn(`Chat job ${job.id} polling timed out for conversation ${conversationId} after ${pollingTimeoutMs}ms.`);
-    // Removed: cleanupPartialRecipeCache(job.id!); // This is not relevant for chat controller
     throw new AppError('Chat message processing timed out.', 408, "I'm sorry, your request took too long to process. Please try again.");
 
   } catch (error) {
     const isAppError = error instanceof AppError;
     const statusCode = isAppError ? error.statusCode : 500;
-    const technicalErrorMsg = error instanceof Error ? error.message : 'Unknown error processing chat';
+    // Use error.message for technicalErrorMsg if it's an AppError, otherwise convert error to string
+    const technicalErrorMsg = (isAppError ? error.message : (error instanceof Error ? error.message : 'Unknown error processing chat'));
     const userFacingReply = (isAppError && error.userFacingReply)
         ? error.userFacingReply
         : "I'm sorry, an unexpected issue occurred. Please try again later.";
@@ -221,15 +221,12 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
     if (!res.headersSent) {
       return res.status(statusCode).json({
         reply: userFacingReply,
-        // MODIFIED: Use technicalErrorMsg or a general one if AppError doesn't have a specific code field.
-        // If AppError has a specific 'errorCode' field, you would use error.errorCode here.
-        // For now, using technicalErrorMsg which would be error.message from AppError.
         error_type: technicalErrorMsg, 
         suggestions: [],
         status_code: statusCode
       });
     } else {
-      logger.error('Headers already sent in handleChatMessage, cannot send error response to client. Passing to next.', { technicalErrorMsg });
+      logger.error('Headers already sent in handleChatMessage, cannot send error response to client. Passing to Express error handler.', { technicalErrorMsg });
       next(error);
     }
   }
