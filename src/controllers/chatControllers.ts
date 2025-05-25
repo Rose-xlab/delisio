@@ -16,6 +16,7 @@ import { Database } from '../types/supabase';
 type MessageInsert = Database['public']['Tables']['messages']['Insert'];
 
 export const handleChatMessage = async (req: Request, res: Response, next: NextFunction) => {
+  const jobIdForContext = uuidv4(); // For consistent job ID if needed before queue add
   try {
     const { conversation_id, message, message_history } = req.body;
     const userId = req.user?.id;
@@ -25,7 +26,7 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
       return next(new AppError('Missing conversation_id in request', 400));
     }
     const conversationId: string = conversation_id;
-    logger.info(`Chat message received for conversation ${conversationId}`, { userId: userId || 'anonymous', messageLength: message?.length });
+    logger.info(`Chat message received for conversation ${conversationId}`, { userId: userId || 'anonymous', messageLength: message?.length, clientMessageId: clientAssignedMessageId });
 
     if (userId) {
       const subscription = await getUserSubscription(userId);
@@ -93,8 +94,8 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
         removeOnComplete: 500,
         removeOnFail: 1000,
         attempts: 2,
-        jobId: uuidv4()
-      } as any // Keeping 'as any' if it was specifically working around a JobsOptions typing issue for 'timeout'
+        jobId: jobIdForContext // Use the pre-generated UUID for the job
+      } as any
     );
     logger.info(`Chat message job ${job.id} added to queue for conversation ${conversationId}`);
 
@@ -106,10 +107,12 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
       const currentJob = await chatQueue.getJob(job.id!);
 
       if (!currentJob) {
-        logger.warn(`Job ${job.id} not found during polling for conv ${conversationId}.`);
+        logger.warn(`Job ${job.id} not found during polling for conv ${conversationId}. It might have been removed or completed very quickly.`);
+        // It's possible the job completed and was removed based on retention policies if polling is slow
+        // Or it failed and was removed. If we can't find it after a short while, assume an issue.
         if (Date.now() - startTime > 5000) {
-            logger.error(`Job ${job.id} (conv ${conversationId}) persistently not found after 5s. Assuming lost.`);
-            throw new AppError('Chat processing job disappeared unexpectedly.', 500, "I'm sorry, there was a technical hiccup with your request. Please try again.");
+            logger.error(`Job ${job.id} (conv ${conversationId}) persistently not found after 5s. Assuming lost or already processed and removed.`);
+            throw new AppError('Chat processing status could not be retrieved. The request might have completed or failed.', 500, "I'm sorry, there was a hiccup checking your message status. Please check the chat for a response shortly.");
         }
         continue;
       }
@@ -120,16 +123,15 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
       if (state === 'completed') {
         const jobReturnValue = currentJob.returnvalue;
 
-        // ***** ENHANCED LOGGING as requested *****
+        // ***** ENHANCED LOGGING *****
         logger.info(
-          `[Controller] Job ${job.id} is 'completed'. Polling attempt. Raw returnvalue from BullMQ:`,
+          `[Controller] Job ${job.id} is 'completed'. Raw returnvalue from BullMQ:`,
           {
-            rawReturnValue: jobReturnValue, // Log the raw value
-            typeOfRawReturnValue: typeof jobReturnValue, // Log its type
+            // Attempt to stringify, but catch errors if it's not directly stringifiable (e.g. undefined)
+            rawReturnValueString: typeof jobReturnValue === 'undefined' ? 'undefined' : JSON.stringify(jobReturnValue, null, 2),
+            typeOfRawReturnValue: typeof jobReturnValue,
             isReturnValueNull: jobReturnValue === null,
             isReturnValueUndefined: typeof jobReturnValue === 'undefined',
-            // Optionally stringify for complex objects, but be mindful of log size
-            // stringifiedReturnValue: (typeof jobReturnValue === 'object' && jobReturnValue !== null) ? JSON.stringify(jobReturnValue) : String(jobReturnValue)
           }
         );
         // ***** END ENHANCED LOGGING *****
@@ -138,9 +140,9 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
 
         if (result && typeof result.reply === 'string') {
           if (result.error) {
-            logger.warn(`Chat job ${job.id} (conv ${conversationId}) completed with reply but also technical error: ${result.error}`);
+            logger.warn(`Chat job ${job.id} (conv ${conversationId}) completed with reply but also with a technical error field from worker: '${result.error}'`);
           } else {
-            logger.info(`Chat job ${job.id} completed successfully for conversation ${conversationId}.`);
+            logger.info(`Chat job ${job.id} completed successfully by worker for conversation ${conversationId}.`);
           }
 
           if (userId) {
@@ -178,10 +180,9 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
             reply: result.reply,
             suggestions: result.suggestions ?? [],
           });
-        } else {
-          const workerTechError = result?.error || 'Chat worker returned invalid result structure.';
-          // Log the actual result object received by the controller for better debugging
-          logger.error(`Chat job ${job.id} (conv ${conversationId}) completed but 'reply' is missing/invalid. Actual reply type: ${typeof result?.reply}. TechError: ${workerTechError}`, { retrievedResultObject: result });
+        } else { // result.reply is not a string, or result is null/undefined
+          const workerTechError = result?.error || 'Chat worker returned invalid result structure (reply missing/invalid).';
+          logger.error(`Chat job ${job.id} (conv ${conversationId}) completed but 'reply' is missing/invalid. Actual reply type: ${typeof result?.reply}. TechError from worker: ${result?.error}`, { retrievedResultObjectString: JSON.stringify(result, null, 2) });
           throw new AppError(
             workerTechError,
             500,
@@ -204,16 +205,15 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
   } catch (error) {
     const isAppError = error instanceof AppError;
     const statusCode = isAppError ? error.statusCode : 500;
-    // Use error.message for technicalErrorMsg if it's an AppError, otherwise convert error to string
     const technicalErrorMsg = (isAppError ? error.message : (error instanceof Error ? error.message : 'Unknown error processing chat'));
     const userFacingReply = (isAppError && error.userFacingReply)
         ? error.userFacingReply
         : "I'm sorry, an unexpected issue occurred. Please try again later.";
 
-    logger.error(`Error in handleChatMessage controller: ${technicalErrorMsg}`, {
+    logger.error(`Error in handleChatMessage controller (Job ID for context: ${jobIdForContext}): ${technicalErrorMsg}`, {
       statusCode,
       isAppError,
-      originalErrorObject: error,
+      originalErrorObjectString: String(error), // Stringify original error for logging
       requestBody: req.body,
       userId: req.user?.id
     });
@@ -226,7 +226,7 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
         status_code: statusCode
       });
     } else {
-      logger.error('Headers already sent in handleChatMessage, cannot send error response to client. Passing to Express error handler.', { technicalErrorMsg });
+      logger.error('Headers already sent in handleChatMessage, cannot send error response to client. Passing to Express error handler.', { technicalErrorMsg, jobIdForContext });
       next(error);
     }
   }
