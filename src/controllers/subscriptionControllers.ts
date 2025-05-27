@@ -1,20 +1,19 @@
 // src/controllers/subscriptionControllers.ts
 import { Request, Response, NextFunction } from 'express';
 
-// Relative imports from src/controllers/
 import {
   getSubscriptionStatus,
   createCheckoutSession,
   createCustomerPortalSession,
   cancelSubscription,
   subscriptionSync
-} from '../services/subscriptionService';
+} from '../services/subscriptionService'; // Adjust path if needed
 
-import { AppError } from '../middleware/errorMiddleware';
-import { logger } from '../utils/logger';
-import { isStripeConfigured } from '../config/stripe';
+import { AppError } from '../middleware/errorMiddleware'; // Adjust path if needed
+import { logger } from '../utils/logger';                 // Adjust path if needed
+import { isStripeConfigured } from '../config/stripe';   // Adjust path if needed
 
-import { SubscriptionTier as ModelSubscriptionTier, SubscriptionStatus as ModelSubscriptionStatus } from '../models/Subscription';
+import { SubscriptionTier as ModelSubscriptionTier, SubscriptionStatus as ModelSubscriptionStatus } from '../models/Subscription'; // Adjust path if needed
 
 interface ClientSubscriptionSyncBody {
   tier: 'free' | 'pro';
@@ -24,7 +23,6 @@ interface ClientSubscriptionSyncBody {
   cancelAtPeriodEnd: boolean;
 }
 
-// This matches the updated SubscriptionSyncParams in your subscriptionService.ts
 interface ServiceSubscriptionSyncParams {
   userId: string;
   tier: ModelSubscriptionTier;
@@ -81,43 +79,57 @@ export const subscriptionSyncController = async (
     logger.info(`Subscription Sync Controller: User ${userId}, Received Body:`, JSON.stringify(req.body, null, 2));
 
     if (clientTier === undefined || clientStatus === undefined ||
-        // clientPeriodStartStr & clientPeriodEndStr can be null, so checking undefined is correct
-        clientPeriodStartStr === undefined || clientPeriodEndStr === undefined || 
+        clientPeriodStartStr === undefined || clientPeriodEndStr === undefined ||
         typeof cancelAtPeriodEnd !== 'boolean') {
       logger.warn(`Subscription Sync Validation Failed (Missing Fields) for User ${userId}:`, req.body);
-      return next(new AppError('Missing or invalid subscription data in request body (tier, status, dates, or cancelAtPeriodEnd)', 400));
+      return next(new AppError('Missing or invalid subscription data in request body', 400));
     }
-    
+
+    // --- MAPPING LOGIC ---
     let modelTier: ModelSubscriptionTier;
-    if (clientTier === 'pro') {
-      modelTier = 'premium';
-      logger.info(`Subscription Sync: Mapped client tier "pro" to "premium" for user ${userId}.`);
-    } else if (clientTier === 'free') {
+    let modelStatus: ModelSubscriptionStatus;
+
+    if (clientTier === 'free') {
       modelTier = 'free';
+      modelStatus = 'active'; // *** ALWAYS "active" if client reports "free" tier ***
+      logger.info(`Subscription Sync: Client tier is "free". Setting model tier to "free" and model status to "active" for user ${userId}.`);
+    } else if (clientTier === 'pro') {
+      modelTier = 'premium'; // Map "pro" from client to "premium" for backend model
+      logger.info(`Subscription Sync: Client tier is "pro". Mapping to model tier "premium" for user ${userId}.`);
+      // For 'pro' (premium) tier, derive status from clientStatus
+      const validModelStatusesForPro: ModelSubscriptionStatus[] = ['active', 'canceled', 'past_due', 'incomplete', 'trialing'];
+      switch (clientStatus) {
+        case 'active': modelStatus = 'active'; break;
+        case 'inactive': modelStatus = 'canceled'; break; // A Pro plan becoming inactive means it's canceled or expired
+        case 'trialing': modelStatus = 'trialing'; break;
+        default:
+          // This case should ideally not be hit if clientStatus is from a controlled set for 'pro'
+          if (validModelStatusesForPro.includes(clientStatus as ModelSubscriptionStatus)) {
+              modelStatus = clientStatus as ModelSubscriptionStatus;
+          } else {
+              logger.warn(`Subscription Sync: Invalid clientStatus '${clientStatus}' for 'pro' tier, user ${userId}.`);
+              return next(new AppError(`Invalid status value '${clientStatus}' provided for 'pro' tier.`, 400));
+          }
+      }
     } else {
+      // This handles if client sends a tier like 'basic' directly (and your ModelSubscriptionTier supports it)
       const validModelTiers: ModelSubscriptionTier[] = ['free', 'basic', 'premium'];
-      if (validModelTiers.includes(clientTier as ModelSubscriptionTier)) {
+       if (validModelTiers.includes(clientTier as ModelSubscriptionTier)) {
           modelTier = clientTier as ModelSubscriptionTier;
+          // For 'basic' or other direct tiers, map status similarly to 'pro'
+          const validModelStatuses: ModelSubscriptionStatus[] = ['active', 'canceled', 'past_due', 'incomplete', 'trialing'];
+           if (validModelStatuses.includes(clientStatus as ModelSubscriptionStatus)) {
+              modelStatus = clientStatus as ModelSubscriptionStatus;
+          } else {
+              logger.warn(`Subscription Sync: Invalid clientStatus '${clientStatus}' for tier '${clientTier}', user ${userId}.`);
+              return next(new AppError(`Invalid status value provided for tier ${clientTier}: ${clientStatus}`, 400));
+          }
       } else {
-          logger.warn(`Subscription Sync: Invalid clientTier '${clientTier}' for user ${userId}. Expected 'pro' or 'free'.`);
+          logger.warn(`Subscription Sync: Invalid clientTier '${clientTier}' received for user ${userId}.`);
           return next(new AppError(`Invalid tier value provided: ${clientTier}. Expected 'pro' or 'free'.`, 400));
       }
     }
-
-    let modelStatus: ModelSubscriptionStatus;
-    const validModelStatuses: ModelSubscriptionStatus[] = ['active', 'canceled', 'past_due', 'incomplete', 'trialing'];
-    switch (clientStatus) {
-      case 'active': modelStatus = 'active'; break;
-      case 'inactive': modelStatus = 'canceled'; break;
-      case 'trialing': modelStatus = 'trialing'; break;
-      default:
-        if (validModelStatuses.includes(clientStatus as ModelSubscriptionStatus)) {
-            modelStatus = clientStatus as ModelSubscriptionStatus;
-        } else {
-            logger.warn(`Subscription Sync: Invalid clientStatus '${clientStatus}' for user ${userId}.`);
-            return next(new AppError(`Invalid status value provided: ${clientStatus}`, 400));
-        }
-    }
+    // --- END OF MAPPING ---
 
     if ((clientPeriodStartStr !== null && isNaN(new Date(clientPeriodStartStr).getTime())) ||
         (clientPeriodEndStr !== null && isNaN(new Date(clientPeriodEndStr).getTime()))) {
@@ -154,23 +166,62 @@ export const subscriptionSyncController = async (
   }
 };
 
+// --- Other Controller Functions (Stripe related - kept as per your original structure) ---
 export const createCheckoutSessionController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    logger.warn("Stripe createCheckoutSessionController called - verify if used/needed.");
-    // Assuming RevenueCat is primary, this might be deprecated for mobile.
+    // ... (Your existing logic, ensuring it maps planIdentifier to 'basic'/'premium' if calling the old Stripe service)
+    logger.warn("Stripe createCheckoutSessionController called - verify if used/needed as RevenueCat is primary for mobile.");
     if (!isStripeConfigured()) return next(new AppError('Payment system (Stripe) is not configured', 503));
-    // ... your original logic for Stripe checkout ...
-    res.status(501).json({ message: "Stripe Checkout not fully implemented or deprecated." });
+    const userId = req.user?.id;
+    if (!userId) return next(new AppError('Authentication required', 401));
+    const { planIdentifier, successUrl, cancelUrl } = req.body;
+    if (!planIdentifier || !successUrl || !cancelUrl) return next(new AppError('planIdentifier (Stripe Price ID), successUrl, and cancelUrl are required', 400));
+
+    let tierForStripe: 'basic' | 'premium';
+    if (planIdentifier === process.env.STRIPE_PRICE_ID_BASIC_YOUR_APP) { // EXAMPLE
+        tierForStripe = 'basic';
+    } else if (planIdentifier === process.env.STRIPE_PRICE_ID_PREMIUM_YOUR_APP) { // EXAMPLE
+        tierForStripe = 'premium';
+    } else {
+        logger.warn(`createCheckoutSessionController: Invalid planIdentifier '${planIdentifier}' for Stripe by user ${userId}.`);
+        return next(new AppError('Invalid planIdentifier for Stripe checkout. Unknown Price ID.', 400));
+    }
+    try {
+        const checkoutUrl = await createCheckoutSession(userId, tierForStripe, successUrl, cancelUrl);
+        if (!checkoutUrl) return next(new AppError('Failed to create Stripe checkout session via service', 500));
+        res.status(200).json({ checkoutUrl });
+    } catch (error) {
+        logger.error('Error creating Stripe checkout session:', error);
+        next(new AppError('Failed to create Stripe checkout session', 500));
+    }
 };
 
 export const createCustomerPortalSessionController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     logger.warn("Stripe createCustomerPortalSessionController called - verify if used/needed.");
     if (!isStripeConfigured()) return next(new AppError('Payment system (Stripe) is not configured', 503));
-    // ... your original logic for Stripe portal ...
-    res.status(501).json({ message: "Stripe Portal not fully implemented or deprecated." });
+    const userId = req.user?.id;
+    if (!userId) return next(new AppError('Authentication required', 401));
+    const { returnUrl } = req.body;
+    if (!returnUrl) return next(new AppError('Return URL is required', 400));
+    try {
+        const portalUrl = await createCustomerPortalSession(userId, returnUrl);
+        if (!portalUrl) return next(new AppError('Failed to create Stripe customer portal session via service', 500));
+        res.status(200).json({ portalUrl });
+    } catch (error) {
+        logger.error('Error creating Stripe customer portal session:', error);
+        next(new AppError('Failed to create Stripe customer portal session', 500));
+    }
 };
 
 export const cancelSubscriptionController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     logger.warn("Backend cancelSubscriptionController called - verify if used for Stripe or direct cancellation.");
-    // ... your original logic for backend cancellation ...
-    res.status(501).json({ message: "Backend cancellation not fully implemented or deprecated." });
+    const userId = req.user?.id;
+    if (!userId) return next(new AppError('Authentication required', 401));
+    try {
+        const success = await cancelSubscription(userId);
+        if (!success) return next(new AppError('Failed to process subscription cancellation request', 500));
+        res.status(200).json({ message: 'Subscription cancellation request processed. Status will reflect at the end of the current billing period.'});
+    } catch (error) {
+        logger.error('Error canceling subscription in controller:', error);
+        next(new AppError('Failed to cancel subscription', 500));
+    }
 };
