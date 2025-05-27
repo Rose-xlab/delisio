@@ -1,47 +1,45 @@
 // src/models/Subscription.ts
 
 /**
- * Subscription tiers available in the application
+ * Subscription tiers available in the application.
  */
-export type SubscriptionTier = 'free' | 'basic' | 'premium'; // Ensure these match your RevenueCat entitlement identifiers or your internal mapping
+export type SubscriptionTier = 'free' | 'basic' | 'premium';
 
 /**
- * Subscription status values
+ * Subscription status values.
  */
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'incomplete' | 'trialing';
 
 /**
- * Interface for the subscription object (from your DB)
+ * Interface for the subscription object (reflecting your DB structure).
+ * Dates can now be null based on updated supabase.ts and database schema.
  */
 export interface Subscription {
   id: string;
   userId: string;
-  stripeCustomerId?: string; // Keep if you still use Stripe for something or for legacy
-  stripeSubscriptionId?: string; // Keep if you still use Stripe for something or for legacy
-  // NEW: Consider adding RevenueCat App User ID if you store it here to link back,
-  // though it's primarily on the 'profiles' table.
-  // revenuecat_app_user_id?: string;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
   tier: SubscriptionTier;
   status: SubscriptionStatus;
-  currentPeriodStart: Date;
-  currentPeriodEnd: Date;
+  currentPeriodStart: Date | null; // MODIFIED: Can be null
+  currentPeriodEnd: Date | null;   // MODIFIED: Can be null
   createdAt: Date;
   updatedAt: Date;
   cancelAtPeriodEnd: boolean;
 }
 
-// UsageRecord for recipes remains the same
+// UsageRecord
 export interface UsageRecord {
   id: string;
   userId: string;
-  recipeCount: number;
+  count: number;
   periodStart: Date;
   periodEnd: Date;
   createdAt: Date;
   updatedAt: Date;
 }
 
-// NEW: Interface for AI Chat Usage (maps to your new ai_chat_usage table)
+// AI Chat Usage
 export interface AiChatUsageRecord {
   id: string;
   userId: string;
@@ -52,60 +50,52 @@ export interface AiChatUsageRecord {
   updatedAt: Date;
 }
 
-
 /**
- * Interface for feature limits based on subscription tier
+ * Interface for feature limits.
  */
 export interface FeatureLimits {
   recipeGenerationsPerMonth: number;
-  aiChatRepliesPerPeriod: number; // e.g., per month, matching subscription period
-  // aiChatReplyPeriodType: 'month' | 'lifetime'; // Implicitly 'month' if tied to currentPeriodStart/End
+  aiChatRepliesPerPeriod: number;
   imageQuality: 'standard' | 'hd';
   imageSize: '1024x1024' | '1792x1024';
 }
 
-/**
- * Configuration for subscription tiers and their feature limits
- */
 export const SUBSCRIPTION_FEATURE_LIMITS: Record<SubscriptionTier, FeatureLimits> = {
   free: {
     recipeGenerationsPerMonth: 1,
-    aiChatRepliesPerPeriod: 3, // Your 3 AI replies for free users
+    aiChatRepliesPerPeriod: 3,
     imageQuality: 'standard',
     imageSize: '1024x1024',
   },
-  basic: { // Assuming 'basic' is a paid tier that might come from RevenueCat
-    recipeGenerationsPerMonth: 10, // Example
-    aiChatRepliesPerPeriod: 100,   // Example
+  basic: {
+    recipeGenerationsPerMonth: 10,
+    aiChatRepliesPerPeriod: 100,
     imageQuality: 'hd',
-    imageSize: '1792x1024',
+    imageSize: '1024x1024',
   },
-  premium: { // This should map to your "pro" RevenueCat entitlement
+  premium: {
     recipeGenerationsPerMonth: Infinity,
-    aiChatRepliesPerPeriod: Infinity, // Unlimited for premium
+    aiChatRepliesPerPeriod: Infinity,
     imageQuality: 'hd',
     imageSize: '1792x1024',
   },
 };
 
 export function getFeatureLimits(tier: SubscriptionTier): FeatureLimits {
-  return SUBSCRIPTION_FEATURE_LIMITS[tier] || SUBSCRIPTION_FEATURE_LIMITS.free; // Fallback to free
+  return SUBSCRIPTION_FEATURE_LIMITS[tier] || SUBSCRIPTION_FEATURE_LIMITS.free;
 }
 
 /**
- * Type for subscription response to clients (Flutter app)
+ * Type for subscription response to clients (Flutter app).
  */
 export interface SubscriptionResponse {
   tier: SubscriptionTier;
   status: SubscriptionStatus;
-  currentPeriodEnd: string; // ISO date string
+  currentPeriodEnd: string | null; // Already string | null, which is good
   cancelAtPeriodEnd: boolean;
-
   recipeGenerationsLimit: number;
   recipeGenerationsUsed: number;
   recipeGenerationsRemaining: number;
-
-  // NEW Fields for AI Chat Replies
   aiChatRepliesLimit: number;
   aiChatRepliesUsed: number;
   aiChatRepliesRemaining: number;

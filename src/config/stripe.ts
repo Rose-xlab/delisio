@@ -1,3 +1,5 @@
+//C:\Users\mukas\Downloads\delisio\delisio\src\config\stripe.ts
+
 import Stripe from 'stripe';
 import { logger } from '../utils/logger';
 import * as dotenv from 'dotenv';

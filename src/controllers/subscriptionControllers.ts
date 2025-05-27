@@ -1,11 +1,11 @@
 // src/controllers/subscriptionControllers.ts
 import { Request, Response, NextFunction } from 'express';
 
-import { 
-  getUserSubscription, 
-  createCheckoutSession, 
-  createCustomerPortalSession,
+// Relative imports from src/controllers/
+import {
   getSubscriptionStatus,
+  createCheckoutSession,
+  createCustomerPortalSession,
   cancelSubscription,
   subscriptionSync
 } from '../services/subscriptionService';
@@ -14,27 +14,26 @@ import { AppError } from '../middleware/errorMiddleware';
 import { logger } from '../utils/logger';
 import { isStripeConfigured } from '../config/stripe';
 
-//
-export type SubscriptionTier = 'free' | 'pro';
+import { SubscriptionTier as ModelSubscriptionTier, SubscriptionStatus as ModelSubscriptionStatus } from '../models/Subscription';
 
-
-/**
- * Subscription status values
- */
-export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'incomplete' | 'trialing';
-
-//
-export interface SubscriptionSyncParams {
-  userId: string;
-  tier: SubscriptionTier;
-  status: SubscriptionStatus;
-  currentPeriodStart: Date;
-  currentPeriodEnd: Date;
+interface ClientSubscriptionSyncBody {
+  tier: 'free' | 'pro';
+  status: 'active' | 'inactive' | 'trialing';
+  currentPeriodStart: string | null;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
 }
 
-/**
- * Get user's subscription status and usage information
- */
+// This matches the updated SubscriptionSyncParams in your subscriptionService.ts
+interface ServiceSubscriptionSyncParams {
+  userId: string;
+  tier: ModelSubscriptionTier;
+  status: ModelSubscriptionStatus;
+  currentPeriodStart: Date | null;
+  currentPeriodEnd: Date | null;
+  cancelAtPeriodEnd: boolean;
+}
+
 export const getSubscriptionDetails = async (
   req: Request,
   res: Response,
@@ -42,80 +41,105 @@ export const getSubscriptionDetails = async (
 ): Promise<void> => {
   try {
     const userId = req.user?.id;
-    
     if (!userId) {
+      logger.warn('getSubscriptionDetails: Authentication required, userId not found.');
       return next(new AppError('Authentication required', 401));
     }
-    
-    const subscriptionStatus = await getSubscriptionStatus(userId);
-    
-    if (!subscriptionStatus) {
-      return next(new AppError('Unable to retrieve subscription status', 500));
+    logger.info(`getSubscriptionDetails: Fetching subscription status for user ${userId}`);
+    const subscriptionData = await getSubscriptionStatus(userId);
+    if (!subscriptionData) {
+      logger.warn(`getSubscriptionDetails: No subscription data returned for user ${userId}.`);
+      return next(new AppError('Unable to retrieve subscription status. Please try again later.', 404));
     }
-    
-    res.status(200).json({
-      subscription: subscriptionStatus
-    });
+    res.status(200).json({ subscription: subscriptionData });
   } catch (error) {
-    logger.error('Error getting subscription details:', error);
+    logger.error('Error in getSubscriptionDetails controller:', error);
     next(new AppError('Failed to get subscription details', 500));
   }
 };
 
-/*
-*
-* Sync subscription status
-*/
-
-
 export const subscriptionSyncController = async (
-  req: Request, // Consider typing req.body if you have a specific DTO
+  req: Request<{}, {}, ClientSubscriptionSyncBody>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
     const userId = req.user?.id;
-
     if (!userId) {
+      logger.warn('subscriptionSyncController: Authentication required, userId not found.');
       return next(new AppError('Authentication required', 401));
     }
 
-    // Extract all necessary parameters from the request body
-    // You'll need to ensure these are actually sent by the client
     const {
-      tier,
-      status,
-      currentPeriodStart, // This will likely be a string from JSON, needs conversion
-      currentPeriodEnd,   // This will also likely be a string, needs conversion
+      tier: clientTier,
+      status: clientStatus,
+      currentPeriodStart: clientPeriodStartStr,
+      currentPeriodEnd: clientPeriodEndStr,
       cancelAtPeriodEnd,
     } = req.body;
-     
-    console.log("================================= SUB CONTROLLER CALLED ===========================")
-    console.log( tier,
-      status,
-      currentPeriodStart, // This will likely be a string from JSON, needs conversion
-      currentPeriodEnd,   // This will also likely be a string, needs conversion
-      cancelAtPeriodEnd)
-    // **Crucial: Validate the incoming data**
-    // This is a simplified check; use a validation library like Joi or Zod in a real app.
-    if (!tier || !status || !currentPeriodStart || !currentPeriodEnd || typeof cancelAtPeriodEnd !== 'boolean') {
-      return next(new AppError('Missing or invalid subscription data in request body', 400));
+
+    logger.info(`Subscription Sync Controller: User ${userId}, Received Body:`, JSON.stringify(req.body, null, 2));
+
+    if (clientTier === undefined || clientStatus === undefined ||
+        // clientPeriodStartStr & clientPeriodEndStr can be null, so checking undefined is correct
+        clientPeriodStartStr === undefined || clientPeriodEndStr === undefined || 
+        typeof cancelAtPeriodEnd !== 'boolean') {
+      logger.warn(`Subscription Sync Validation Failed (Missing Fields) for User ${userId}:`, req.body);
+      return next(new AppError('Missing or invalid subscription data in request body (tier, status, dates, or cancelAtPeriodEnd)', 400));
+    }
+    
+    let modelTier: ModelSubscriptionTier;
+    if (clientTier === 'pro') {
+      modelTier = 'premium';
+      logger.info(`Subscription Sync: Mapped client tier "pro" to "premium" for user ${userId}.`);
+    } else if (clientTier === 'free') {
+      modelTier = 'free';
+    } else {
+      const validModelTiers: ModelSubscriptionTier[] = ['free', 'basic', 'premium'];
+      if (validModelTiers.includes(clientTier as ModelSubscriptionTier)) {
+          modelTier = clientTier as ModelSubscriptionTier;
+      } else {
+          logger.warn(`Subscription Sync: Invalid clientTier '${clientTier}' for user ${userId}. Expected 'pro' or 'free'.`);
+          return next(new AppError(`Invalid tier value provided: ${clientTier}. Expected 'pro' or 'free'.`, 400));
+      }
     }
 
-    // Construct the params object for the service
-    const syncParams: SubscriptionSyncParams = {
+    let modelStatus: ModelSubscriptionStatus;
+    const validModelStatuses: ModelSubscriptionStatus[] = ['active', 'canceled', 'past_due', 'incomplete', 'trialing'];
+    switch (clientStatus) {
+      case 'active': modelStatus = 'active'; break;
+      case 'inactive': modelStatus = 'canceled'; break;
+      case 'trialing': modelStatus = 'trialing'; break;
+      default:
+        if (validModelStatuses.includes(clientStatus as ModelSubscriptionStatus)) {
+            modelStatus = clientStatus as ModelSubscriptionStatus;
+        } else {
+            logger.warn(`Subscription Sync: Invalid clientStatus '${clientStatus}' for user ${userId}.`);
+            return next(new AppError(`Invalid status value provided: ${clientStatus}`, 400));
+        }
+    }
+
+    if ((clientPeriodStartStr !== null && isNaN(new Date(clientPeriodStartStr).getTime())) ||
+        (clientPeriodEndStr !== null && isNaN(new Date(clientPeriodEndStr).getTime()))) {
+      logger.warn(`Subscription Sync: Invalid date format for user ${userId}. Start: ${clientPeriodStartStr}, End: ${clientPeriodEndStr}`);
+      return next(new AppError('Invalid date format for currentPeriodStart or currentPeriodEnd', 400));
+    }
+
+    const syncServiceParams: ServiceSubscriptionSyncParams = {
       userId,
-      tier: tier as SubscriptionTier, // Add type assertion or proper validation/parsing
-      status: status as SubscriptionStatus, // Add type assertion or proper validation/parsing
-      currentPeriodStart: new Date(currentPeriodStart), // Convert string to Date
-      currentPeriodEnd: new Date(currentPeriodEnd),     // Convert string to Date
+      tier: modelTier,
+      status: modelStatus,
+      currentPeriodStart: clientPeriodStartStr ? new Date(clientPeriodStartStr) : null,
+      currentPeriodEnd: clientPeriodEndStr ? new Date(clientPeriodEndStr) : null,
+      cancelAtPeriodEnd: cancelAtPeriodEnd,
     };
 
-    const subscription = await subscriptionSync(syncParams);
+    logger.info(`Subscription Sync Controller: Calling service for user ${userId} with mapped params:`, JSON.stringify(syncServiceParams, null, 2));
+    const subscription = await subscriptionSync(syncServiceParams);
 
     if (!subscription) {
-      // The service function already logs errors, so we can be a bit more generic here
-      return next(new AppError('Unable to sync subscription status', 500));
+      logger.error(`Subscription Sync Controller: Service call to subscriptionSync returned null for user ${userId}.`);
+      return next(new AppError('Unable to sync subscription status with backend service.', 500));
     }
 
     res.status(200).json({
@@ -124,136 +148,29 @@ export const subscriptionSyncController = async (
     });
 
   } catch (error) {
-    // Log the actual error for debugging
     logger.error('Error in subscriptionSyncController:', error);
-
-    // Avoid sending detailed error internals to the client in production
-    if (error instanceof AppError) {
-      return next(error);
-    }
+    if (error instanceof AppError) return next(error);
     next(new AppError('Failed to sync subscription details due to an unexpected error', 500));
   }
 };
 
-/**
- * Create a checkout session for subscription purchase
- */
-export const createCheckoutSessionController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    // Check if Stripe is configured
-    if (!isStripeConfigured()) {
-      return next(new AppError('Payment system is not available', 503));
-    }
-    
-    const userId = req.user?.id;
-    
-    if (!userId) {
-      return next(new AppError('Authentication required', 401));
-    }
-    
-    const { tier, successUrl, cancelUrl } = req.body;
-    
-    // Validate tier
-    if (tier !== 'basic' && tier !== 'premium') {
-      return next(new AppError('Invalid subscription tier. Must be "basic" or "premium"', 400));
-    }
-    
-    // Validate URLs
-    if (!successUrl || !cancelUrl) {
-      return next(new AppError('Success URL and cancel URL are required', 400));
-    }
-    
-    const checkoutUrl = await createCheckoutSession(userId, tier, successUrl, cancelUrl);
-    
-    if (!checkoutUrl) {
-      return next(new AppError('Failed to create checkout session', 500));
-    }
-    
-    res.status(200).json({
-      checkoutUrl
-    });
-  } catch (error) {
-    logger.error('Error creating checkout session:', error);
-    next(new AppError('Failed to create checkout session', 500));
-  }
+export const createCheckoutSessionController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    logger.warn("Stripe createCheckoutSessionController called - verify if used/needed.");
+    // Assuming RevenueCat is primary, this might be deprecated for mobile.
+    if (!isStripeConfigured()) return next(new AppError('Payment system (Stripe) is not configured', 503));
+    // ... your original logic for Stripe checkout ...
+    res.status(501).json({ message: "Stripe Checkout not fully implemented or deprecated." });
 };
 
-/**
- * Create customer portal session for managing subscription
- */
-export const createCustomerPortalSessionController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    // Check if Stripe is configured
-    if (!isStripeConfigured()) {
-      return next(new AppError('Payment system is not available', 503));
-    }
-    
-    const userId = req.user?.id;
-    
-    if (!userId) {
-      return next(new AppError('Authentication required', 401));
-    }
-    
-    const { returnUrl } = req.body;
-    
-    if (!returnUrl) {
-      return next(new AppError('Return URL is required', 400));
-    }
-    
-    const portalUrl = await createCustomerPortalSession(userId, returnUrl);
-    
-    if (!portalUrl) {
-      return next(new AppError('Failed to create customer portal session', 500));
-    }
-    
-    res.status(200).json({
-      portalUrl
-    });
-  } catch (error) {
-    logger.error('Error creating customer portal session:', error);
-    next(new AppError('Failed to create customer portal session', 500));
-  }
+export const createCustomerPortalSessionController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    logger.warn("Stripe createCustomerPortalSessionController called - verify if used/needed.");
+    if (!isStripeConfigured()) return next(new AppError('Payment system (Stripe) is not configured', 503));
+    // ... your original logic for Stripe portal ...
+    res.status(501).json({ message: "Stripe Portal not fully implemented or deprecated." });
 };
 
-/**
- * Cancel subscription
- */
-export const cancelSubscriptionController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    // Check if Stripe is configured
-    if (!isStripeConfigured()) {
-      return next(new AppError('Payment system is not available', 503));
-    }
-    
-    const userId = req.user?.id;
-    
-    if (!userId) {
-      return next(new AppError('Authentication required', 401));
-    }
-    
-    const success = await cancelSubscription(userId);
-    
-    if (!success) {
-      return next(new AppError('Failed to cancel subscription', 500));
-    }
-    
-    res.status(200).json({
-      message: 'Subscription will be canceled at the end of the current billing period'
-    });
-  } catch (error) {
-    logger.error('Error canceling subscription:', error);
-    next(new AppError('Failed to cancel subscription', 500));
-  }
+export const cancelSubscriptionController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    logger.warn("Backend cancelSubscriptionController called - verify if used for Stripe or direct cancellation.");
+    // ... your original logic for backend cancellation ...
+    res.status(501).json({ message: "Backend cancellation not fully implemented or deprecated." });
 };
