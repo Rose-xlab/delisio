@@ -1,4 +1,4 @@
-//Users\mukas\Downloads\delisio\delisio\src\utils\validationUtils.ts
+// src/utils/validationUtils.ts
 
 import Joi from 'joi';
 import { Request, Response, NextFunction } from 'express';
@@ -11,11 +11,11 @@ import { Request, Response, NextFunction } from 'express';
 export const validateRequest = (schema: Joi.ObjectSchema) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const { error } = schema.validate(req.body, {
-      abortEarly: false,
-      stripUnknown: true,
+      abortEarly: false, // Return all errors, not just the first one
+      stripUnknown: true, // Remove unknown keys from the validated data
       errors: {
         wrap: {
-          label: ''
+          label: '' // Remove quotes around keys in error messages
         }
       }
     });
@@ -25,20 +25,25 @@ export const validateRequest = (schema: Joi.ObjectSchema) => {
         .map(detail => detail.message)
         .join(', ');
       
+      // Consistent error response structure
       return res.status(400).json({
         error: {
           message: `Validation error: ${errorMessage}`,
           status: 400,
-          details: error.details
+          details: error.details.map(detail => ({ // Provide structured details
+            message: detail.message,
+            path: detail.path,
+            type: detail.type,
+          }))
         }
       });
     }
 
-    next();
+    next(); // Proceed to the next middleware/handler if validation passes
   };
 };
 
-// Recipe validation schema - removed imageStyle field
+// Recipe validation schema
 export const recipeSchema = Joi.object({
   query: Joi.string().required().min(2).max(200)
     .messages({
@@ -50,7 +55,7 @@ export const recipeSchema = Joi.object({
   save: Joi.boolean().optional()
 });
 
-// Updated chat message validation schema with conversation_id and message_history
+// Chat message validation schema
 export const chatMessageSchema = Joi.object({
   message: Joi.string().required().min(1).max(500)
     .messages({
@@ -59,7 +64,7 @@ export const chatMessageSchema = Joi.object({
       'string.max': 'Message cannot exceed 500 characters',
       'any.required': 'Message is required'
     }),
-  conversation_id: Joi.string().optional(),
+  conversation_id: Joi.string().uuid().optional(), // Assuming conversation_id is a UUID
   message_history: Joi.array().items(
     Joi.object({
       role: Joi.string().valid('user', 'assistant').required(),
@@ -101,13 +106,17 @@ export const loginSchema = Joi.object({
     })
 });
 
-// User preferences validation schema
+// User preferences validation schema - UPDATED
 export const userPreferencesSchema = Joi.object({
-  dietaryRestrictions: Joi.array().items(Joi.string()).optional(),
-  favoriteCuisines: Joi.array().items(Joi.string()).optional(),
-  allergies: Joi.array().items(Joi.string()).optional(),
-  cookingSkill: Joi.string().valid('beginner', 'intermediate', 'advanced').optional()
+  dietaryRestrictions: Joi.array().items(Joi.string()).optional().default([]),
+  favoriteCuisines: Joi.array().items(Joi.string()).optional().default([]),
+  allergies: Joi.array().items(Joi.string()).optional().default([]),
+  cookingSkill: Joi.string().trim().lowercase().valid('beginner', 'intermediate', 'advanced').optional().default('beginner')
     .messages({
-      'any.only': 'Cooking skill must be beginner, intermediate, or advanced'
-    })
+      'any.only': 'Cooking skill must be one of [beginner, intermediate, advanced]'
+    }),
+  // --- ADDED VALIDATION FOR likedFoodCategoryIds ---
+  likedFoodCategoryIds: Joi.array().items(Joi.string().trim()).optional().default([]) 
+  // Ensures it's an array of strings, trims whitespace from each ID.
+  // It's optional and defaults to an empty array if not provided.
 });

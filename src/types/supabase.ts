@@ -1172,6 +1172,7 @@ export type Database = {
           dietary_restrictions: string[] | null
           favorite_cuisines: string[] | null
           id: string
+          liked_food_category_ids: string[] | null
           updated_at: string | null
           user_id: string | null
         }
@@ -1182,6 +1183,7 @@ export type Database = {
           dietary_restrictions?: string[] | null
           favorite_cuisines?: string[] | null
           id?: string
+          liked_food_category_ids?: string[] | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -1192,6 +1194,7 @@ export type Database = {
           dietary_restrictions?: string[] | null
           favorite_cuisines?: string[] | null
           id?: string
+          liked_food_category_ids?: string[] | null
           updated_at?: string | null
           user_id?: string | null
         }

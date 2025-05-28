@@ -1,36 +1,36 @@
+// src/routes/authRoutes.ts
 import express from 'express';
-import { 
-  signUp, 
-  signIn, 
-  signOut, 
-  getCurrentUser,
-  resetPassword
-} from '../services/authService';
 import { authenticate } from '../middleware/authMiddleware';
 import {
-  saveUserPreferences,
-  getUserPreferences
-} from '../services/supabaseService';
-import { 
-  validateRequest, 
-  registerSchema, 
-  loginSchema, 
-  userPreferencesSchema 
+  signUp as signUpService,
+  signIn as signInService,
+  signOut as signOutService,
+  getCurrentUserWithPreferences,
+  updatePreferences, // This is the service function
+  resetPassword
+} from '../services/authService'; // Assuming this path is correct
+
+// Import the correctly named interface from authService.ts
+import { ClientUserPreferencesPayload } from '../services/authService'; 
+
+import {
+  validateRequest,
+  registerSchema,
+  loginSchema,
+  userPreferencesSchema // This schema should also align with ClientUserPreferencesPayload
 } from '../utils/validationUtils';
 import { AppError } from '../middleware/errorMiddleware';
+import { logger } from '../utils/logger';
 
 const router = express.Router();
 
 /**
  * @route   POST /api/auth/signup
- * @desc    Register a new user
- * @access  Public
  */
 router.post('/signup', validateRequest(registerSchema), async (req, res, next) => {
   try {
     const { email, password, name } = req.body;
-    
-    const user = await signUp(email, password, name);
+    const user = await signUpService(email, password, name);
     res.status(201).json({ user });
   } catch (error) {
     next(error);
@@ -39,23 +39,14 @@ router.post('/signup', validateRequest(registerSchema), async (req, res, next) =
 
 /**
  * @route   POST /api/auth/signin
- * @desc    Sign in existing user
- * @access  Public
  */
 router.post('/signin', validateRequest(loginSchema), async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    
-    const { user, session } = await signIn(email, password);
-    
-    // Get user preferences if available
-    const preferences = await getUserPreferences(user.id);
-    if (preferences) {
-      user.preferences = preferences;
-    }
-    
+    const { user: authUser, session } = await signInService(email, password);
+    const fullUserProfile = await getCurrentUserWithPreferences(authUser.id);
     res.status(200).json({
-      user,
+      user: fullUserProfile,
       session
     });
   } catch (error) {
@@ -65,12 +56,10 @@ router.post('/signin', validateRequest(loginSchema), async (req, res, next) => {
 
 /**
  * @route   POST /api/auth/signout
- * @desc    Sign out current user
- * @access  Private
  */
 router.post('/signout', authenticate, async (req, res, next) => {
   try {
-    await signOut();
+    await signOutService();
     res.status(200).json({ message: 'Successfully signed out' });
   } catch (error) {
     next(error);
@@ -79,20 +68,17 @@ router.post('/signout', authenticate, async (req, res, next) => {
 
 /**
  * @route   GET /api/auth/me
- * @desc    Get current user
- * @access  Private
  */
 router.get('/me', authenticate, async (req, res, next) => {
   try {
-    // User is already set in req.user by authenticate middleware
-    const preferences = await getUserPreferences(req.user.id);
-    
-    const user = {
-      ...req.user,
-      preferences: preferences || undefined
-    };
-    
-    res.status(200).json({ user });
+    if (!req.user?.id) {
+        return next(new AppError('Authentication error: User ID not found in request.', 401));
+    }
+    const userProfile = await getCurrentUserWithPreferences(req.user.id);
+    if (!userProfile) {
+        return next(new AppError('User profile not found.', 404));
+    }
+    res.status(200).json({ user: userProfile });
   } catch (error) {
     next(error);
   }
@@ -100,17 +86,13 @@ router.get('/me', authenticate, async (req, res, next) => {
 
 /**
  * @route   POST /api/auth/reset-password
- * @desc    Send password reset email
- * @access  Public
  */
 router.post('/reset-password', async (req, res, next) => {
   try {
     const { email } = req.body;
-    
     if (!email) {
       throw new AppError('Please provide email', 400);
     }
-    
     await resetPassword(email);
     res.status(200).json({ message: 'Password reset email sent' });
   } catch (error) {
@@ -120,24 +102,33 @@ router.post('/reset-password', async (req, res, next) => {
 
 /**
  * @route   PUT /api/auth/preferences
- * @desc    Update user preferences
- * @access  Private
  */
 router.put('/preferences', authenticate, validateRequest(userPreferencesSchema), async (req, res, next) => {
   try {
-    const { dietaryRestrictions, favoriteCuisines, allergies, cookingSkill } = req.body;
+    const userId = req.user?.id;
+    if (!userId) {
+        return next(new AppError('Authentication error: User ID not found in request.', 401));
+    }
+
+    // Use the correctly imported ClientUserPreferencesPayload
+    const preferencesPayload: ClientUserPreferencesPayload = req.body;
+
+    logger.info(`Controller /api/auth/preferences: Updating preferences for user ${userId}`, preferencesPayload);
+
+    const updatedDbPreferences = await updatePreferences(userId, preferencesPayload);
     
-    const preferences = {
-      dietaryRestrictions: dietaryRestrictions || [],
-      favoriteCuisines: favoriteCuisines || [],
-      allergies: allergies || [],
-      cookingSkill: cookingSkill || 'beginner'
-    };
-    
-    const updatedPreferences = await saveUserPreferences(req.user.id, preferences);
-    res.status(200).json({ preferences: updatedPreferences });
+    res.status(200).json({ preferences: updatedDbPreferences });
+
   } catch (error) {
-    next(error);
+    logger.error(`Controller /api/auth/preferences: Error updating preferences for user ${req.user?.id}:`, error);
+    if (error instanceof AppError) {
+        return next(error);
+    }
+    const pgError = error as { code?: string, message?: string };
+    if (pgError.code && pgError.message) {
+        return next(new AppError(`Database error updating preferences: ${pgError.message}`, 500));
+    }
+    next(new AppError('Failed to update preferences due to an unexpected error.', 500));
   }
 });
 
