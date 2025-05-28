@@ -404,9 +404,12 @@ export const saveUserPreferences = async (userId: string, preferences: UserPrefe
     const { data, error } = await supabase.from('user_preferences').upsert(preferencesData, { onConflict: 'user_id' }).select().single();
     if (error) { logger.error('Error saving user preferences', { userId, error }); throw error; }
     if (!data) { throw new Error('No data returned from preferences upsert'); }
-    return {
-      dietaryRestrictions: data.dietary_restrictions ?? [], favoriteCuisines: data.favorite_cuisines ?? [],
-      allergies: data.allergies ?? [], cookingSkill: (data.cooking_skill ?? 'beginner') as UserPreferences['cookingSkill']
+  return {
+      dietaryRestrictions: data.dietary_restrictions ?? [],
+      favoriteCuisines: data.favorite_cuisines ?? [],
+      allergies: data.allergies ?? [],
+      cookingSkill: (data.cooking_skill ?? 'beginner') as UserPreferences['cookingSkill'],
+      likedFoodCategoryIds: data.liked_food_category_ids ?? [], // <<< ADDED & DEFAULTED
     };
   } catch (error) { logger.error('Error saving user preferences:', { userId, error }); throw new Error(`Failed to save preferences: ${(error as Error).message}`); }
 };
@@ -420,8 +423,11 @@ export const getUserPreferences = async (userId: string): Promise<UserPreference
     if (error) { if (error.code === 'PGRST116') return null; logger.error('Error fetching user preferences', { userId, error }); throw error; }
     if (!data) return null;
     return {
-      dietaryRestrictions: data.dietary_restrictions ?? [], favoriteCuisines: data.favorite_cuisines ?? [],
-      allergies: data.allergies ?? [], cookingSkill: (data.cooking_skill ?? 'beginner') as UserPreferences['cookingSkill']
+      dietaryRestrictions: data.dietary_restrictions ?? [],
+      favoriteCuisines: data.favorite_cuisines ?? [],
+      allergies: data.allergies ?? [],
+      cookingSkill: (data.cooking_skill ?? 'beginner') as UserPreferences['cookingSkill'],
+      likedFoodCategoryIds: data.liked_food_category_ids ?? [], // <<< ADDED & DEFAULTED
     };
   } catch (error) { logger.error('Error fetching user preferences:', { userId, error }); throw new Error(`Failed to fetch preferences: ${(error as Error).message}`); }
 };
