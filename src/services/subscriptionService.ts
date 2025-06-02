@@ -8,7 +8,7 @@ import {
   SUBSCRIPTION_FEATURE_LIMITS,
   SubscriptionResponse,
 } from '../models/Subscription';
-import { isStripeConfigured } from '../config/stripe'; // Keep if Stripe functions are used
+import { isStripeConfigured } from '../config/stripe';
 
 export interface SubscriptionSyncParams {
   userId: string;
@@ -37,7 +37,6 @@ export const getUserSubscription = async (userId: string): Promise<Subscription 
       return await createFreeSubscription(userId);
     }
 
-    // Handle potentially null dates from DB (supabase.ts now types these as string | null)
     const currentPeriodStart = data.current_period_start ? new Date(data.current_period_start) : null;
     const currentPeriodEnd = data.current_period_end ? new Date(data.current_period_end) : null;
 
@@ -48,10 +47,10 @@ export const getUserSubscription = async (userId: string): Promise<Subscription 
       stripeSubscriptionId: data.stripe_subscription_id ?? undefined,
       tier: data.tier as ModelSubscriptionTier,
       status: data.status as ModelSubscriptionStatus,
-      currentPeriodStart: currentPeriodStart, // This is now Date | null
-      currentPeriodEnd: currentPeriodEnd,     // This is now Date | null
-      createdAt: new Date(data.created_at),   // Assuming created_at is never null
-      updatedAt: new Date(data.updated_at),   // Assuming updated_at is never null
+      currentPeriodStart: currentPeriodStart,
+      currentPeriodEnd: currentPeriodEnd,
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at),
       cancelAtPeriodEnd: data.cancel_at_period_end,
     };
   } catch (error) {
@@ -69,8 +68,8 @@ export const createFreeSubscription = async (userId: string): Promise<Subscripti
       user_id: userId,
       tier: 'free' as ModelSubscriptionTier,
       status: 'active' as ModelSubscriptionStatus,
-      current_period_start: now.toISOString(),      // Non-null for new free sub
-      current_period_end: periodEnd.toISOString(),  // Non-null for new free sub
+      current_period_start: now.toISOString(),
+      current_period_end: periodEnd.toISOString(),
       cancel_at_period_end: false,
     };
 
@@ -81,11 +80,8 @@ export const createFreeSubscription = async (userId: string): Promise<Subscripti
       .single();
 
     if (subInsertError) {
-      if (subInsertError.code === '23505') { // Unique constraint violation (user_id likely)
+      if (subInsertError.code === '23505') {
         logger.warn(`createFreeSubscription: Unique violation for user ${userId}, subscription likely already exists. Fetching existing.`);
-        // Attempt to fetch the existing one. If getUserSubscription is called, it might re-call createFreeSubscription leading to a loop if not careful.
-        // However, the typical flow is getUserSubscription -> createFreeSubscription (if not found).
-        // If a sync happens concurrently, this handles it.
         const existingSub = await supabase.from('subscriptions').select('*').eq('user_id', userId).single();
         if (existingSub.data) {
             return {
@@ -107,7 +103,7 @@ export const createFreeSubscription = async (userId: string): Promise<Subscripti
     }
     if (!subInsertData || !subInsertData.current_period_start || !subInsertData.current_period_end) {
         logger.error(`No data or period dates returned after inserting free subscription for ${userId}.`);
-        return null; // Essential dates are missing
+        return null;
     }
     
     const newPeriodStart = new Date(subInsertData.current_period_start);
@@ -141,7 +137,7 @@ export const resetUsageCounter = async (userId: string, newPeriodStart: Date | n
     const commonUsageData = {
       user_id: userId, count: 0,
       period_start: newPeriodStart.toISOString(), period_end: newPeriodEnd.toISOString(),
-      updated_at: new Date().toISOString(), // Ensure this is set
+      updated_at: new Date().toISOString(),
     };
     const { error: recipeError } = await supabase.from('recipe_usage').upsert(commonUsageData, { onConflict: 'user_id, period_start' });
     if (recipeError) logger.error(`Error resetting/upserting recipe_usage for user ${userId}:`, recipeError);
@@ -156,24 +152,16 @@ export const resetUsageCounter = async (userId: string, newPeriodStart: Date | n
 };
 
 export const subscriptionSync = async (params: SubscriptionSyncParams): Promise<Subscription | null> => {
-  // Make params mutable by re-assigning if you need to modify them locally within this function
   let { userId, tier, status, currentPeriodStart, currentPeriodEnd, cancelAtPeriodEnd } = params;
 
   try {
-    // **** THIS IS THE KEY MODIFICATION ****
-    // If it's a 'free' tier and the period start is effectively null
-    // (either null or an invalid date string that becomes null when parsed by the controller),
-    // then we MUST initialize period dates here.
     if (tier === 'free' && !currentPeriodStart) {
       logger.info(`subscriptionSync: Tier is 'free' and currentPeriodStart is null for user ${userId}. Initializing period dates.`);
       const now = new Date();
-      currentPeriodStart = now; // Set to current time
-      // For a free tier, the period end could be a long time in the future,
-      // or a rolling monthly period. Example: one month from now.
+      currentPeriodStart = now;
       currentPeriodEnd = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds());
-      status = 'active'; // Ensure status is active for free tier initial sync or if it became null
+      status = 'active';
     }
-    // **** END OF KEY MODIFICATION ****
 
     const subscriptionUpsertData = {
       user_id: userId,
@@ -182,14 +170,14 @@ export const subscriptionSync = async (params: SubscriptionSyncParams): Promise<
       current_period_start: currentPeriodStart ? currentPeriodStart.toISOString() : null,
       current_period_end: currentPeriodEnd ? currentPeriodEnd.toISOString() : null,
       cancel_at_period_end: cancelAtPeriodEnd,
-      updated_at: new Date().toISOString(), // Always update this timestamp
+      updated_at: new Date().toISOString(),
     };
 
     logger.info(`Service: Upserting subscription for user ${userId} with tier "${tier}", status "${status}", cancelAtEnd: ${cancelAtPeriodEnd}`, { start: subscriptionUpsertData.current_period_start, end: subscriptionUpsertData.current_period_end });
     
     const { data, error } = await supabase
         .from('subscriptions')
-        .upsert(subscriptionUpsertData, { onConflict: 'user_id' }) // onConflict ensures it updates if user_id exists, or inserts if not
+        .upsert(subscriptionUpsertData, { onConflict: 'user_id' })
         .select()
         .single();
 
@@ -206,17 +194,9 @@ export const subscriptionSync = async (params: SubscriptionSyncParams): Promise<
 
     const dbPeriodStartDate = data.current_period_start ? new Date(data.current_period_start) : null;
     const dbPeriodEndDate = data.current_period_end ? new Date(data.current_period_end) : null;
-    
     const dbCreatedAt = new Date(data.created_at);
     const dbUpdatedAt = new Date(data.updated_at);
-    
-    // isNewRecord: true if the record was just inserted by the upsert
     const isNewRecord = dbCreatedAt.getTime() === dbUpdatedAt.getTime();
-    
-    // periodJustStarted: true if the current_period_start in the DB matches the
-    // currentPeriodStart we intended to set (which might have been modified for 'free' tier).
-    // This condition means the period we are now establishing/confirming has indeed "just started"
-    // or was just set.
     const periodJustSetOrConfirmed = currentPeriodStart && dbPeriodStartDate && 
                                (dbPeriodStartDate.getTime() === currentPeriodStart.getTime());
 
@@ -230,16 +210,11 @@ export const subscriptionSync = async (params: SubscriptionSyncParams): Promise<
     }
 
     return {
-      id: data.id,
-      userId: data.user_id,
-      stripeCustomerId: data.stripe_customer_id ?? undefined,
-      stripeSubscriptionId: data.stripe_subscription_id ?? undefined,
-      tier: data.tier as ModelSubscriptionTier,
+      id: data.id, userId: data.user_id, stripeCustomerId: data.stripe_customer_id ?? undefined,
+      stripeSubscriptionId: data.stripe_subscription_id ?? undefined, tier: data.tier as ModelSubscriptionTier,
       status: data.status as ModelSubscriptionStatus,
-      currentPeriodStart: dbPeriodStartDate,
-      currentPeriodEnd: dbPeriodEndDate,
-      createdAt: dbCreatedAt,
-      updatedAt: dbUpdatedAt,
+      currentPeriodStart: dbPeriodStartDate, currentPeriodEnd: dbPeriodEndDate,
+      createdAt: dbCreatedAt, updatedAt: dbUpdatedAt,
       cancelAtPeriodEnd: data.cancel_at_period_end,
     };
   } catch (error) {
@@ -310,7 +285,7 @@ export const getSubscriptionStatus = async (userId: string): Promise<Subscriptio
 
     if (subscription.currentPeriodStart) {
       recipeUsageCount = await getUserRecipeUsage(userId, subscription.currentPeriodStart);
-      if (limits.aiChatRepliesPerPeriod !== Infinity) { // Only fetch if not unlimited
+      if (limits.aiChatRepliesPerPeriod !== Infinity) {
           aiChatUsageCount = await getAiChatUsageCount(userId, subscription.currentPeriodStart);
       }
     } else {
@@ -319,7 +294,6 @@ export const getSubscriptionStatus = async (userId: string): Promise<Subscriptio
 
     const recipeLimit = limits.recipeGenerationsPerMonth;
     const recipeRemaining = recipeLimit === Infinity ? -1 : Math.max(0, recipeLimit - recipeUsageCount);
-
     const aiChatLimit = limits.aiChatRepliesPerPeriod;
     const aiChatRemaining = aiChatLimit === Infinity ? -1 : Math.max(0, aiChatLimit - aiChatUsageCount);
 
@@ -343,8 +317,74 @@ export const getSubscriptionStatus = async (userId: string): Promise<Subscriptio
   }
 };
 
+// ***** START IMPLEMENTATION OF trackAiChatReplyGeneration *****
+export const trackAiChatReplyGeneration = async (userId: string): Promise<boolean> => {
+  logger.info(`trackAiChatReplyGeneration called for ${userId}`);
+  try {
+    const subscription = await getUserSubscription(userId);
+    if (!subscription || !subscription.currentPeriodStart || !subscription.currentPeriodEnd) {
+      logger.error(`trackAiChatReplyGeneration: User ${userId} has no active subscription or periodStart/End is missing. Cannot track usage.`);
+      return false;
+    }
+
+    const periodStartISO = subscription.currentPeriodStart.toISOString();
+    const periodEndISO = subscription.currentPeriodEnd.toISOString();
+
+    // Option 1: Fetch current count then update (Non-atomic, but simpler without RPC)
+    // Check if a record for the current period exists
+    const { data: existingUsage, error: fetchError } = await supabase
+      .from('ai_chat_usage')
+      .select('id, count')
+      .eq('user_id', userId)
+      .eq('period_start', periodStartISO)
+      .maybeSingle();
+
+    if (fetchError) {
+      logger.error(`trackAiChatReplyGeneration: Error fetching existing AI chat usage for user ${userId}, period ${periodStartISO}:`, fetchError);
+      return false;
+    }
+
+    let newCount = 1;
+    if (existingUsage) {
+      newCount = existingUsage.count + 1;
+    }
+
+    const usageDataToUpsert = {
+      user_id: userId,
+      count: newCount,
+      period_start: periodStartISO,
+      period_end: periodEndISO,
+      updated_at: new Date().toISOString(),
+      ...(existingUsage ? {} : { created_at: new Date().toISOString(), id: undefined }), // Set created_at and new id only if inserting
+    };
+    
+    // If existingUsage.id is available, we ensure we are updating that specific row by its id.
+    // Otherwise, the onConflict will handle new inserts.
+    const onConflictConstraint = 'user_id, period_start'; 
+    const upsertQuery = existingUsage?.id 
+      ? supabase.from('ai_chat_usage').update(usageDataToUpsert).eq('id', existingUsage.id)
+      : supabase.from('ai_chat_usage').upsert(usageDataToUpsert, { onConflict: onConflictConstraint });
+
+
+    const { error: upsertError } = await upsertQuery.select().single(); // select().single() to ensure it returns something or errors
+
+    if (upsertError) {
+      logger.error(`trackAiChatReplyGeneration: Error upserting AI chat usage for user ${userId}, period ${periodStartISO}:`, upsertError);
+      return false;
+    }
+
+    logger.info(`trackAiChatReplyGeneration: Successfully tracked AI chat reply for user ${userId}. New count: ${newCount} for period ${periodStartISO}.`);
+    return true;
+
+  } catch (error) {
+    logger.error(`trackAiChatReplyGeneration: Unexpected error for user ${userId}:`, error);
+    return false;
+  }
+};
+// ***** END IMPLEMENTATION OF trackAiChatReplyGeneration *****
+
+
 // --- Stripe specific functions (kept from your original, ensure they are relevant) ---
-// These are placeholders as per your original file. Implement if needed.
 export const getOrCreateStripeCustomer = async (userId: string): Promise<string | null> => { 
     logger.warn(`getOrCreateStripeCustomer called for ${userId} - STUBBED`); 
     return null; 
@@ -367,16 +407,10 @@ export const updateSubscriptionFromStripe = async (stripeSubscriptionId: string,
 };
 export const trackRecipeGeneration = async (userId: string): Promise<boolean> => { 
     logger.warn(`trackRecipeGeneration called for ${userId} - STUBBED (should ideally interact with recipe_usage table)`); 
-    // This should ideally find the current period_start from the subscriptions table,
-    // then increment the count in recipe_usage for that user_id and period_start.
-    return false; // Return false to indicate it's a stub or if an error occurs
-};
-export const trackAiChatReplyGeneration = async (userId: string): Promise<boolean> => { 
-    logger.warn(`trackAiChatReplyGeneration called for ${userId} - STUBBED (should ideally interact with ai_chat_usage table)`); 
-    // Similar to trackRecipeGeneration, but for ai_chat_usage.
     return false; 
 };
+
 export const hasReachedRecipeLimit = async (userId: string): Promise<boolean> => { 
     logger.warn(`hasReachedRecipeLimit called for ${userId} - STUBBED (should check usage against limits)`); 
-    return true; // Default to true (limit reached) for a stub
+    return true;
 };
