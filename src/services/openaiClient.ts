@@ -1,9 +1,15 @@
+// *** MODIFIED ***
 // src/services/openaiClient.ts
+
 import { OpenAI } from 'openai';
 import * as dotenv from 'dotenv';
 
-// Load environment variables first thing
-dotenv.config();
+// --- MODIFIED ---
+// Only load variables from .env file if not in a production environment
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
+// --- END MODIFICATION ---
 
 // Get API key
 const apiKey = process.env.OPENAI_API_KEY;
@@ -11,8 +17,8 @@ const apiKey = process.env.OPENAI_API_KEY;
 // Check if API key is available
 if (!apiKey) {
   console.error('FATAL ERROR: OPENAI_API_KEY environment variable not set.');
-  // You can choose to throw an error here or handle it differently
-  // throw new Error('OPENAI_API_KEY environment variable not set.');
+  // In production, this error means Railway's variable is missing.
+  // Locally, it means the .env file is missing the key.
 }
 
 // Create a single OpenAI client instance to be shared across services
