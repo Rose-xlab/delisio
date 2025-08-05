@@ -1,6 +1,9 @@
+// src/services/gptService.ts
+
 import openai, { OpenAI, GPT_MODEL } from './openaiClient';
 import { buildRecipePrompt, buildChatPrompt } from '../utils/promptBuilder';
-import { logger } from '../utils/logger'; // Import your logger
+import { logger } from '../utils/logger';
+import { AiChatResponseSchema, AiChatResponse } from '../schemas/chat.schema'; // Import our new schema
 
 /**
  * Interface for a message in the conversation history
@@ -312,159 +315,125 @@ export const generateRecipeContent = async (
 };
 
 /**
- * Generates a chat response JSON string using the configured GPT model.
- * Includes conversation history for context.
- * Attempts to always return a parsable JSON string, even on errors,
- * conforming to { reply: string, suggestions: string[] | null, error?: string }.
+ * Generates a chat response using the configured GPT model.
+ * This function is now the FIRST LINE OF DEFENSE. It ensures the response
+ * from OpenAI is parsed and validated against our strict AiChatResponseSchema.
+ * It ALWAYS returns a trusted, typed AiChatResponse object.
+ *
+ * @returns A promise that resolves to a validated AiChatResponse object.
  */
 export const generateChatResponse = async (
-  message: string,
-  messageHistory?: MessageHistoryItem[]
-): Promise<string> => {
-  try {
-    const { systemPrompt } = buildChatPrompt(message); // Assuming buildChatPrompt is robust
-    logger.info("gptService: Sending request to OpenAI for chat JSON with conversation history...");
-
-    const messages: Array<OpenAI.Chat.Completions.ChatCompletionMessageParam> = [
-      { role: 'system', content: systemPrompt }
-    ];
-
-    if (messageHistory && messageHistory.length > 0) {
-      const limitedHistory = messageHistory.slice(-10); // Consider token count if messages are very long
-      logger.info(`gptService: Including ${limitedHistory.length} previous messages as context for chat.`);
-      limitedHistory.forEach(msg => {
-        if (msg.role === 'user' || msg.role === 'assistant') {
-          messages.push({ role: msg.role, content: msg.content });
+    message: string,
+    messageHistory?: MessageHistoryItem[]
+  ): Promise<AiChatResponse> => { // <--- MODIFIED: Return type is now a trusted object
+    try {
+      const systemPrompt = `
+        You are a helpful culinary assistant named Delisio.
+        Your primary goal is to assist users with their cooking and recipe needs.
+        ALWAYS respond using a JSON object that strictly adheres to the following format.
+        Do not include any text, notes, or markdown formatting before or after the JSON object.
+  
+        The required JSON format is:
+        {
+          "reply": "Your conversational response to the user goes here. This field is required and must not be empty.",
+          "suggestions": ["An optional list", "of short, relevant", "follow-up questions or actions."]
         }
-      });
-    }
-    messages.push({ role: 'user', content: message });
-
-    logger.info(`gptService: Sending ${messages.length} messages to OpenAI for chat completion.`);
-
-    const response = await openai.chat.completions.create({
-      model: GPT_MODEL, // Ensure this is a model that reliably supports JSON mode (e.g., gpt-3.5-turbo-0125+, gpt-4-turbo-preview)
-      messages: messages,
-      temperature: 0.7,
-      max_tokens: 1024, // MODIFIED: Increased from 500. Adjust based on typical response length and cost
-      top_p: 1,
-      frequency_penalty: 0.1,
-      presence_penalty: 0.1,
-      response_format: { type: "json_object" },
-    });
-
-    logger.info("gptService: Received response from OpenAI for chat JSON.");
-    const chatJsonContent = response.choices[0]?.message?.content;
-
-    if (!chatJsonContent) { // Path 1: No content from OpenAI
-      logger.error('gptService: OpenAI chat response missing content (null or empty).', { query: message, historyLength: messageHistory?.length });
-      return JSON.stringify({
-        reply: "I'm sorry, I couldn't generate a response at this moment as the AI returned empty content. Please try again.",
-        suggestions: null,
-        error: "AI_RESPONSE_EMPTY_CONTENT"
-      });
-    }
-
-    // Attempt to parse and validate immediately
-    let parsedResponse: any;
-    try { // Path 2: chatJsonContent is not valid JSON
-      parsedResponse = JSON.parse(chatJsonContent);
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
-      logger.error('gptService: OpenAI chat response was not valid JSON and could not be parsed.', {
-        error: errorMessage,
-        rawResponse: chatJsonContent, // Log the problematic string
-        stack: e instanceof Error ? e.stack : undefined
-      });
-      return JSON.stringify({
-        reply: "I'm sorry, I received an invalid response structure from the AI that I couldn't understand. Please try again.",
-        suggestions: null,
-        error: "AI_RESPONSE_NOT_VALID_JSON"
-      });
-    }
-
-    // Validate essential fields and structure from the parsedResponse
-    const reply = parsedResponse.reply;
-    let suggestions = parsedResponse.suggestions;
-    // Check if the AI itself reported an error within its valid JSON structure
-    const anErrorFromAI = parsedResponse.error as string | undefined;
-
-    // Path 3: 'reply' field invalid (missing, not a string, or empty string)
-    if (typeof reply !== 'string' || reply.trim() === "") {
-      logger.error('gptService: OpenAI chat response "reply" field is missing, not a string, or empty.', { rawResponse: chatJsonContent, parsedResponse });
-      return JSON.stringify({
-        reply: (typeof reply === 'undefined' || reply === null)
-          ? "I'm sorry, the AI's response was not in the expected format (missing reply). Please try again."
-          : "I'm sorry, the AI provided an empty reply. Please try rephrasing your message.", // Specific for empty string reply
-        suggestions: (Array.isArray(suggestions) ? suggestions.filter((s: any) => typeof s === 'string') : null), // Attempt to salvage suggestions
-        error: anErrorFromAI || "AI_RESPONSE_INVALID_REPLY_FIELD" // Prioritize AI's error if present
-      });
-    }
-
-    // Path 4 & 4.1: 'suggestions' field validation and cleanup
-    if (suggestions !== null && !Array.isArray(suggestions)) {
-      logger.warn('gptService: OpenAI chat response "suggestions" field is present but not an array. Correcting to null.', { rawResponse: chatJsonContent, suggestionsValue: suggestions });
-      suggestions = null;
-    }
-    if (Array.isArray(suggestions)) {
-      suggestions = suggestions.filter((s: any) => typeof s === 'string');
-      if (suggestions.length === 0) { // If filtering results in empty array, make it null for consistency
-          suggestions = null;
+  
+        Example: If the user asks for a quick dinner, you might respond with:
+        {
+          "reply": "A great quick dinner idea is a classic Sheet Pan Lemon Herb Chicken with roasted vegetables! It's delicious and cleanup is a breeze. Would you like the recipe for that?",
+          "suggestions": ["Yes, give me the recipe", "Suggest something vegetarian", "How long does it take?"]
+        }
+      `;
+  
+      logger.info("gptService: Sending request to OpenAI for chat JSON with conversation history...");
+  
+      const messages: Array<OpenAI.Chat.Completions.ChatCompletionMessageParam> = [
+        { role: 'system', content: systemPrompt }
+      ];
+  
+      if (messageHistory && messageHistory.length > 0) {
+        const limitedHistory = messageHistory.slice(-10);
+        logger.info(`gptService: Including ${limitedHistory.length} previous messages as context for chat.`);
+        messages.push(...limitedHistory);
       }
-    }
-    
-    // Path 5: Success path - reconstruct the object to ensure correct structure and types
-    const finalResponseObject: { reply: string; suggestions: string[] | null; error?: string } = {
-        reply: reply, // Known to be a non-empty string here
-        suggestions: suggestions, // Known to be string[] or null
-    };
-
-    // Only include the error field if the AI itself provided one in its valid JSON response
-    if (anErrorFromAI) {
-        finalResponseObject.error = anErrorFromAI;
-    }
-
-    return JSON.stringify(finalResponseObject);
-
-  } catch (error) { // Path 6: Critical error calling OpenAI API itself (network, auth, OpenAI server errors etc.)
-    const technicalErrorMessage = error instanceof Error ? error.message : 'Unknown error connecting to AI service';
-    logger.error('gptService: Critical error calling OpenAI chat completion API:', {
-      error: technicalErrorMessage,
-      originalError: error, // Log the original error object for more details
-      stack: error instanceof Error ? error.stack : undefined
-    });
-
-    let userFacingReply = "I'm sorry, I'm currently unable to connect to the chat service. Please try again in a few moments.";
-    let errorCode = "AI_CONNECTION_OR_API_ERROR";
-
-    if (error instanceof OpenAI.APIError) {
-        if (error.status === 429) { // Specifically for OpenAI rate limits
+      messages.push({ role: 'user', content: message });
+  
+      logger.info(`gptService: Sending ${messages.length} messages to OpenAI for chat completion.`);
+  
+      const response = await openai.chat.completions.create({
+        model: GPT_MODEL,
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 1024,
+        response_format: { type: "json_object" },
+      });
+  
+      logger.info("gptService: Received response from OpenAI for chat JSON.");
+      const chatJsonContent = response.choices[0]?.message?.content;
+  
+      if (!chatJsonContent) {
+        logger.error('gptService: OpenAI chat response missing content.');
+        return {
+          reply: "I'm sorry, I couldn't generate a response as the AI returned empty content. Please try again.",
+          suggestions: [],
+          error: "AI_RESPONSE_EMPTY_CONTENT"
+        };
+      }
+  
+      let parsedJson: unknown;
+      try {
+        parsedJson = JSON.parse(chatJsonContent);
+      } catch (e) {
+        logger.error('gptService: OpenAI response was not valid JSON.', { rawResponse: chatJsonContent });
+        return {
+          reply: "I'm sorry, I received an invalid response structure from the AI. Please try again.",
+          suggestions: [],
+          error: "AI_RESPONSE_NOT_VALID_JSON"
+        };
+      }
+  
+      const validationResult = AiChatResponseSchema.safeParse(parsedJson);
+  
+      if (!validationResult.success) {
+        logger.error('gptService: OpenAI response FAILED schema validation.', {
+          errors: validationResult.error.flatten(),
+          receivedData: parsedJson
+        });
+        // Attempt to salvage the reply if it's just a simple string in the wrong place
+        const replyAttempt = (parsedJson as any)?.reply || (parsedJson as any)?.answer || '';
+        return {
+          reply: `I'm sorry, the AI's response was not in the expected format. Please try again. ${replyAttempt}`,
+          suggestions: [],
+          error: "AI_RESPONSE_SCHEMA_INVALID"
+        };
+      }
+  
+      // Success! We have a valid, trusted object.
+      return validationResult.data;
+  
+    } catch (error) { // This block catches errors with the OpenAI API call itself (network, auth, etc.)
+      const technicalErrorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error('gptService: Critical error calling OpenAI API:', { error: technicalErrorMessage, originalError: error });
+  
+      let userFacingReply = "I'm sorry, I'm currently unable to connect to the chat service. Please try again in a few moments.";
+      let errorCode = "AI_CONNECTION_OR_API_ERROR";
+  
+      if (error instanceof OpenAI.APIError) {
+        if (error.status === 429) {
             userFacingReply = "The AI service is currently experiencing high demand. Please try again shortly.";
             errorCode = `AI_API_ERROR_RATE_LIMIT_S${error.status}`;
-        } else if (error.status === 401) { // OpenAI Auth error
-            userFacingReply = "There's an authentication issue with the AI service. Please contact support if this persists.";
-            errorCode = `AI_API_ERROR_AUTH_S${error.status}`;
-        } else if (error.status === 400) { // Bad request to OpenAI (e.g. prompt issue)
-             userFacingReply = "There was an issue processing your request with the AI service. Please try rephrasing.";
-             errorCode = `AI_API_ERROR_BAD_REQUEST_S${error.status}`;
-        } else { // Other OpenAI API errors
+        } else {
             userFacingReply = `I'm sorry, there was an issue with the AI service (Code: ${error.status || 'N/A'}). Please try again.`;
             errorCode = `AI_API_ERROR_S${error.status}_T${error.type || 'UnknownType'}`;
         }
-        logger.error(`gptService: OpenAI API Error details:`, {
-            status: error.status,
-            type: error.type,
-            code: error.code,
-            param: error.param,
-            message: error.message,
-            headers: error.headers // This might be extensive, log selectively if needed
-        });
+      }
+      
+      // Return a valid AiChatResponse object even in case of a critical failure
+      return {
+        reply: userFacingReply,
+        suggestions: [],
+        error: errorCode
+      };
     }
-
-    return JSON.stringify({
-      reply: userFacingReply,
-      suggestions: null,
-      error: errorCode
-    });
-  }
-};
+  };

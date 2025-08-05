@@ -1,7 +1,8 @@
-import { Queue, Worker, Job, JobProgress} from 'bullmq';
+import { Queue, Worker, Job } from 'bullmq';
 import { redisClient } from '../config/redis';
 import { generateChatResponse } from '../services/gptService';
 import { logger } from '../utils/logger';
+import { AiChatResponse } from '../schemas/chat.schema'; // Import our trusted type
 
 interface MessageHistoryItem {
   role: 'user' | 'assistant';
@@ -15,11 +16,8 @@ export interface ChatJobData {
   userId?: string;
 }
 
-export interface ChatJobResult {
-  reply: string;
-  suggestions?: string[] | null; 
-  error?: string | null;
-}
+// This now directly uses our trusted AiChatResponse type for consistency
+export type ChatJobResult = AiChatResponse;
 
 const CONNECTION_OPTIONS = {
   connection: redisClient,
@@ -45,104 +43,40 @@ export const chatQueue = new Queue<ChatJobData, ChatJobResult, 'process-message'
 const chatWorker = new Worker<ChatJobData, ChatJobResult, 'process-message'>(
   'chat-messages',
   async (job: Job<ChatJobData, ChatJobResult, 'process-message'>): Promise<ChatJobResult> => {
-    logger.info(`[ChatWorker_JobProcessing] Job ${job.id} ENTERED. Attempts: ${job.attemptsMade}/${job.opts.attempts}. Data:`, { conversationId: job.data.conversationId, messageLength: job.data.message.length });
-    const { message, conversationId, messageHistory } = job.data;
+    logger.info(`[ChatWorker_JobProcessing] Job ${job.id} ENTERED. Attempts: ${job.attemptsMade}/${job.opts.attempts}.`);
+    const { message, messageHistory } = job.data;
     const startTime = Date.now();
 
     try {
       await job.updateProgress(10);
 
       logger.info(`[ChatWorker_JobProcessing] Job ${job.id}: Calling generateChatResponse...`);
-      const callStartTime = Date.now();
-      const chatJsonResponseString = await generateChatResponse(message, messageHistory);
-      const callEndTime = Date.now();
-      logger.info(`[ChatWorker_JobProcessing] Job ${job.id}: generateChatResponse returned. Duration: ${callEndTime - callStartTime}ms`);
-      logger.info(`[ChatWorker_JobProcessing] Job ${job.id}: RAW chatJsonResponseString received:`, { rawResponse: chatJsonResponseString });
-
-      await job.updateProgress(80);
-
-      logger.info(`[ChatWorker_JobProcessing] Job ${job.id}: Parsing response...`);
-      let parsedGptResponse: any;
-
-      try {
-        parsedGptResponse = JSON.parse(chatJsonResponseString);
-      } catch (parseError) {
-        const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
-        logger.error(`[ChatWorker_JobProcessing] Job ${job.id}: Failed to parse JSON response from gptService.`, {
-          error: errorMessage, rawResponse: chatJsonResponseString, stack: parseError instanceof Error ? parseError.stack : undefined
-        });
-        return {
-          reply: "I'm sorry, I received an unreadable response from the AI. Please try again later.",
-          error: `FATAL_PARSE_ERROR_IN_WORKER: ${errorMessage}`,
-          suggestions: null,
-        };
-      }
-      logger.info(`[ChatWorker_JobProcessing] Job ${job.id}: Response from gptService parsed successfully.`);
-
-      let finalReply: string;
-      let finalSuggestions: string[] | null = null;
-      let finalError: string | null = null;
-
-      if (typeof parsedGptResponse.reply === 'string' && parsedGptResponse.reply.trim() !== '') {
-        finalReply = parsedGptResponse.reply;
-      } else {
-        const originalReplyType = typeof parsedGptResponse.reply;
-        logger.error(`[ChatWorker_JobProcessing] Job ${job.id}: 'reply' from gptService is missing, not a string, or empty. Type was: ${originalReplyType}`, { parsedGptResponse });
-        finalReply = (originalReplyType === 'undefined' || parsedGptResponse.reply === null)
-            ? "I'm sorry, the AI's response was not in the expected format (missing reply). Please try again later."
-            : "I'm sorry, the AI provided an empty or invalid reply. Please try rephrasing your message.";
-        finalError = parsedGptResponse.error || `INVALID_REPLY_FIELD_TYPE_FROM_GPTSERVICE (was ${originalReplyType})`;
-      }
-
-      if (Array.isArray(parsedGptResponse.suggestions)) {
-        finalSuggestions = parsedGptResponse.suggestions.filter((s: any) => typeof s === 'string');
-        // ***** MODIFIED LINE 101 (approx) *****
-        if (finalSuggestions && finalSuggestions.length === 0) { // Check if finalSuggestions is not null before accessing length
-          finalSuggestions = null; 
-        }
-      } else if (parsedGptResponse.suggestions !== null && typeof parsedGptResponse.suggestions !== 'undefined') {
-          logger.warn(`[ChatWorker_JobProcessing] Job ${job.id}: 'suggestions' field from gptService was present but not an array. Setting to null.`, { suggestions: parsedGptResponse.suggestions });
-          finalSuggestions = null;
-      }
       
-      if (typeof parsedGptResponse.error === 'string' && parsedGptResponse.error.trim() !== '') {
-        if (finalError) { 
-            logger.warn(`[ChatWorker_JobProcessing] Job ${job.id}: gptService also had an error: '${parsedGptResponse.error}', but using primary error: '${finalError}'`);
-        } else {
-            finalError = parsedGptResponse.error;
-        }
-      }
-      
-      if (finalError) {
-        logger.warn(`[ChatWorker_JobProcessing] Job ${job.id}: A technical error condition was met: '${finalError}'. User will see: "${finalReply}"`);
-      }
-      
+      // The worker's core logic is now one simple, type-safe line.
+      // All complex parsing and validation is handled by the gptService.
+      const validatedResponse = await generateChatResponse(message, messageHistory);
+
       await job.updateProgress(100);
       const endTime = Date.now();
       logger.info(`[ChatWorker_JobProcessing] Job ${job.id}: COMPLETED LOGIC. Total Duration: ${endTime - startTime}ms`);
 
-      const resultToSend: ChatJobResult = {
-        reply: finalReply,
-      };
-      if (finalSuggestions !== undefined) {
-        resultToSend.suggestions = finalSuggestions;
-      }
-      if (finalError !== undefined) { // Check against undefined if you want to preserve null as a specific "no error" state
-        resultToSend.error = finalError; 
-      }
-      
-      return resultToSend;
+      // We can trust validatedResponse completely because gptService guarantees its structure.
+      return validatedResponse;
 
     } catch (error) { 
       const endTime = Date.now();
       const errorMessage = error instanceof Error ? error.message : String(error);
       logger.error(`[ChatWorker_JobProcessing] Job ${job.id}: CRITICAL UNEXPECTED error during processing. Total Duration: ${endTime - startTime}ms`, {
-        error: errorMessage, stack: error instanceof Error ? error.stack : undefined, jobData: job.data
+        error: errorMessage, 
+        stack: error instanceof Error ? error.stack : undefined, 
+        jobData: job.data
       });
+
+      // Even in a catastrophic failure, we return a valid object that conforms to our schema.
       return {
-        reply: `I'm sorry, an unexpected internal error occurred while processing your message. Please try again.`,
+        reply: `I'm sorry, an unexpected internal error occurred while processing your message. Our team has been notified.`,
+        suggestions: [],
         error: `UNEXPECTED_WORKER_ERROR: ${errorMessage}`,
-        suggestions: null,
       };
     }
   },

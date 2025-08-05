@@ -1,5 +1,3 @@
-//C:\Users\mukas\Downloads\delisio\delisio\src\controllers\chatControllers.ts
-
 import { Request, Response, NextFunction } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../config/supabase';
@@ -110,8 +108,6 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
 
       if (!currentJob) {
         logger.warn(`Job ${job.id} not found during polling for conv ${conversationId}. It might have been removed or completed very quickly.`);
-        // It's possible the job completed and was removed based on retention policies if polling is slow
-        // Or it failed and was removed. If we can't find it after a short while, assume an issue.
         if (Date.now() - startTime > 5000) {
             logger.error(`Job ${job.id} (conv ${conversationId}) persistently not found after 5s. Assuming lost or already processed and removed.`);
             throw new AppError('Chat processing status could not be retrieved. The request might have completed or failed.', 500, "I'm sorry, there was a hiccup checking your message status. Please check the chat for a response shortly.");
@@ -123,38 +119,26 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
       logger.debug(`Polling chat job ${job.id}: State=${state} for conversation ${conversationId}`);
 
       if (state === 'completed') {
-        const jobReturnValue = currentJob.returnvalue;
+        const result = currentJob.returnvalue as ChatJobResult;
 
-        // ***** ENHANCED LOGGING *****
         logger.info(
           `[Controller] Job ${job.id} is 'completed'. Raw returnvalue from BullMQ:`,
-          {
-            // Attempt to stringify, but catch errors if it's not directly stringifiable (e.g. undefined)
-            rawReturnValueString: typeof jobReturnValue === 'undefined' ? 'undefined' : JSON.stringify(jobReturnValue, null, 2),
-            typeOfRawReturnValue: typeof jobReturnValue,
-            isReturnValueNull: jobReturnValue === null,
-            isReturnValueUndefined: typeof jobReturnValue === 'undefined',
-          }
+          { rawResult: result } // Log the entire result object now
         );
-        // ***** END ENHANCED LOGGING *****
 
-        const result = jobReturnValue as ChatJobResult;
-
-        if (result && typeof result.reply === 'string') {
-          if (result.error) {
-            logger.warn(`Chat job ${job.id} (conv ${conversationId}) completed with reply but also with a technical error field from worker: '${result.error}'`);
-          } else {
-            logger.info(`Chat job ${job.id} completed successfully by worker for conversation ${conversationId}.`);
-          }
+        // This is the clean success path.
+        // We check for the *absence* of a structured error from the worker.
+        if (result && !result.error) {
+          logger.info(`Chat job ${job.id} completed successfully by worker for conversation ${conversationId}.`);
 
           if (userId) {
             const subscription = await getUserSubscription(userId);
-            if (subscription?.tier === 'free' && !result.error) {
+            if (subscription?.tier === 'free') {
               await trackAiChatReplyGeneration(userId);
             }
           }
 
-          if (userId && !result.error) {
+          if (userId) {
             try {
               const assistantMessagePayload: MessageInsert = {
                 id: uuidv4(),
@@ -174,21 +158,30 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
               const errorMsg = dbError instanceof Error ? dbError.message : String(dbError);
               logger.error(`Error saving assistant message or updating conversation ${conversationId} for user ${userId}: ${errorMsg}`);
             }
-          } else if (!userId && !result.error) {
+          } else {
             logger.info(`Assistant response for anonymous conversation ${conversationId}, not saving AI message to DB.`);
           }
           
           return res.status(200).json({
             reply: result.reply,
-            suggestions: result.suggestions ?? [],
+            suggestions: result.suggestions, // suggestions now defaults to [] in the schema
           });
-        } else { // result.reply is not a string, or result is null/undefined
-          const workerTechError = result?.error || 'Chat worker returned invalid result structure (reply missing/invalid).';
-          logger.error(`Chat job ${job.id} (conv ${conversationId}) completed but 'reply' is missing/invalid. Actual reply type: ${typeof result?.reply}. TechError from worker: ${result?.error}`, { retrievedResultObjectString: JSON.stringify(result, null, 2) });
+
+        } else { 
+          // This path handles jobs that completed but returned a structured error.
+          const workerTechError = result?.error || 'Chat worker completed but returned an invalid structure.';
+          const userFacingReply = result?.reply || "I’m sorry, I didn’t quite catch that. Could you rephrase that?";
+
+          logger.error(`Chat job ${job.id} (conv ${conversationId}) completed with a structured error from the worker.`, { 
+            technicalError: workerTechError,
+            userFacingReply: userFacingReply,
+            fullResult: result 
+          });
+
           throw new AppError(
-            workerTechError,
+            workerTechError, // Technical error message for our logs
             500,
-            (result && typeof result.reply === 'string' ? result.reply : null) || "I'm sorry, I couldn't formulate that response properly."
+            userFacingReply // Safe reply to show the user
           );
         }
       } else if (state === 'failed') {
@@ -215,7 +208,7 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
     logger.error(`Error in handleChatMessage controller (Job ID for context: ${jobIdForContext}): ${technicalErrorMsg}`, {
       statusCode,
       isAppError,
-      originalErrorObjectString: String(error), // Stringify original error for logging
+      originalErrorObjectString: String(error),
       requestBody: req.body,
       userId: req.user?.id
     });
