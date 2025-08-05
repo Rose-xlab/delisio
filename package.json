@@ -39,7 +39,8 @@
     "stripe": "^15.4.0",
     "uuid": "^11.1.0",
     "winston": "^3.12.0",
-    "winston-daily-rotate-file": "^4.7.1"
+    "winston-daily-rotate-file": "^4.7.1",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
