@@ -56,21 +56,31 @@ export const recipeSchema = Joi.object({
 });
 
 // Chat message validation schema
+// Chat message validation schema - UPDATED FOR PRODUCTION
 export const chatMessageSchema = Joi.object({
-  message: Joi.string().required().min(1).max(500)
+  message: Joi.string()
+    .required()
+    .min(1)
+    .max(4000) // Increased from 500 to 4000
+    .trim() // Auto-trim whitespace
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove control characters
     .messages({
       'string.empty': 'Message cannot be empty',
       'string.min': 'Message must be at least 1 character long',
-      'string.max': 'Message cannot exceed 500 characters',
+      'string.max': 'Message cannot exceed 4000 characters',
       'any.required': 'Message is required'
     }),
-  conversation_id: Joi.string().uuid().optional(), // Assuming conversation_id is a UUID
-  message_history: Joi.array().items(
-    Joi.object({
-      role: Joi.string().valid('user', 'assistant').required(),
-      content: Joi.string().required()
-    })
-  ).optional()
+  conversation_id: Joi.string().uuid().required(), // Make it required
+  message_history: Joi.array()
+    .max(20) // Limit history to prevent token overflow
+    .items(
+      Joi.object({
+        role: Joi.string().valid('user', 'assistant').required(),
+        content: Joi.string().max(2000).required() // Limit individual message size
+      })
+    )
+    .optional()
+    .default([]) // Default to empty array
 });
 
 // User registration validation schema

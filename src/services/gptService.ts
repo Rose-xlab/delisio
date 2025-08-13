@@ -325,115 +325,146 @@ export const generateRecipeContent = async (
 export const generateChatResponse = async (
     message: string,
     messageHistory?: MessageHistoryItem[]
-  ): Promise<AiChatResponse> => { // <--- MODIFIED: Return type is now a trusted object
-    try {
-      const systemPrompt = `
-        You are a helpful culinary assistant named Delisio.
-        Your primary goal is to assist users with their cooking and recipe needs.
-        ALWAYS respond using a JSON object that strictly adheres to the following format.
-        Do not include any text, notes, or markdown formatting before or after the JSON object.
-  
-        The required JSON format is:
-        {
-          "reply": "Your conversational response to the user goes here. This field is required and must not be empty.",
-          "suggestions": ["An optional list", "of short, relevant", "follow-up questions or actions."]
-        }
-  
-        Example: If the user asks for a quick dinner, you might respond with:
-        {
-          "reply": "A great quick dinner idea is a classic Sheet Pan Lemon Herb Chicken with roasted vegetables! It's delicious and cleanup is a breeze. Would you like the recipe for that?",
-          "suggestions": ["Yes, give me the recipe", "Suggest something vegetarian", "How long does it take?"]
-        }
-      `;
-  
-      logger.info("gptService: Sending request to OpenAI for chat JSON with conversation history...");
-  
-      const messages: Array<OpenAI.Chat.Completions.ChatCompletionMessageParam> = [
-        { role: 'system', content: systemPrompt }
-      ];
-  
-      if (messageHistory && messageHistory.length > 0) {
-        const limitedHistory = messageHistory.slice(-10);
-        logger.info(`gptService: Including ${limitedHistory.length} previous messages as context for chat.`);
-        messages.push(...limitedHistory);
-      }
-      messages.push({ role: 'user', content: message });
-  
-      logger.info(`gptService: Sending ${messages.length} messages to OpenAI for chat completion.`);
-  
-      const response = await openai.chat.completions.create({
-        model: GPT_MODEL,
-        messages: messages,
-        temperature: 0.7,
-        max_tokens: 1024,
-        response_format: { type: "json_object" },
-      });
-  
-      logger.info("gptService: Received response from OpenAI for chat JSON.");
-      const chatJsonContent = response.choices[0]?.message?.content;
-  
-      if (!chatJsonContent) {
-        logger.error('gptService: OpenAI chat response missing content.');
-        return {
-          reply: "I'm sorry, I couldn't generate a response as the AI returned empty content. Please try again.",
-          suggestions: [],
-          error: "AI_RESPONSE_EMPTY_CONTENT"
-        };
-      }
-  
-      let parsedJson: unknown;
-      try {
-        parsedJson = JSON.parse(chatJsonContent);
-      } catch (e) {
-        logger.error('gptService: OpenAI response was not valid JSON.', { rawResponse: chatJsonContent });
-        return {
-          reply: "I'm sorry, I received an invalid response structure from the AI. Please try again.",
-          suggestions: [],
-          error: "AI_RESPONSE_NOT_VALID_JSON"
-        };
-      }
-  
-      const validationResult = AiChatResponseSchema.safeParse(parsedJson);
-  
-      if (!validationResult.success) {
-        logger.error('gptService: OpenAI response FAILED schema validation.', {
-          errors: validationResult.error.flatten(),
-          receivedData: parsedJson
-        });
-        // Attempt to salvage the reply if it's just a simple string in the wrong place
-        const replyAttempt = (parsedJson as any)?.reply || (parsedJson as any)?.answer || '';
-        return {
-          reply: `I'm sorry, the AI's response was not in the expected format. Please try again. ${replyAttempt}`,
-          suggestions: [],
-          error: "AI_RESPONSE_SCHEMA_INVALID"
-        };
-      }
-  
-      // Success! We have a valid, trusted object.
-      return validationResult.data;
-  
-    } catch (error) { // This block catches errors with the OpenAI API call itself (network, auth, etc.)
-      const technicalErrorMessage = error instanceof Error ? error.message : 'Unknown error';
-      logger.error('gptService: Critical error calling OpenAI API:', { error: technicalErrorMessage, originalError: error });
-  
-      let userFacingReply = "I'm sorry, I'm currently unable to connect to the chat service. Please try again in a few moments.";
-      let errorCode = "AI_CONNECTION_OR_API_ERROR";
-  
-      if (error instanceof OpenAI.APIError) {
-        if (error.status === 429) {
-            userFacingReply = "The AI service is currently experiencing high demand. Please try again shortly.";
-            errorCode = `AI_API_ERROR_RATE_LIMIT_S${error.status}`;
-        } else {
-            userFacingReply = `I'm sorry, there was an issue with the AI service (Code: ${error.status || 'N/A'}). Please try again.`;
-            errorCode = `AI_API_ERROR_S${error.status}_T${error.type || 'UnknownType'}`;
-        }
-      }
-      
-      // Return a valid AiChatResponse object even in case of a critical failure
+  ): Promise<AiChatResponse> => {
+    
+    // Input sanitization and validation
+    let sanitizedMessage = message?.toString() || "";
+    
+    // Remove potentially problematic characters
+    sanitizedMessage = sanitizedMessage
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Control characters
+      .trim();
+    
+    // Handle empty messages
+    if (!sanitizedMessage) {
       return {
-        reply: userFacingReply,
-        suggestions: [],
-        error: errorCode
+        reply: "I didn't catch that. Could you please tell me what you're looking for?",
+        suggestions: ["Show me a quick recipe", "I need dinner ideas", "What can I make with chicken?"],
       };
     }
-  };
+    
+    // Handle gibberish or spam (simple check for repeated characters)
+    if (/^(.)\1{10,}$/.test(sanitizedMessage) || /^[^a-zA-Z0-9\s]{20,}$/.test(sanitizedMessage)) {
+      return {
+        reply: "I'm having trouble understanding that. How can I help you with cooking today?",
+        suggestions: ["Browse recipes", "Get meal suggestions", "Ask about ingredients"],
+      };
+    }
+    
+    // Handle extremely long messages
+    if (sanitizedMessage.length > 4000) {
+      sanitizedMessage = sanitizedMessage.substring(0, 4000);
+    }
+    
+    // Progressive retry strategy
+    const attempts = [
+      { historySize: 10, temperature: 0.7, maxTokens: 1024 },
+      { historySize: 5, temperature: 0.6, maxTokens: 800 },
+      { historySize: 0, temperature: 0.5, maxTokens: 600 },
+    ];
+    
+    for (let i = 0; i < attempts.length; i++) {
+      try {
+        return await attemptChatCompletion(
+          sanitizedMessage,
+          messageHistory?.slice(-attempts[i].historySize),
+          attempts[i].temperature,
+          attempts[i].maxTokens
+        );
+      } catch (error) {
+        logger.error(`Attempt ${i + 1} failed:`, { 
+          error: error instanceof Error ? error.message : String(error),
+          attempt: attempts[i]
+        });
+        
+        // If it's a 401 error, don't retry
+        if (error instanceof OpenAI.APIError && error.status === 401) {
+          logger.error('CRITICAL: OpenAI authentication failed. Invalid API key.');
+          return {
+            reply: "I'm experiencing a configuration issue. Our team has been notified. Please try again later.",
+            suggestions: [],
+            error: "AUTH_FAILED"
+          };
+        }
+      }
+    }
+    
+    // Ultimate fallback
+    return {
+      reply: "I apologize, but I'm having trouble right now. Let me suggest some popular recipes: Would you like to try Spaghetti Carbonara, Chicken Stir-Fry, or a Caesar Salad?",
+      suggestions: ["Spaghetti Carbonara", "Chicken Stir-Fry", "Caesar Salad", "Show me more options"],
+    };
+};
+
+async function attemptChatCompletion(
+    message: string,
+    messageHistory?: MessageHistoryItem[],
+    temperature: number = 0.7,
+    maxTokens: number = 1024
+): Promise<AiChatResponse> {
+    // Simplified, more flexible system prompt
+    const systemPrompt = `
+You are Delisio, a helpful cooking assistant. 
+
+CRITICAL: You MUST ALWAYS respond, no matter what the user says.
+- If the message is unclear, ask for clarification
+- If it's off-topic, gently redirect to cooking
+- If it's gibberish, respond helpfully anyway
+- NEVER refuse to respond
+
+Your response MUST be valid JSON:
+{
+  "reply": "Your helpful response",
+  "suggestions": ["Optional", "suggestions", "array"] or null
+}
+
+Be friendly, helpful, and always provide value.`;
+
+    const messages: Array<OpenAI.Chat.Completions.ChatCompletionMessageParam> = [
+        { role: 'system', content: systemPrompt }
+    ];
+
+    // Add message history with token management
+    if (messageHistory && messageHistory.length > 0) {
+        for (const msg of messageHistory) {
+            messages.push({
+                role: msg.role,
+                content: msg.content.substring(0, 1000) // Truncate long messages
+            });
+        }
+    }
+    
+    messages.push({ role: 'user', content: message });
+
+    try {
+        const response = await openai.chat.completions.create({
+            model: GPT_MODEL,
+            messages: messages,
+            temperature: temperature,
+            max_tokens: maxTokens,
+            response_format: { type: "json_object" },
+        });
+
+        const content = response.choices[0]?.message?.content;
+        if (!content) {
+            throw new Error('Empty response from OpenAI');
+        }
+
+        const parsed = JSON.parse(content);
+        
+        // Validate and clean the response
+        return {
+            reply: String(parsed.reply || "I can help you with that! What would you like to cook?"),
+            suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions.map(String) : [],
+        };
+        
+    } catch (error) {
+        // Log detailed error for debugging
+        logger.error('OpenAI API call failed:', {
+            error: error instanceof Error ? error.message : String(error),
+            messageLength: message.length,
+            historyLength: messageHistory?.length || 0,
+        });
+        throw error;
+    }
+}
