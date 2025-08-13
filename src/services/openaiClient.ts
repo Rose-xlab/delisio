@@ -1,29 +1,54 @@
 // src/services/openaiClient.ts
-
 import { OpenAI } from 'openai';
 import * as dotenv from 'dotenv';
+import { logger } from '../utils/logger';
 
-// Only load variables from .env file if not in a production environment
-if (process.env.NODE_ENV !== 'production') {
-  dotenv.config();
-}
+// Always try to load .env file, regardless of environment
+// This ensures consistency across all processes
+dotenv.config();
 
 // Get API key
 const apiKey = process.env.OPENAI_API_KEY;
 
-// --- ADDED: Diagnostic Logging ---
-// This will run every time the server starts or restarts.
-// We are logging whether the key exists, NOT the key itself for security.
-if (apiKey && apiKey.startsWith('sk-')) {
-    console.log('[Startup Check] OpenAI API Key loaded successfully from environment.');
-} else {
-    console.error('[Startup Check] FATAL ERROR: OPENAI_API_KEY is missing or invalid in the environment.');
+// Validate API key exists and looks valid
+if (!apiKey) {
+    const errorMsg = 'CRITICAL: OPENAI_API_KEY is not set in environment variables';
+    console.error(`[OpenAI Client] ${errorMsg}`);
+    logger?.error(errorMsg);
+    throw new Error(errorMsg);
 }
-// --- END: Diagnostic Logging ---
 
+if (!apiKey.startsWith('sk-')) {
+    const errorMsg = 'CRITICAL: OPENAI_API_KEY exists but does not appear to be valid (should start with "sk-")';
+    console.error(`[OpenAI Client] ${errorMsg}`);
+    logger?.error(errorMsg);
+    throw new Error(errorMsg);
+}
+
+// Log success (partial key only for security)
+const maskedKey = `${apiKey.substring(0, 7)}...${apiKey.substring(apiKey.length - 4)}`;
+console.log(`[OpenAI Client] API Key loaded successfully: ${maskedKey}`);
+logger?.info(`OpenAI client initialized with API key: ${maskedKey}`);
 
 // Create a single OpenAI client instance to be shared across services
-const openai = new OpenAI({ apiKey });
+const openai = new OpenAI({ 
+    apiKey,
+    maxRetries: 3, // Add retry logic
+    timeout: 30000, // 30 second timeout
+});
+
+// Test the API key on initialization (optional but helpful)
+if (process.env.NODE_ENV !== 'production') {
+    openai.models.list()
+        .then(() => {
+            console.log('[OpenAI Client] API key validated successfully - can access OpenAI API');
+            logger?.info('OpenAI API key validated successfully');
+        })
+        .catch((error) => {
+            console.error('[OpenAI Client] API key validation failed:', error.message);
+            logger?.error('OpenAI API key validation failed', { error: error.message });
+        });
+}
 
 // Export the configured client
 export default openai;

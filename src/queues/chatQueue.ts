@@ -1,3 +1,5 @@
+//C:\Users\mukas\Downloads\delisio\delisio\src\queues\chatQueue.ts
+
 import { Queue, Worker, Job } from 'bullmq';
 import { redisClient } from '../config/redis';
 import { generateChatResponse } from '../services/gptService';
