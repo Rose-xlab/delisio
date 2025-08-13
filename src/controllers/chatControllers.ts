@@ -1,4 +1,4 @@
-//C:\Users\mukas\Downloads\delisio\delisio\src\controllers\chatControllers.ts
+// src/controllers/chatControllers.ts
 import { Request, Response, NextFunction } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../config/supabase';
@@ -45,15 +45,21 @@ export const handleChatMessage = async (req: Request, res: Response, next: NextF
         }
         const aiRepliesUsed = await getAiChatUsageCount(userId, currentPeriodStart);
         logger.info(`User ${userId} (free) AI replies used: ${aiRepliesUsed} / Limit: ${limits.aiChatRepliesPerPeriod} for period starting ${currentPeriodStart.toISOString()}`);
+        
+        // ================== MODIFIED BLOCK START ==================
         if (aiRepliesUsed >= limits.aiChatRepliesPerPeriod) {
-          logger.warn(`User ${userId} (free) has reached AI reply limit of ${limits.aiChatRepliesPerPeriod}.`);
-          return res.status(402).json({
-            reply: `You have reached your limit of ${limits.aiChatRepliesPerPeriod} free AI replies for this period. Please upgrade.`,
-            error_type: "AI_REPLY_LIMIT_REACHED",
+          logger.warn(`User ${userId} (free) has reached AI reply limit of ${limits.aiChatRepliesPerPeriod}. Blocking request.`);
+          
+          // Return a 403 Forbidden status, which is more appropriate for an authorization failure (i.e., not allowed to use the feature).
+          return res.status(403).json({
+            reply: `You have reached your limit of ${limits.aiChatRepliesPerPeriod} free AI replies. Please upgrade for more.`,
+            // This error type matches what your Flutter app is now looking for.
+            error_type: "SUBSCRIPTION_LIMIT_REACHED", 
             suggestions: [],
-            status_code: 402
+            status_code: 403
           });
         }
+        // ================== MODIFIED BLOCK END ==================
       }
     }
 
